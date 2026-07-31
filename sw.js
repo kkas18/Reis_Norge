@@ -5,7 +5,7 @@
      kartfliser → cache-first med tak på antall fliser
      API-er     → network-first med cachet fallback (tunnel/dårlig dekning)
 */
-const VERSION = 'v4.0.0';
+const VERSION = 'v4.1.0';
 const SHELL_CACHE = `reis-shell-${VERSION}`;
 const TILE_CACHE = `reis-tiles-${VERSION}`;
 const DATA_CACHE = `reis-data-${VERSION}`;
@@ -32,7 +32,7 @@ const isData = (u) =>
   /entur|wikipedia|wikimedia|overpass|open-meteo|urbansharing|oslobysykkel|gbfs/.test(u.host);
 
 const isAsset = (u) =>
-  /fonts\.(googleapis|gstatic)\.com|unpkg\.com|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com/.test(u.host);
+  /unpkg\.com|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com/.test(u.host);
 
 /* ------------------------------------------------------------------ install */
 self.addEventListener('install', (e) => {

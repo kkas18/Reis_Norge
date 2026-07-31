@@ -64,6 +64,14 @@ Android cacher WebAPK-ikonet. Avinstaller appen, åpne Chrome →
 *Innstillinger → Personvern → Slett nettleserdata → Bufrede bilder og filer*,
 last siden på nytt og installer igjen.
 
+## Bygging av ressurser
+```
+python3 build_icons.py   # ikonsettet (SVG + PNG)
+python3 build_fonts.py   # subsetter og legger skriftene inn i index.html
+```
+Skriftene ligger i `index.html` som base64-WOFF2, så appen har ingen eksterne
+avhengigheter utenom kart og API-er.
+
 ## Datakilder (alle gratis, ingen nøkkel)
 - Kollektiv, sanntid, geosøk, avvik, kjøretøyposisjoner: **Entur**
 - Bil / sykkel / gange-ruting: **OSRM** (FOSSGIS)
@@ -84,7 +92,7 @@ mens appen er åpen.
 ## Tester
 ```
 npm install jsdom      # kun for test-dom.js
-node test-dom.js       # 118 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
+node test-dom.js       # 127 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
 node test-live.js      # 15 tester: appens egne spørringer mot Entur (krever nett)
 python3 swipe_test.py  # sveip og kartlag med ekte touch i Chromium
 python3 measure.py     # tetthet, fanefarger og kontrast
@@ -92,6 +100,8 @@ python3 fill_test.py   # utfylling av Plan-fanen og zoom-sperre
 python3 qt_test.py     # hurtigreiser ende-til-ende
 python3 sec_test.py    # sammenleggbare seksjoner og kartkort
 python3 overlap_test.py # at kartpanelene ikke dekker hverandre
+python3 perf_test.py   # pausing i bakgrunn, oppfriskning, offline-buffer
+python3 font_test.py   # at skriftene er lokale og dekker alle vekter
 ```
 
 ## Feilretting

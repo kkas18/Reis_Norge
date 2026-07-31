@@ -2,9 +2,9 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (118 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (127 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
-`sec_test.py` og `overlap_test.py` måler layout,
+`sec_test.py`, `overlap_test.py`, `perf_test.py` og `font_test.py` måler layout,
 farger, kontrast, sveip og zoom-sperre med ekte touch-hendelser i Chromium på
 Galaxy S24-bredde. Alle grønne.
 
@@ -162,6 +162,53 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Batteri, oppstart og offline
+
+Tre svakheter funnet ved gjennomgang, ikke ved gjetting.
+
+### 1. Appen jobbet videre i bakgrunnen
+Sju `setInterval` gikk uansett om skjermen var på. De sjekket om *fanen* var
+aktiv, men ikke om appen var synlig. Det tappet batteri, og ved retur sto
+nedtellingen på gamle tall til neste poll.
+
+Alle periodiske jobber går nå gjennom `every()`, som hopper over når
+`document.visibilityState` er `hidden`. Ved retur:
+
+- klokke og nedtellinger rettes opp **umiddelbart**
+- var du borte i mer enn 10 sekunder, hentes friske data for den fanen du er på
+
+Målt i nettleser: **0 Entur-kall på 26 sekunder** i bakgrunnen (mot minst ett
+per 20 sekunder før), og ett kall umiddelbart ved retur.
+
+### 2. Skriftene ble hentet fra Google
+Første gang appen ble åpnet uten nett fikk du systemfont, og på treg forbindelse
+blokkerte skriftene opptegningen. Nå ligger alle sju snitt i fila som
+base64-WOFF2, subsettet til latin + norsk + de symbolene grensesnittet bruker –
+**82 kB til sammen**.
+
+Verifisert: null eksterne fontkall, og alle vekter som faktisk brukes er lastet.
+Byggeskriptet `build_fonts.py` kan kjøres på nytt og bytter blokken ut i stedet
+for å legge en ny oppå.
+
+> Underveis fant testen at `IBM Plex Sans 700` og `IBM Plex Mono 400` var i bruk
+> uten å være lastet – nettleseren syntetiserte dem. Begge er nå med.
+
+### 3. Avgangstavla startet tom
+Siste stoppested ble husket, men ikke avgangene. Nå bufres de siste 12
+avgangene, og tavla viser dem umiddelbart – nedtonet, med «Lagret liste ·
+oppdaterer…» over – til friske tall er på plass. Bufferet regnes som ubrukelig
+etter en time.
+
+Feiler hentingen mens du har en brukbar liste, beholdes lista med en beskjed i
+stedet for at et feilkort tar over. Verifisert med nettverket avslått:
+**12 rader på skjermen uten nett.**
+
+> Testene mot Entur var samtidig skjøre: to av dem brukte «nå» som tidspunkt og
+> feilet om natta, når det ikke går buss fra Fredrikstad. De bruker nå neste
+> hverdag kl. 08.
 
 ---
 
