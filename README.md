@@ -84,10 +84,11 @@ mens appen er åpen.
 ## Tester
 ```
 npm install jsdom      # kun for test-dom.js
-node test-dom.js       # 86 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
-node test-live.js      # 13 tester: appens egne spørringer mot Entur (krever nett)
+node test-dom.js       # 94 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
+node test-live.js      # 14 tester: appens egne spørringer mot Entur (krever nett)
 python3 swipe_test.py  # sveip og kartlag med ekte touch i Chromium
 python3 measure.py     # tetthet, fanefarger og kontrast
+python3 fill_test.py   # utfylling av Plan-fanen og zoom-sperre
 ```
 
 ## Feilretting

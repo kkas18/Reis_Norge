@@ -1,10 +1,11 @@
 # REIS Norge – hva som ble fikset
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
-`node test-live.js` kjører appens egne spørringer mot API-et (13 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (86 tester),
-`python3 shot.py`, `measure.py` og `swipe_test.py` måler layout, farger, kontrast
-og sveip med ekte touch-hendelser i Chromium på Galaxy S24-bredde. Alle grønne.
+`node test-live.js` kjører appens egne spørringer mot API-et (14 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (94 tester),
+`python3 shot.py`, `measure.py`, `swipe_test.py` og `fill_test.py` måler layout,
+farger, kontrast, sveip og zoom-sperre med ekte touch-hendelser i Chromium på
+Galaxy S24-bredde. Alle grønne.
 
 ---
 
@@ -160,6 +161,39 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Tomrommet under «Finn reise», og lås mot knipe-zoom
+
+**«I nærheten» fyller plassen.** Under knappen lå det rundt 250 px død flate.
+Der ligger nå de nærmeste stoppestedene med hva som faktisk går derfra – linje,
+retning og nedtelling. Ett trykk åpner tavla for det stoppet.
+
+Det er ikke fyllstoff: det er den vanligste tingen du vil vite når du åpner
+appen, og det sparer et fanebytte pluss et søk. Detaljene:
+
+- Stopp og avganger hentes i **ett** kall (`NEARBY_Q`), ikke ett per stopp.
+- Oppdateres hvert 45. sekund, og bare mens Plan-fanen faktisk er synlig.
+- Har du alt gitt posisjonstilgang, hentes den stille ved oppstart – listen står
+  klar før du rekker å trykke. Er tillatelsen **ikke** gitt, vises et kort med en
+  knapp i stedet, slik at spørsmålet kommer av en handling og ikke av seg selv.
+
+Målt i Chromium: innholdet i Plan-fanen rekker nå 763 px mot 742 px synlig flate,
+altså fylt helt ut, mot 610 px før.
+
+**Knipe-zoom er sperret – unntatt på kartet.** Å knipe grensesnittet større
+forskjøv hele oppsettet. Nå:
+
+- `user-scalable=no, maximum-scale=1` i viewport
+- `touch-action: pan-y` på `body`, `pan-x` på de sidelengs rullefeltene
+- `touch-action: none` på `#map`, så Leaflet håndterer knipingen selv
+- iOS bryr seg ikke om viewport-flagget, så `gesturestart`/`gesturechange`
+  stoppes i JS, sammen med to-finger-`touchmove` og dobbelttrykk – alt med et
+  unntak for alt som skjer inne i `#map`
+
+Verifisert med ekte to-finger-gester i nettleser: appens skala står på 1,0 før og
+etter knip, mens kartet zoomet fra nivå 13 til 16 i samme test.
 
 ---
 

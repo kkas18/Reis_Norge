@@ -61,7 +61,7 @@ async def main():
 
         # Fanefarger
         colors = {}
-        for tab in ["plan", "depart", "map", "saved"]:
+        for tab in ["plan", "depart", "map"]:
             await pg.click(f".nav-btn[data-tab='{tab}']")
             await pg.wait_for_timeout(900)
             colors[tab] = await pg.evaluate(

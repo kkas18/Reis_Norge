@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0A2A57">
 <meta name="color-scheme" content="dark light">
 <meta name="description" content="REIS Norge – kollektiv, bil, sykkel og gå med sanntidsavganger, vekk-meg-alarm, utgangsguide, bysykkel og levende kjøretøy.">
@@ -56,6 +56,12 @@
 #app[data-tab="depart"]{--tab:#C8102E;--tab-2:#E8455E;--tab-soft:rgba(200,16,46,.12)}
 #app[data-tab="map"]   {--tab:#0F6F6C;--tab-2:#2BA39C;--tab-soft:rgba(15,111,108,.12)}
 *{box-sizing:border-box;margin:0;padding:0}
+/* Grensesnittet skal ikke kunne knipes større – da forskyver hele oppsettet seg.
+   Kartet er unntatt: der håndterer Leaflet knipingen selv. */
+html{touch-action:pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{touch-action:pan-y}
+.dep-stop-chips,#modeBar{touch-action:pan-x}
+#map,.leaflet-container{touch-action:none}
 /* FIX: .chip-btn m.fl. setter display:inline-flex og overstyrte [hidden].
    Uten dette ble «Vis på kart», LIVE-merket og «+ via-stopp» alltid synlige. */
 [hidden]{display:none!important}
@@ -536,6 +542,30 @@ a{color:inherit}
 /* Satellitt og topografi er lyse flater – hold kortene lesbare over dem. */
 :root[data-base="satellitt"] #mapCtxChip{background:rgba(6,20,40,.86)}
 
+/* ---------- «I nærheten» ---------- */
+#nearbyWrap{padding-bottom:6px}
+.near-card{display:block;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);
+  border-radius:14px;padding:10px 12px;margin-top:8px;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s;
+  animation:rowIn .34s cubic-bezier(.22,1,.36,1) both}
+.near-card:active{transform:scale(.98)}
+.near-card:hover{box-shadow:var(--sh-1);border-color:var(--line-2)}
+.nc-top{display:flex;align-items:baseline;gap:8px}
+.nc-top b{font-family:var(--font-d);font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nc-top span{margin-left:auto;flex:none;font-family:var(--font-m);font-size:10.5px;color:var(--faint)}
+.nc-lines{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.nc-line{display:inline-flex;align-items:center;gap:6px;background:var(--paper);border-radius:9px;padding:4px 8px 4px 4px;max-width:100%}
+.nc-line .leg-badge{height:20px;padding:0 6px;font-size:10.5px}
+.nc-dest{font-size:11.5px;color:var(--muted);max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nc-when{font-family:var(--font-m);font-size:11.5px;font-weight:600;color:var(--ink)}
+.nc-when.due{color:var(--signal-2)}
+.near-ask{display:flex;align-items:center;gap:11px;background:var(--card);border:1.5px dashed var(--line-2);
+  border-radius:14px;padding:12px;margin-top:8px}
+.near-ask .na-ic{flex:none;width:34px;height:34px;border-radius:11px;background:var(--tab-soft);color:var(--tab);display:grid;place-items:center}
+.near-ask .na-ic svg{width:17px;height:17px;display:block}
+.near-ask p{flex:1;min-width:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+.near-ask b{display:block;color:var(--ink);font-size:13.5px;font-family:var(--font-d);margin-bottom:2px}
+
 #ac{position:fixed;z-index:2000;background:var(--card);border:1.5px solid var(--line);border-radius:14px;box-shadow:var(--sh-2);max-height:264px;overflow-y:auto;display:none}
 #ac.open{display:block;animation:viewIn .18s}
 .ac-item{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer;border-bottom:1px solid var(--paper)}
@@ -641,6 +671,10 @@ a{color:inherit}
           <div class="modes" id="planModes"></div>
           <button class="cta" id="btnSearch">Finn reise <span class="arr" id="ctaArr"></span></button>
           <div id="recentsWrap" hidden><div class="sec-label">Nylige</div><div class="recents" id="recents"></div></div>
+          <div id="nearbyWrap">
+            <div class="sec-label">I nærheten <span class="auto-tag" id="nearbyTag" hidden>LIVE</span></div>
+            <div id="nearby"></div>
+          </div>
         </div>
 
         <div id="plan-results" class="sub">
@@ -933,6 +967,23 @@ function openModal(html){$('#modalCard').innerHTML=html;$('#modal').classList.ad
   if(typeof pushHistory==='function')pushHistory();}
 function closeModal(){$('#modal').classList.remove('open');$('#modal').setAttribute('aria-hidden','true')}
 $('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+/* iOS/Safari bryr seg ikke om user-scalable, så knipe-gestene stoppes i tillegg.
+   Alt som skjer inne i #map slippes gjennom til Leaflet. */
+const onMap=t=>!!(t&&t.closest&&t.closest('#map'));
+['gesturestart','gesturechange','gestureend'].forEach(type=>{
+  document.addEventListener(type,e=>{if(!onMap(e.target))e.preventDefault()},{passive:false});
+});
+document.addEventListener('touchmove',e=>{
+  if(e.touches.length>1&&!onMap(e.target)&&e.cancelable)e.preventDefault();
+},{passive:false});
+/* Dobbelttrykk-zoom */
+let lastTouchEnd=0;
+document.addEventListener('touchend',e=>{
+  const now=Date.now();
+  if(now-lastTouchEnd<300&&!onMap(e.target)&&e.cancelable)e.preventDefault();
+  lastTouchEnd=now;
+},{passive:false});
+
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeWakeFlash();if(typeof closeMore==='function'&&!$('#moreSheet').hidden)closeMore()}});
 
 const MODE={foot:{l:'Gange',hex:'#64748B'},tram:{l:'Trikk',hex:'#0B87C7'},metro:{l:'T-bane',hex:'#E8590C'},bus:{l:'Buss',hex:'#C2255C'},rail:{l:'Tog',hex:'#3457D5'},water:{l:'Båt',hex:'#0C8599'},coach:{l:'Ekspress',hex:'#8447C9'},air:{l:'Fly',hex:'#5C6B7A'},funicular:{l:'Bane',hex:'#5C6B7A'},lift:{l:'Gondol',hex:'#5C6B7A'},cableway:{l:'Kabelbane',hex:'#5C6B7A'},trolleybus:{l:'Buss',hex:'#C2255C'},monorail:{l:'Bane',hex:'#5C6B7A'},taxi:{l:'Taxi',hex:'#8A8F98'}};
@@ -1105,7 +1156,8 @@ async function getPos(opts={}){
       {enableHighAccuracy:true,timeout,maximumAge:30000});
   });
 }
-async function ensureUserPos(){if(state.userPos)return state.userPos;try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);return p}catch(e){return null}}
+async function ensureUserPos(){if(state.userPos)return state.userPos;
+  try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);loadNearby(true);return p}catch(e){return null}}
 $('#fabLocate').onclick=async()=>{try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);
   if(map)map.setView([p.lat,p.lon],15);toast('Her er du','ok')}catch(e){logErr('geo',e);toast(e.message,'err')}};
 
@@ -1188,6 +1240,21 @@ const DEP_Q=`query Dep($id:String!,$n:Int!){
 /* FIX 5: Quay har IKKE feltet compassBearing i v3 – den gamle spørringen feilet
    på validering, så Utgangsguiden viste alltid feil. Riktige felt er
    latitude/longitude (retningen regnes ut selv), wheelchairAccessible og lines. */
+/* Ett kall gir både stoppestedene rundt deg og de neste avgangene fra hvert av
+   dem – det som fyller «I nærheten» uten å belaste API-et unødig. */
+const NEARBY_Q=`query Nearby($lat:Float!,$lon:Float!,$r:Float!,$n:Int!,$dep:Int!){
+  nearest(latitude:$lat,longitude:$lon,maximumDistance:$r,maximumResults:$n,
+          filterByPlaceTypes:[stopPlace],filterByInUse:true,multiModalMode:parent){
+    edges{node{distance place{... on StopPlace{
+      id name latitude longitude
+      estimatedCalls(numberOfDepartures:$dep,timeRange:5400){
+        aimedDepartureTime expectedDepartureTime realtime cancellation
+        destinationDisplay{frontText}
+        serviceJourney{line{publicCode transportMode presentation{colour}}}
+      }
+    }}}}
+  }
+}`;
 const EXIT_Q=`query Exit($id:String!){
   stopPlace(id:$id){
     id name latitude longitude
@@ -1441,7 +1508,7 @@ function switchTab(name,dir){
   Object.entries(views).forEach(([k,v])=>v.classList.toggle('active',k===name));
   if(name==='map')ensureMap().then(m=>{if(m)setTimeout(()=>{m.invalidateSize({pan:false});applyMapContext()},60)});
   if(name==='depart')ensureDepartFilled();
-  if(name==='plan'){renderCommuter();checkProactive()}
+  if(name==='plan'){renderCommuter();checkProactive();renderNearby();loadNearby()}
   pushHistory();
 }
 navBtns.forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
@@ -1650,6 +1717,84 @@ async function updateCommuterLive(){
       slot.innerHTML=`<span class="leg-badge" style="background:${mm.hex}">${esc(next.code)}</span> ${relMin(next.t-Date.now())} <span class="pace ${pc.cls}">${pc.ic}${pc.txt}</span>`;
     }catch(e){slot.innerHTML=`<span style="color:var(--faint)">—</span>`}
   }
+}
+
+/* ================= «I nærheten» =================
+   Fyller plassen under «Finn reise» med noe du faktisk kan handle på: de
+   nærmeste stoppestedene og hva som går derfra nå. Ett trykk åpner tavla. */
+let nearbyStops=[],nearbyBusy=false,nearbyTimer=null,nearbyAt=0;
+function nearbyAskHTML(){
+  return `<div class="near-ask"><span class="na-ic">${IC.locate}</span>
+    <p><b>Hva går rundt deg?</b>Gi tilgang til posisjon, så viser vi de nærmeste stoppene og neste avgang.</p>
+    <button class="chip-btn" id="nearAsk">Vis</button></div>`;
+}
+function nearbyCardHTML(s2,i){
+  const calls=(s2.calls||[]).slice(0,3).map(c=>{
+    const mm=MODE[c.mode]||MODE.bus;const hex=c.colour?('#'+c.colour):mm.hex;
+    const diff=c.t-Date.now();
+    const when=diff<=45000?'nå':(diff<3600000?Math.max(1,Math.round(diff/60000))+' min':fmtTime(c.t));
+    return `<span class="nc-line"><i class="leg-badge" style="background:${esc(hex)}">${esc(c.code)}</i>
+      <span class="nc-dest">${esc(c.dest)}</span><span class="nc-when${diff<=45000?' due':''}">${when}</span></span>`;
+  }).join('');
+  return `<button class="near-card" data-i="${i}" style="animation-delay:${Math.min(i*50,200)}ms">
+    <div class="nc-top"><b>${esc(s2.name)}</b><span>${Math.round(s2.dist)} m</span></div>
+    <div class="nc-lines">${calls||'<span class="nc-dest">Ingen avganger den neste timen</span>'}</div>
+  </button>`;
+}
+function renderNearby(){
+  const box=$('#nearby');if(!box)return;
+  if(!state.userPos&&!nearbyStops.length){box.innerHTML=nearbyAskHTML();
+    const b=$('#nearAsk');if(b)b.onclick=async()=>{
+      try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);loadNearby(true)}
+      catch(e){logErr('geo',e);toast(e.message,'err')}};
+    $('#nearbyTag').hidden=true;return}
+  if(!nearbyStops.length){box.innerHTML='<div class="skel" style="height:64px;margin-top:8px"></div>'.repeat(3);return}
+  $('#nearbyTag').hidden=false;
+  box.innerHTML=nearbyStops.map(nearbyCardHTML).join('');
+  box.querySelectorAll('.near-card').forEach(c=>c.onclick=()=>{
+    const st=nearbyStops[+c.dataset.i];if(!st)return;
+    $('#depSearchInput').value=st.name;$('#depField').classList.add('filled');
+    $('#depChips').innerHTML=`<button class="stop-chip on">${esc(st.name)}<span>${Math.round(st.dist)} m</span></button>`;
+    switchTab('depart');selectDepartStop(st);
+  });
+}
+/* Har du alt gitt posisjonstilgang, hentes den uten å spørre på nytt – da er
+   listen på plass før du rekker å trykke. Er tillatelsen ikke gitt, viser vi et
+   kort med en knapp i stedet, slik at spørsmålet kommer av en handling. */
+async function positionIfAlreadyAllowed(){
+  if(state.userPos)return state.userPos;
+  if(!('geolocation' in navigator)||!window.isSecureContext)return null;
+  if(!navigator.permissions||!navigator.permissions.query)return null;
+  try{
+    const st=await navigator.permissions.query({name:'geolocation'});
+    if(st.state!=='granted')return null;
+    const p=await getPos({timeout:8000});
+    state.userPos=p;setUser(p.lat,p.lon);return p;
+  }catch(e){return null}
+}
+async function loadNearby(force){
+  if(nearbyBusy)return;
+  if(!force&&Date.now()-nearbyAt<45000)return;
+  let p=state.userPos||await positionIfAlreadyAllowed();
+  if(!p){renderNearby();return}
+  nearbyBusy=true;
+  if(!nearbyStops.length)renderNearby();
+  try{
+    const d=await enturGQL(NEARBY_Q,{lat:p.lat,lon:p.lon,r:1300,n:4,dep:3});
+    nearbyStops=((d.nearest&&d.nearest.edges)||[]).filter(e=>e.node&&e.node.place&&e.node.place.id).map(e=>{
+      const pl=e.node.place;
+      const calls=mapCalls(pl).filter(c=>!c.cancelled&&c.t-Date.now()>-60000).slice(0,3);
+      return {id:pl.id,name:pl.name,lat:pl.latitude,lon:pl.longitude,dist:e.node.distance,calls};
+    });
+    nearbyAt=Date.now();
+  }catch(e){logErr('nearby',e)}
+  finally{nearbyBusy=false;renderNearby()}
+}
+function startNearby(){
+  clearInterval(nearbyTimer);
+  nearbyTimer=setInterval(()=>{
+    if(currentTab==='plan'&&$('#plan-form').classList.contains('active'))loadNearby();
+  },45000);
 }
 
 /* ================= proaktivt varsel ================= */
@@ -2401,6 +2546,7 @@ function tickClock(){try{$('#clock').textContent=new Intl.DateTimeFormat('nb-NO'
 setInterval(tickClock,15000);tickClock();
 
 $('#app').dataset.tab='plan';
+renderNearby();loadNearby();startNearby();
 document.documentElement.dataset.base=state.basemap;
 $$('#baseSeg button').forEach(b=>b.classList.toggle('on',b.dataset.base===state.basemap));
 applyTheme();renderStops();renderRecents();renderCommuter();positionNav();renderErrLog();

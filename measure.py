@@ -40,7 +40,7 @@ async def main():
 
         # Farger per fane
         tabs={}
-        for t in ["plan","depart","map","saved"]:
+        for t in ["plan","depart","map"]:
             await pg.click(f".nav-btn[data-tab='{t}']"); await pg.wait_for_timeout(800)
             tabs[t]={
               "navInd":await pg.evaluate("()=>getComputedStyle(document.getElementById('navInd')).backgroundColor"),
