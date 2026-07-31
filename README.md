@@ -69,7 +69,7 @@ last siden på nytt og installer igjen.
 - Bil / sykkel / gange-ruting: **OSRM** (FOSSGIS)
 - Bysykkel: **Oslo bysykkels** åpne GBFS-feed
 - Vær og høydedata: **Open-Meteo**
-- Kart: **OpenStreetMap + CARTO**
+- Kart: **OpenStreetMap + CARTO**, satellitt fra **Esri**, topografi fra **Kartverket**
 - Severdigheter: **Wikipedia + OpenStreetMap (Overpass)**
 
 Alle Entur-kall skal sende headeren `ET-Client-Name` – uten den kan du bli
@@ -84,8 +84,10 @@ mens appen er åpen.
 ## Tester
 ```
 npm install jsdom      # kun for test-dom.js
-node test-dom.js       # 43 tester: grensesnitt, PWA-oppsett, logikk (uten nett)
+node test-dom.js       # 86 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
 node test-live.js      # 13 tester: appens egne spørringer mot Entur (krever nett)
+python3 swipe_test.py  # sveip og kartlag med ekte touch i Chromium
+python3 measure.py     # tetthet, fanefarger og kontrast
 ```
 
 ## Feilretting

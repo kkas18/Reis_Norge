@@ -2,9 +2,9 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (13 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (73 tester),
-`python3 shot.py` og `python3 measure.py` måler layout, farger og kontrast i ekte
-Chromium på Galaxy S24-bredde. Alle grønne.
+`node test-dom.js` tester grensesnitt og logikk i jsdom (86 tester),
+`python3 shot.py`, `measure.py` og `swipe_test.py` måler layout, farger, kontrast
+og sveip med ekte touch-hendelser i Chromium på Galaxy S24-bredde. Alle grønne.
 
 ---
 
@@ -160,6 +160,58 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Sveip, tre faner og færre trykk
+
+**Sveip med rundgang.** Sidelengs sveip bytter fane, og du treffer aldri en vegg:
+fra siste fane sveiper du videre til den første, og motsatt vei. Detaljer som
+gjør at det ikke kommer i veien:
+
+- Sveipet låses til én akse først – loddrett bevegelse ruller som normalt.
+- Terskel er 40 px absolutt, deretter 64 px *eller* et raskt kast. Uten
+  minsteavstanden kunne et skjelvent trykk bytte fane.
+- På Kart starter sveipet bare fra ytterste 32 px, ellers ville du ikke fått
+  panorert kartet.
+- Sperret mens søkelisten, «Mer»-arket eller en dialog er åpen.
+- Kort haptisk klikk når fanen faktisk skifter.
+
+**Tilbakeknappen virker.** Tidligere lukket Androids tilbakeknapp hele appen.
+Nå går den ett steg: dialog → «Mer»-ark → underskjerm i Plan → forrige fane →
+og først da ut. Implementert med `pushState`/`popstate` og en `applyState()`
+som gjenoppretter uten å legge nye steg på historikken.
+
+**Fra fire faner til tre.** «Lagret» var en fast fane for ting man åpner sjelden.
+Lagrede reiser, lagrede steder, utseende, feillogg og installasjon ligger nå i et
+«Mer»-ark ett trykk unna i topplinjen. Menyen rommer bare det du faktisk veksler
+mellom: **Plan · Avganger · Kart**. Sveipesirkelen ble kortere av samme grunn.
+
+**Færre trykk ellers:**
+
+| Før | Nå |
+|---|---|
+| Appen åpnet alltid på Plan med tomt avgangsbrett | Gjenopptar siste fane og siste stoppested – null trykk for å se hva som går |
+| «Hjem» betød *reis fra* hjem | Kortet du trykker er **målet** – «Hjem» betyr reis hjem |
+| Bytte fane krevde å strekke seg til bunnmenyen | Sveip hvor som helst på flaten |
+| Tilbake førte ut av appen | Tilbake går ett steg innover |
+
+---
+
+## Kartlag som i Ruter-appen
+
+Fem knapper lå strødd langs kartkanten. De er samlet i én lagvelger:
+
+- **Kartvisning:** Standard · Satellitt · Topografi
+- **Vis på kartet:** Kjøretøy i sanntid · Bysykkel · Severdigheter
+
+Satellittbildene kommer fra **Esri World Imagery**, topografien fra
+**Kartverkets** åpne WMTS. Begge uten API-nøkkel, som resten av appen. Alle tre
+er verifisert i nettleser: flisene lastes og attribusjonen bytter med laget.
+Service workeren cacher nå også disse flisene, med tak på 600.
+
+Kjøretøyposisjoner fantes fra før, men lå bak et ikon uten forklaring. I
+lagvelgeren står det hva de er, og en prikk på lagknappen viser når et lag er på.
 
 ---
 

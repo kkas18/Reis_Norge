@@ -5,11 +5,11 @@
      kartfliser → cache-first med tak på antall fliser
      API-er     → network-first med cachet fallback (tunnel/dårlig dekning)
 */
-const VERSION = 'v3.1.0';
+const VERSION = 'v4.0.0';
 const SHELL_CACHE = `reis-shell-${VERSION}`;
 const TILE_CACHE = `reis-tiles-${VERSION}`;
 const DATA_CACHE = `reis-data-${VERSION}`;
-const TILE_LIMIT = 400;
+const TILE_LIMIT = 600;
 
 const SHELL = [
   './',
@@ -26,7 +26,7 @@ const SHELL = [
 ];
 
 const isTile = (u) =>
-  /basemaps\.cartocdn|tile\.openstreetmap|tiles?\.stadiamaps|api\.maptiler/.test(u.host);
+  /basemaps\.cartocdn|tile\.openstreetmap|server\.arcgisonline\.com|cache\.kartverket\.no/.test(u.host);
 
 const isData = (u) =>
   /entur|wikipedia|wikimedia|overpass|open-meteo|urbansharing|oslobysykkel|gbfs/.test(u.host);
