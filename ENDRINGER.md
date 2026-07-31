@@ -2,9 +2,10 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (127 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (140 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
-`sec_test.py`, `overlap_test.py`, `perf_test.py` og `font_test.py` måler layout,
+`sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
+`polish_test.py` måler layout,
 farger, kontrast, sveip og zoom-sperre med ekte touch-hendelser i Chromium på
 Galaxy S24-bredde. Alle grønne.
 
@@ -162,6 +163,57 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Finpuss: tilgjengelighet, nattbuss og snarveier
+
+### Trykkflater
+20 av 26 knapper var under 44 px. Verstingene: tøm-krysset 28×28, og
+seksjonsoverskriftene bare **20 px høye** – brede, men en tynn stripe å treffe.
+
+Løst på to måter: små ikonknapper fikk en usynlig sone (`::before` med
+`max(100%,44px)`) som ikke endrer utseendet, og knappene i rutenett ble hevet til
+44 px høyde. Målt med ekte treffpunkt-testing, ikke bare bokshøyde: **0 av 26 for
+små** nå. Tettheten er praktisk talt uendret.
+
+### Skjermleser og tastatur
+- Dialogene har `role="dialog"`, `aria-modal` og tittel; vekkealarmen `alertdialog`.
+- **Fokusfelle:** Tab går ikke lenger ut av en åpen dialog, og fokus gis tilbake
+  til knappen du kom fra. En finurlighet underveis: dialoger som tegnes to ganger
+  (skjelett → innhold) lagret fokus fra sin egen forgjenger, så det forsvant.
+  Fokus lagres nå bare første gang.
+- Avgangstavla er `aria-live="polite"` med `aria-busy` mens den laster, og hver
+  rad har en lesbar setning: «Buss 31 mot Fornebu, om 4 minutter, 2 minutter forsinket».
+- Bunnmenyen er en `tablist` med `aria-selected`.
+- Synlig fokusmarkering i faneidentitetens farge.
+
+### «Siste avgang i kveld»
+Ny knapp i avgangsfanen. Henter et døgn med avganger, grupperer per linje og
+retning, og viser den siste før kl. 03 – nattbussene hører til kvelden før.
+Øverst står svaret på det man faktisk lurer på: *«Aller siste fra Jernbanetorget
+går 22:39 med linje 5 mot Stortinget – om 1t 34.»*
+
+### Klokkeavvik
+Nedtellingene ble regnet fra telefonens klokke. Går den feil, viser appen feil –
+og du tror det er sanntidsdataene. `Date`-headeren fra Entur leses nå av hvert
+kall, og alt som teller ned bruker `now()` i stedet for `Date.now()`. Avvik over
+30 sekunder vises under **Mer → Systemtid**.
+
+### Nettverksbevissthet
+Appen pollet like hardt på 2G som på wifi. Intervallene skaleres nå ×3 på
+2G/`saveData` og ×1,8 på 3G, og kjøretøylaget hoppes over med en beskjed.
+Sekundtikk og klokke skaleres ikke.
+
+### Dyplenker og snarveier
+- `?stop=NSR:StopPlace:58366` åpner rett i tavla for det stoppet.
+- `?from=…&to=…&go=1` søker en hurtigreise automatisk.
+- Begge har en «Legg på startsiden»-knapp som kopierer lenken og forklarer
+  framgangsmåten. Android lager da et eget ikon – i praksis en holdeplass-widget.
+- **Share target:** del en adresse fra Kart eller Gmail rett inn i REIS som mål.
+  Fire linjer i manifestet, ingen server.
+- Manifestet har fått tre skjermbilder, så Androids installasjonsdialog viser
+  hva appen er i stedet for bare navnet.
 
 ---
 

@@ -68,6 +68,7 @@ last siden på nytt og installer igjen.
 ```
 python3 build_icons.py   # ikonsettet (SVG + PNG)
 python3 build_fonts.py   # subsetter og legger skriftene inn i index.html
+python3 mkshots.py       # skjermbildene manifestet viser ved installasjon
 ```
 Skriftene ligger i `index.html` som base64-WOFF2, så appen har ingen eksterne
 avhengigheter utenom kart og API-er.
@@ -92,7 +93,7 @@ mens appen er åpen.
 ## Tester
 ```
 npm install jsdom      # kun for test-dom.js
-node test-dom.js       # 127 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
+node test-dom.js       # 140 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
 node test-live.js      # 15 tester: appens egne spørringer mot Entur (krever nett)
 python3 swipe_test.py  # sveip og kartlag med ekte touch i Chromium
 python3 measure.py     # tetthet, fanefarger og kontrast
@@ -102,6 +103,8 @@ python3 sec_test.py    # sammenleggbare seksjoner og kartkort
 python3 overlap_test.py # at kartpanelene ikke dekker hverandre
 python3 perf_test.py   # pausing i bakgrunn, oppfriskning, offline-buffer
 python3 font_test.py   # at skriftene er lokale og dekker alle vekter
+python3 a11y.py        # trykkflater og tilgjengelige navn
+python3 polish_test.py # siste avgang, dyplenker, share target, fokus
 ```
 
 ## Feilretting
