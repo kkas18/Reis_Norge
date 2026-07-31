@@ -140,25 +140,30 @@ a{color:inherit}
 .pb-close svg{width:13px;height:13px}
 .pb-close:hover{background:var(--card)}
 .pb-acts{display:flex;align-items:center;gap:8px;margin-top:11px}
-.commuter{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
-.comm-btn{position:relative;text-align:left;border:1.5px solid var(--line);border-radius:16px;padding:12px 13px;background:var(--card);overflow:hidden;transition:transform .15s,box-shadow .18s,border-color .18s}
+.commuter{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;align-items:stretch}
+.comm-cell{position:relative;display:flex}
+.comm-btn{flex:1;min-width:0;min-height:104px;display:flex;flex-direction:column;text-align:left;
+  border:1.5px solid var(--line);border-radius:16px;padding:12px 13px;background:var(--card);
+  transition:transform .15s,box-shadow .18s,border-color .18s}
 .comm-btn:active{transform:scale(.97)}
 .comm-btn:hover{box-shadow:var(--sh-1);border-color:var(--line-2)}
-.comm-btn .cb-top{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
-.comm-btn .cb-ic{width:18px;height:18px;display:grid;place-items:center;color:var(--teal)}
-.comm-btn .cb-ic svg{width:16px;height:16px;display:block}
-.comm-btn .cb-name{font-family:var(--font-d);font-size:14px;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.comm-btn .cb-live{margin-top:8px;display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;min-height:18px;flex-wrap:wrap}
+.cb-top{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.cb-ic{width:18px;height:18px;display:grid;place-items:center;color:var(--teal);flex:none}
+.cb-ic svg{width:16px;height:16px;display:block}
+.cb-name{display:block;font-family:var(--font-d);font-size:14px;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-live{margin-top:auto;padding-top:8px;display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;min-height:26px;flex-wrap:wrap}
 .comm-btn.empty .cb-name{color:var(--faint);font-weight:600}
-.comm-btn .cb-edit{position:absolute;top:9px;right:9px;width:24px;height:24px;border-radius:7px;color:var(--faint);display:none;place-items:center}
-.comm-btn:not(.empty) .cb-edit{display:grid}
-.comm-btn .cb-edit svg{width:12px;height:12px;display:block}
-.comm-btn .cb-edit:hover{background:var(--paper);color:var(--ink)}
-.comm-setup{margin-top:10px;display:none;gap:8px;align-items:stretch;height:50px}
-.comm-setup.show{display:flex;animation:viewIn .2s}
-.comm-setup .search-field{flex:1;height:100%;display:flex}
-.comm-setup .search-field input{flex:1;height:100%}
-.comm-setup .chip-btn{height:auto}
+.cb-edit{position:absolute;top:8px;right:8px;z-index:2;width:26px;height:26px;border-radius:8px;
+  color:var(--faint);display:grid;place-items:center;background:var(--card)}
+.cb-edit svg{width:13px;height:13px;display:block}
+.cb-edit:hover{background:var(--paper);color:var(--ink)}
+.cb-edit:active{transform:scale(.9)}
+.comm-setup{margin-top:12px;display:none}
+.comm-setup.show{display:block;animation:viewIn .2s}
+.cs-title{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 2px 8px}
+.comm-setup .search-field input{height:46px;border-radius:12px}
+.cs-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.cs-acts .chip-btn{width:100%;height:40px}
 .pace{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:99px;flex:none}
 .pace svg{width:11px;height:11px;display:block}
 .pace.ok{background:var(--green-soft);color:var(--green-txt)}
@@ -183,15 +188,21 @@ a{color:inherit}
 .stop-del{flex:none;width:34px;height:34px;border-radius:10px;color:var(--faint);display:grid;place-items:center}
 .stop-del svg{width:13px;height:13px;display:block}
 .stop-del:hover{background:var(--signal-soft);color:var(--signal-2)}
-.plan-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 2px}
+/* Tre like brede knapper i stedet for tre ulike bredder på én flyt-rad. */
+.plan-tools{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 2px}
+.plan-tools .chip-btn{width:100%;padding:0 6px;font-size:12px;gap:5px}
+.plan-tools .chip-btn svg{width:14px;height:14px}
+.chip-btn:disabled{opacity:.4;pointer-events:none}
 .seg{display:flex;background:var(--paper);border-radius:12px;padding:3px;gap:2px}
 .seg button{flex:1;height:34px;border-radius:9px;font-size:12px;font-weight:600;color:var(--muted);transition:all .2s}
 .seg button.on{background:var(--navy);color:#fff;box-shadow:var(--sh-1)}
 #timeInput{margin-top:8px;width:100%;height:42px;border:1.5px solid var(--line);border-radius:12px;padding:0 10px;font-family:var(--font-m);font-size:13px;color:var(--ink);background:var(--card);display:none;color-scheme:light}
 :root[data-theme="dark"] #timeInput{color-scheme:dark}
 #timeInput.show{display:block;animation:viewIn .2s}
-.modes{display:flex;flex-wrap:wrap;gap:6px}
-.mode-chip,.mf-chip{--mc:var(--navy);display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);font-size:12px;font-weight:600;color:var(--muted);background:var(--card);transition:all .18s;line-height:1;white-space:nowrap}
+/* Seks like celler i to rader – ingen løs «Båt» alene på linje tre. */
+.modes,.mode-filter{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.modes .mode-chip,.mode-filter .mf-chip{width:100%;padding:0 6px;gap:6px}
+.mode-chip,.mf-chip{--mc:var(--navy);display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;font-weight:600;color:var(--muted);background:var(--card);transition:all .18s;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mode-chip i,.mf-chip i{width:8px;height:8px;border-radius:50%;background:var(--mc);flex:0 0 auto}
 .mode-chip.on,.mf-chip.on{border-color:var(--mc);color:var(--mc);background:color-mix(in srgb,var(--mc) 12%,var(--card))}
 .cta{position:relative;width:100%;height:54px;margin-top:15px;border-radius:16px;background:linear-gradient(135deg,var(--signal),var(--signal-2));color:#fff;font-family:var(--font-d);font-size:16.5px;font-weight:700;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(232,95,48,.32);transition:transform .15s;overflow:hidden}
@@ -268,7 +279,7 @@ a{color:inherit}
 .bh-right{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
 .live-pill{display:inline-flex;align-items:center;gap:6px;background:var(--green-soft);color:var(--green-txt);font-size:10px;font-weight:700;letter-spacing:.14em;padding:5px 10px;border-radius:99px}
 .live-pill i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
-.mode-filter{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.mode-filter{margin-top:12px}
 .dep-row{display:flex;align-items:center;gap:11px;padding:12px 2px;border-bottom:1px solid var(--line);animation:viewIn .25s ease}
 .dep-row.soon{background:linear-gradient(90deg,var(--teal-soft),transparent 70%);border-radius:10px;padding-left:8px;padding-right:8px;border-bottom-color:transparent}
 .dep-row.cancelled{opacity:.55}
@@ -527,18 +538,21 @@ a{color:inherit}
           <div class="sec-label">Hurtigreise</div>
           <div class="commuter" id="commuter"></div>
           <div class="comm-setup" id="commSetup">
+            <div class="cs-title" id="commTitle">Sett opp Hjem</div>
             <div class="search-field" id="commField">
               <span class="s-ic" id="commSic"></span>
-              <input type="text" id="commInput" data-ac="1" autocomplete="off" placeholder="Søk etter sted…">
+              <input type="text" id="commInput" data-ac="1" autocomplete="off" placeholder="Søk etter adresse eller stoppested…">
               <button class="stop-clear" id="commClear" type="button" aria-label="Tøm"></button>
             </div>
-            <button class="chip-btn" id="commHere">Din posisjon</button>
-            <button class="chip-btn" id="commCancel">Avbryt</button>
+            <div class="cs-acts">
+              <button class="chip-btn" id="commHere"><span id="commHereIc"></span>Din posisjon</button>
+              <button class="chip-btn" id="commCancel">Avbryt</button>
+            </div>
           </div>
           <div class="sec-label">Planlegg reisen</div>
           <div class="stops" id="stops"></div>
           <div class="plan-tools">
-            <button class="chip-btn" id="btnAddStop">+ Legg til via-stopp</button>
+            <button class="chip-btn" id="btnAddStop"><span id="addIc"></span>Via-stopp</button>
             <button class="chip-btn" id="btnSwap" aria-label="Bytt retning"><span id="swapIc"></span>Bytt</button>
             <button class="chip-btn" id="btnUseLoc"><span id="locIc"></span>Din posisjon</button>
           </div>
@@ -550,13 +564,7 @@ a{color:inherit}
           </div>
           <input type="datetime-local" id="timeInput">
           <div class="sec-label">Transport</div>
-          <div class="modes">
-            <button class="mode-chip" data-mode="tram" style="--mc:#0B87C7"><i></i>Trikk</button>
-            <button class="mode-chip" data-mode="metro" style="--mc:#E8590C"><i></i>T-bane</button>
-            <button class="mode-chip" data-mode="bus" style="--mc:#C2255C"><i></i>Buss</button>
-            <button class="mode-chip" data-mode="rail" style="--mc:#3457D5"><i></i>Tog</button>
-            <button class="mode-chip" data-mode="water" style="--mc:#0C8599"><i></i>Båt</button>
-          </div>
+          <div class="modes" id="planModes"></div>
           <button class="cta" id="btnSearch">Finn reise <span class="arr" id="ctaArr"></span></button>
           <div id="recentsWrap" hidden><div class="sec-label">Nylige</div><div class="recents" id="recents"></div></div>
         </div>
@@ -745,6 +753,8 @@ const IC={
   sparkle:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>',
   clockAlert:S('<circle cx="11" cy="13" r="8"/><path d="M11 9v4"/><path d="M11 16h.01"/><path d="M19 4v4"/><path d="M19 10h.01"/>'),
   arrowR:S('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>'),
+  plus:S('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+  edit:S('<path d="M4 20h4l10-10a2.83 2.83 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
   chevL:S('<path d="M15 5l-7 7 7 7"/>'),
   swapV:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3 5 6.99h3V14h2V6.99h3L9 3z"/></svg>',
   sun:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 0 0 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>',
@@ -773,6 +783,7 @@ const VEH_ARROW='<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2l8 18-8-5-8 
 $('#pbClose').innerHTML=IC.x; $('#pbIc').innerHTML=IC.alert;
 $('#commSic').innerHTML=IC.search; $('#commClear').innerHTML=IC.x;
 $('#swapIc').innerHTML=IC.swapV; $('#locIc').innerHTML=IC.locate; $('#ctaArr').innerHTML=IC.arrowR;
+$('#addIc').innerHTML=IC.plus; $('#commHereIc').innerHTML=IC.locate;
 $('#btnResBack').innerHTML=IC.chevL; $('#btnDetBack').innerHTML=IC.chevL;
 $('#depSic').innerHTML=IC.search; $('#depSearchClear').innerHTML=IC.x; $('#depNearMe').innerHTML=IC.locate;
 $('#fabLocate').innerHTML=IC.locate; $('#fabSetB').innerHTML=IC.pin;
@@ -1321,22 +1332,45 @@ function paceFor(depDiffMin){const w=state.walkMinToStop;
 function paceBadge(depDiffMin){const p=paceFor(depDiffMin);return `<span class="pace ${p.cls}">${p.ic}${p.txt}</span>`}
 
 /* ================= pendlerknapper ================= */
+/* FIX: kortet hadde en <button class="cb-edit"> inni <button class="comm-btn">.
+   Nøstede knapper er ugyldig HTML – parseren lukker det ytre kortet når den
+   møter det indre, så navn og sanntidslinje havnet UTENFOR knappen. Derfor
+   virket ikke Hjem/Jobb når de først var satt opp. Endre-knappen er nå en
+   søsken-knapp i en egen celle. */
 function renderCommuter(){
   const box=$('#commuter');if(!box)return;
   box.innerHTML=['home','work'].map(k=>{
-    const p=state[k];const lbl=k==='home'?'Hjem':'Jobb';
-    if(!p)return `<button class="comm-btn empty" data-k="${k}"><div class="cb-top"><span class="cb-ic">${COMM_IC[k]}</span>${lbl}</div><div class="cb-name">Sett opp med ett trykk</div><div class="cb-live"></div></button>`;
-    return `<button class="comm-btn" data-k="${k}"><button class="cb-edit" data-edit="${k}" aria-label="Endre">${IC.x}</button>
-      <div class="cb-top"><span class="cb-ic">${COMM_IC[k]}</span>${lbl}</div><div class="cb-name">${esc(p.name)}</div>
-      <div class="cb-live" data-live="${k}"><span class="skel" style="height:13px;width:90px"></span></div></button>`;
+    const p=state[k],lbl=k==='home'?'Hjem':'Jobb';
+    const head=`<span class="cb-top"><span class="cb-ic">${COMM_IC[k]}</span>${lbl}</span>`;
+    if(!p)return `<div class="comm-cell">
+      <button class="comm-btn empty" data-k="${k}" aria-label="Sett opp ${lbl}">
+        ${head}<span class="cb-name">Sett opp med ett trykk</span><span class="cb-live"></span>
+      </button></div>`;
+    return `<div class="comm-cell">
+      <button class="comm-btn" data-k="${k}" aria-label="Reis fra ${esc(p.name)}">
+        ${head}<span class="cb-name">${esc(p.name)}</span>
+        <span class="cb-live" data-live="${k}"><span class="skel" style="height:13px;width:90px"></span></span>
+      </button>
+      <button class="cb-edit" data-edit="${k}" aria-label="Endre ${lbl}">${IC.edit}</button>
+    </div>`;
   }).join('');
-  box.querySelectorAll('.comm-btn').forEach(b=>b.onclick=e=>{
-    if(e.target.closest('[data-edit]')){e.stopPropagation();beginCommuterSetup(e.target.closest('[data-edit]').dataset.edit);return}
-    const k=b.dataset.k;if(!state[k]){beginCommuterSetup(k);return}commuterGo(k)});
+  box.querySelectorAll('.comm-btn').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k;
+    if(!state[k])beginCommuterSetup(k);else commuterGo(k);
+  });
+  box.querySelectorAll('.cb-edit').forEach(b=>b.onclick=()=>beginCommuterSetup(b.dataset.edit));
   updateCommuterLive();
 }
-function beginCommuterSetup(k){commuterTarget=k;$('#commSetup').classList.add('show');$('#commInput').value='';$('#commField').classList.remove('filled');
-  $('#commInput').placeholder=k==='home'?'Søk etter hjemadresse…':'Søk etter jobbadresse…';$('#commInput').focus();}
+function beginCommuterSetup(k){
+  commuterTarget=k;
+  const lbl=k==='home'?'Hjem':'Jobb';
+  $('#commTitle').textContent=(state[k]?'Endre ':'Sett opp ')+lbl;
+  $('#commSetup').classList.add('show');
+  $('#commInput').value='';$('#commField').classList.remove('filled');
+  $('#commInput').placeholder=k==='home'?'Søk etter hjemadresse…':'Søk etter jobbadresse…';
+  $('#commInput').focus();
+  try{$('#commSetup').scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}
+}
 $('#commCancel').onclick=()=>{$('#commSetup').classList.remove('show');commuterTarget=null};
 $('#commClear').onclick=()=>{$('#commInput').value='';$('#commField').classList.remove('filled');$('#commInput').focus()};
 $('#commHere').onclick=async()=>{if(!commuterTarget)return;try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);
@@ -1348,7 +1382,9 @@ async function commuterGo(k){
   const p=state[k];if(!p)return;const other=state[k==='home'?'work':'home'];
   if(other){state.stops=[{uid:uid(),name:p.name,lat:p.lat,lon:p.lon,id:p.id},{uid:uid(),name:other.name,lat:other.lat,lon:other.lon,id:other.id}];
     renderStops();switchTab('plan');showPlanSection('form');findJourney(false);}
-  else{try{const stops=await nearestStops(p.lat,p.lon);if(!stops.length){toast('Ingen stopp i nærheten','err');return}
+  else{try{
+    toast(`Sett opp ${k==='home'?'Jobb':'Hjem'} også for å planlegge hele reisen – viser avganger nær ${p.name} nå`,'');
+    const stops=await nearestStops(p.lat,p.lon);if(!stops.length){toast('Ingen stopp i nærheten','err');return}
     switchTab('depart');$('#depSearchInput').value=p.name;$('#depField').classList.add('filled');
     $('#depChips').innerHTML=`<button class="stop-chip on">${esc(stops[0].name)}<span>${Math.round(stops[0].dist)} m</span></button>`;
     selectDepartStop(stops[0]);}catch(e){toast(e.message,'err',e.raw)}}
@@ -1510,7 +1546,7 @@ function renderStops(){
       del.onclick=()=>{state.stops=state.stops.filter(x=>x.uid!==s.uid);renderStops()};row.append(del)}
     box.append(row);
   });
-  $('#btnAddStop').hidden=state.stops.length>=4;
+  $('#btnAddStop').disabled=state.stops.length>=4;
 }
 $('#btnAddStop').onclick=()=>{if(state.stops.length>=4)return;state.stops.splice(state.stops.length-1,0,{uid:uid()});renderStops();
   const inputs=$$('#stops input');inputs[state.stops.length-2].focus()};
@@ -1533,12 +1569,20 @@ const acSearch=debounce(async inp=>{
   ac.classList.add('open');
 },240);
 function acClose(){ac.classList.remove('open');acFor=null}
-function pickAC(i){const it=acItems[i];if(!it||!acFor)return;
-  if(acFor.id==='depSearchInput'){acClose();acFor.blur();chooseDepartTarget(it)}
-  else if(acFor.id==='commInput'){acClose();acFor.blur();pickCommuter(it)}
-  else{const s=findStop(+acFor.dataset.uid);
-    if(s){s.name=it.name;s.lat=it.lat;s.lon=it.lon;s.id=it.id;acFor.value=it.name;acFor.closest('.stop-field').classList.add('filled')}
-    acClose()}
+/* FIX: acClose() setter acFor=null, så acFor.blur() rett etterpå kastet
+   TypeError. Da døde både «Hjem/Jobb»-oppsettet og stoppestedssøket i det
+   øyeblikket du trykket på et treff i listen. Ta vare på feltet først. */
+function pickAC(i){
+  const it=acItems[i], inp=acFor;
+  if(!it||!inp)return;
+  acClose();
+  if(inp.id==='depSearchInput'){inp.blur();chooseDepartTarget(it)}
+  else if(inp.id==='commInput'){inp.blur();pickCommuter(it)}
+  else{
+    const s=findStop(+inp.dataset.uid);
+    if(s){s.name=it.name;s.lat=it.lat;s.lon=it.lon;s.id=it.id;
+      inp.value=it.name;inp.closest('.stop-field').classList.add('filled')}
+  }
 }
 document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.ac)acSearch(e.target);
   if(e.target.id==='depSearchInput')$('#depField').classList.toggle('filled',!!e.target.value);
@@ -1567,7 +1611,26 @@ $$('#timeSeg button').forEach(b=>b.onclick=()=>{
 });
 function setTimeInputDefault(){const d=new Date(Date.now()+5*60000),p=n=>String(n).padStart(2,'0');
   $('#timeInput').value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`}
-$$('.mode-chip').forEach(c=>c.onclick=()=>{c.classList.toggle('on');const m=c.dataset.mode;c.classList.contains('on')?state.modes.add(m):state.modes.delete(m)});
+
+/* ================= transportvelgere =================
+   Begge velgerne bygges fra samme liste og får samme 3x2-rutenett, slik at
+   «Alle» + fem transportmidler alltid fyller nøyaktig to hele rader. */
+const TRANSPORT=[['tram','Trikk','#0B87C7'],['metro','T-bane','#E8590C'],['bus','Buss','#C2255C'],
+                 ['rail','Tog','#3457D5'],['water','Båt','#0C8599']];
+function modeChipsHTML(cls){
+  return `<button class="${cls} on" data-m="all">Alle</button>`+
+    TRANSPORT.map(([m,l,c])=>`<button class="${cls}" data-m="${m}" style="--mc:${c}"><i></i>${l}</button>`).join('');
+}
+function syncModeChips(sel,cls,set){
+  $$(`${sel} .${cls}`).forEach(c=>c.classList.toggle('on',c.dataset.m==='all'?!set.size:set.has(c.dataset.m)));
+}
+$('#planModes').innerHTML=modeChipsHTML('mode-chip');
+$('#planModes').addEventListener('click',e=>{
+  const b=e.target.closest('.mode-chip');if(!b)return;
+  if(b.dataset.m==='all')state.modes.clear();
+  else{const m=b.dataset.m;state.modes.has(m)?state.modes.delete(m):state.modes.add(m)}
+  syncModeChips('#planModes','mode-chip',state.modes);
+});
 
 /* ================= søk + resultater ================= */
 const skelCards=n=>Array.from({length:n},()=>`<div class="trip-card" style="pointer-events:none"><div class="skel" style="height:24px;width:60%"></div><div class="skel" style="height:14px;width:85%;margin-top:12px"></div><div class="skel" style="height:14px;width:40%;margin-top:8px"></div></div>`).join('');
@@ -1764,11 +1827,10 @@ async function loadTips(p){
 
 /* ================= avgangstavle ================= */
 let depRefresh=null;
-const DEP_MODES=[['tram','Trikk','#0B87C7'],['metro','T-bane','#E8590C'],['bus','Buss','#C2255C'],['rail','Tog','#3457D5'],['water','Båt','#0C8599']];
-$('#depModeFilter').innerHTML=`<button class="mf-chip on" data-m="all">Alle</button>`+DEP_MODES.map(([m,l,c])=>`<button class="mf-chip" data-m="${m}" style="--mc:${c}"><i></i>${l}</button>`).join('');
+$('#depModeFilter').innerHTML=modeChipsHTML('mf-chip');
 $('#depModeFilter').addEventListener('click',e=>{const b=e.target.closest('.mf-chip');if(!b)return;
   if(b.dataset.m==='all')state.depFilter.clear();else{const m=b.dataset.m;state.depFilter.has(m)?state.depFilter.delete(m):state.depFilter.add(m)}
-  $$('#depModeFilter .mf-chip').forEach(c=>c.classList.toggle('on',c.dataset.m==='all'?!state.depFilter.size:state.depFilter.has(c.dataset.m)));renderDepartures()});
+  syncModeChips('#depModeFilter','mf-chip',state.depFilter);renderDepartures()});
 function countdownHTML(diff){
   if(diff<=30000)return '<span class="cd due">nå</span>';
   if(diff<3600000)return `<span class="cd">${Math.max(1,Math.round(diff/60000))} min</span>`;

@@ -2,7 +2,8 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (13 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (50 tester). Alle grønne.
+`node test-dom.js` tester grensesnitt og logikk i jsdom (65 tester),
+`python3 shot.py` måler layouten i ekte Chromium på Galaxy S24-bredde. Alle grønne.
 
 ---
 
@@ -158,6 +159,58 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Hjem og Jobb i Hurtigreise virket ikke
+
+To feil samtidig.
+
+**1. Kortet var ugyldig HTML.** Endre-knappen lå som `<button>` *inne i* kortets
+egen `<button>`. Nøstede knapper er ikke lov, så HTML-parseren lukker det ytre
+kortet i det øyeblikket den møter det indre. Resultatet ble at navnet og
+sanntidslinjen havnet **utenfor** knappen — kortet mistet innholdet sitt og
+klikkhåndteringen gikk i stykker så snart Hjem eller Jobb var satt opp.
+Endre-knappen er nå en søsken-knapp i en egen `.comm-cell`, absolutt plassert
+oppe i hjørnet. Testen leter etter `button button` og feiler hvis noen nøster igjen.
+
+**2. `pickAC` kastet TypeError.** Da du trykket på et treff i søkelisten:
+
+```js
+if(acFor.id==='commInput'){acClose();acFor.blur();pickCommuter(it)}
+```
+
+`acClose()` setter `acFor=null`, og linjen etter kaller `acFor.blur()`. Hver
+eneste gang. Det tok også stoppestedssøket i Avgangsfanen. Feltet tas nå vare på
+i en lokal variabel før `acClose()`.
+
+I tillegg: oppsettpanelet har fått en tittel som sier hva du holder på med
+(«Sett opp Hjem» / «Endre Jobb»), søkefeltet ligger på egen linje i full bredde,
+og «Din posisjon» / «Avbryt» er to like brede knapper under. Endre-ikonet er byttet
+fra et kryss til en blyant — et kryss så ut som «slett».
+
+---
+
+## Symmetri i menyene
+
+Radene var bygget som `flex-wrap` med knapper av ulik bredde, så høyrekanten ble
+ujevn og «Båt» havnet alene på en tredje linje i avgangsfilteret.
+
+| Rad | Før | Nå |
+|---|---|---|
+| Via-stopp / Bytt / Din posisjon | tre ulike bredder på én flytende rad | `grid` med tre like kolonner — målt 113/113/113 px |
+| Transport (Plan) | fem chips, flyt | `grid` 3×2 med «Alle» først — 114 px hver |
+| Filter (Avganger) | seks chips, «Båt» alene på rad tre | samme 3×2-rutenett — identisk med Plan |
+
+Begge transportvelgerne bygges nå fra **én** felles liste og deler kode for
+opptegning og av/på-logikk, så de kan ikke drive fra hverandre igjen. «Alle» er
+lagt til i Plan-fanen også — det gir seks celler som fyller nøyaktig to hele rader,
+og en tydelig måte å nullstille valget på.
+
+«+ Legg til via-stopp» ble tidligere skjult ved fire stopp, noe som ville etterlatt
+en tom rutenettcelle. Den deaktiveres nå i stedet, så raden holder formen.
+
+Bredene er verifisert i ekte Chromium på 384 px (Galaxy S24), ikke bare i CSS.
 
 ---
 
