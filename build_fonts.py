@@ -1,73 +1,106 @@
-"""Måler utfylling av Plan-fanen og at knipe-zoom er sperret utenom kartet."""
-import asyncio, json, threading, functools, http.server, socketserver
-from playwright.async_api import async_playwright
-socketserver.TCPServer.allow_reuse_address=True
-srv=socketserver.TCPServer(("127.0.0.1",8150),functools.partial(http.server.SimpleHTTPRequestHandler,directory='/home/claude/build'))
-threading.Thread(target=srv.serve_forever,daemon=True).start()
+#!/usr/bin/env python3
+"""Subsetter skriftene til norsk tegnsett og legger dem inn i index.html som
+base64-WOFF2. Da slipper appen Google Fonts: den tegner riktig med én gang,
+også offline og på treg forbindelse."""
+import base64, io, os, re, sys
+from fontTools.subset import Subsetter, Options
+from fontTools.ttLib import TTFont
 
-async def main():
-    async with async_playwright() as pw:
-        b=await pw.chromium.launch(args=["--ignore-certificate-errors"])
-        ctx=await b.new_context(viewport={"width":384,"height":854},is_mobile=True,has_touch=True,
-                                ignore_https_errors=True,permissions=["geolocation"],
-                                geolocation={"latitude":59.9119,"longitude":10.7504})
-        pg=await ctx.new_page(); errs=[]
-        pg.on("pageerror",lambda e:errs.append(str(e)))
-        await pg.goto("http://127.0.0.1:8150/index.html",wait_until="load")
-        await pg.wait_for_timeout(3000)
-        out={}
+HERE = os.path.dirname(os.path.abspath(__file__))
 
-        # vent til «I nærheten» har kort
-        try:
-            await pg.wait_for_function("() => document.querySelectorAll('#nearby .near-card').length>0",timeout=15000)
-        except Exception: pass
-        out["antall nærhetskort"]=await pg.eval_on_selector_all("#nearby .near-card","e=>e.length")
-        out["kort med avganger"]=await pg.eval_on_selector_all(
-            "#nearby .near-card","e=>e.filter(c=>c.querySelectorAll('.nc-line').length>0).length")
-        out["første kort"]=await pg.evaluate("""()=>{const c=document.querySelector('#nearby .near-card');
-          return c?{stopp:c.querySelector('.nc-top b').textContent,
-                    avstand:c.querySelector('.nc-top span').textContent,
-                    linjer:[...c.querySelectorAll('.nc-line')].map(l=>l.textContent.replace(/\\s+/g,' ').trim())}:null}""")
+# Tegnsett: latin + norsk + de symbolene grensesnittet faktisk bruker.
+CHARS = (
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789"
+    "ÆØÅæøå"                       # norsk
+    "ÄÖÜäöüÉéÈèÀàÂâÔôÛûÇçÑñÍíÓóÚúÝý"  # navn med aksent i NSR-data
+    " .,:;!?'\"()[]{}<>/\\|@#%&*+-–—_=~^"
+    "·°£$€kr"                       # priser og enheter
+    "→←↑↓×✓«»…"                     # piler og typografi
+)
+CODEPOINTS = sorted({ord(c) for c in CHARS})
 
-        m=await pg.evaluate("""()=>{
-          const els=[...document.querySelectorAll('#plan-form > *')].filter(e=>e.offsetParent);
-          const bottom=Math.round(Math.max(...els.map(e=>e.getBoundingClientRect().bottom)));
-          const pad=document.querySelector('#viewPlan .scrollpad');
-          return {innholdBunn:bottom, synligHoyde:Math.round(pad.getBoundingClientRect().height),
-                  rullehoyde:pad.scrollHeight};
-        }""")
-        out["utfylling"]=m
-        out["tomrom under innhold"]=max(0,m["synligHoyde"]-m["innholdBunn"]+  # bottom er viewport-relativ
-                                        0) if m["innholdBunn"]<m["synligHoyde"] else 0
+# Bare vektene grensesnittet faktisk bruker.
+FONTS = [
+    ("Space Grotesk", 700, "/tmp/sg/SpaceGrotesk-2.0.0/ttf/static/SpaceGrotesk-Bold.ttf"),
+    ("Space Grotesk", 600, "/tmp/sg/SpaceGrotesk-2.0.0/ttf/static/SpaceGrotesk-SemiBold.ttf"),
+    ("IBM Plex Sans", 400, "/tmp/ps/ibm-plex-sans/fonts/complete/ttf/IBMPlexSans-Regular.ttf"),
+    ("IBM Plex Sans", 600, "/tmp/ps/ibm-plex-sans/fonts/complete/ttf/IBMPlexSans-SemiBold.ttf"),
+    ("IBM Plex Sans", 700, "/tmp/ps/ibm-plex-sans/fonts/complete/ttf/IBMPlexSans-Bold.ttf"),
+    ("IBM Plex Mono", 400, "/tmp/pm/ibm-plex-mono/fonts/complete/ttf/IBMPlexMono-Regular.ttf"),
+    ("IBM Plex Mono", 600, "/tmp/pm/ibm-plex-mono/fonts/complete/ttf/IBMPlexMono-SemiBold.ttf"),
+]
 
-        # zoom-sperre
-        out["viewport"]=await pg.evaluate("()=>document.querySelector('meta[name=viewport]').content")
-        out["touchAction body"]=await pg.evaluate("()=>getComputedStyle(document.body).touchAction")
-        out["touchAction kart"]=await pg.evaluate("()=>{const m=document.getElementById('map');return m?getComputedStyle(m).touchAction:null}")
 
-        # knip utenfor kart -> skal ikke endre skala
-        cdp=await ctx.new_cdp_session(pg)
-        async def pinch(x,y,spread=60):
-            await cdp.send("Input.dispatchTouchEvent",{"type":"touchStart","touchPoints":[
-                {"x":x-10,"y":y,"id":1},{"x":x+10,"y":y,"id":2}]})
-            for i in range(1,6):
-                d=10+spread*i/5
-                await cdp.send("Input.dispatchTouchEvent",{"type":"touchMove","touchPoints":[
-                    {"x":x-d,"y":y,"id":1},{"x":x+d,"y":y,"id":2}]})
-                await pg.wait_for_timeout(30)
-            await cdp.send("Input.dispatchTouchEvent",{"type":"touchEnd","touchPoints":[]})
-            await pg.wait_for_timeout(400)
-        before=await pg.evaluate("()=>visualViewport.scale")
-        await pinch(190,600)
-        out["skala i appen (før/etter)"]=[before,await pg.evaluate("()=>visualViewport.scale")]
+def subset_to_woff2(path, codepoints):
+    opts = Options()
+    opts.layout_features = ["kern", "liga", "calt", "ccmp", "locl"]
+    opts.desubroutinize = True
+    opts.drop_tables += ["DSIG"]
+    opts.notdef_outline = False
+    opts.recalc_bounds = True
+    opts.name_IDs = ["*"]
+    opts.name_legacy = False
+    opts.name_languages = ["*"]
 
-        await pg.evaluate("()=>switchTab('map')"); await pg.wait_for_timeout(1500)
-        z0=await pg.evaluate("()=>map&&map.getZoom()")
-        await pinch(190,420)
-        z1=await pg.evaluate("()=>map&&map.getZoom()")
-        out["kartzoom (før/etter knip)"]=[z0,z1]
-        out["kartet lar seg fortsatt zoome"]= (z1 is not None and z0 is not None and z1!=z0)
-        out["feil"]=sorted(set(errs))
-        print(json.dumps(out,indent=2,ensure_ascii=False))
-        await b.close()
-asyncio.run(main()); srv.shutdown()
+    font = TTFont(path)
+    sub = Subsetter(options=opts)
+    sub.populate(unicodes=codepoints)
+    sub.subset(font)
+    font.flavor = "woff2"
+    buf = io.BytesIO()
+    font.save(buf)
+    return buf.getvalue()
+
+
+def main():
+    missing = [p for _, _, p in FONTS if not os.path.exists(p)]
+    if missing:
+        # SemiBold finnes ikke i alle Space Grotesk-utgivelser – fall tilbake på Medium.
+        alt = "/tmp/sg/SpaceGrotesk-2.0.0/ttf/static/SpaceGrotesk-Medium.ttf"
+        for i, (fam, w, p) in enumerate(FONTS):
+            if not os.path.exists(p) and fam == "Space Grotesk" and os.path.exists(alt):
+                FONTS[i] = (fam, w, alt)
+        missing = [p for _, _, p in FONTS if not os.path.exists(p)]
+        if missing:
+            sys.exit("Fant ikke: " + ", ".join(missing))
+
+    faces, total = [], 0
+    for fam, weight, path in FONTS:
+        data = subset_to_woff2(path, CODEPOINTS)
+        total += len(data)
+        b64 = base64.b64encode(data).decode("ascii")
+        faces.append(
+            "@font-face{font-family:'%s';font-style:normal;font-weight:%d;font-display:swap;"
+            "src:url(data:font/woff2;base64,%s) format('woff2')}" % (fam, weight, b64)
+        )
+        print(f"  {fam:16} {weight}  {len(data)/1024:6.1f} kB  (base64 {len(b64)/1024:.1f} kB)")
+
+    css = "\n/* Skriftene ligger i fila, ikke hos Google: appen tegner riktig med\n" \
+          "   én gang, også offline og uten et eksternt oppslag i kritisk sti. */\n" \
+          + "\n".join(faces) + "\n"
+
+    p = os.path.join(HERE, "index.html")
+    html = open(p, encoding="utf-8").read()
+
+    # Fjern Google Fonts-lenkene og forhåndskoblingene til dem.
+    html = re.sub(r'\s*<link rel="preconnect" href="https://fonts\.g[^"]*"[^>]*>', "", html)
+    html = re.sub(r'\s*<link href="https://fonts\.googleapis\.com[^"]*" rel="stylesheet">', "", html)
+
+    # Fjern et tidligere innlagt blokk presist, slik at skriptet kan kjøres på nytt.
+    html = re.sub(r"/\* Skriftene ligger i fila[^*]*?\*/\n(?:@font-face\{[^}]*\}\n)+", "", html)
+
+    # Sett inn rett etter <style>, uansett om det står linjeskift der eller ikke.
+    m = re.search(r"<style>\s*", html)
+    if not m:
+        sys.exit("Fant ikke <style> i index.html")
+    html = html[:m.end()] + css.lstrip("\n") + html[m.end():]
+    open(p, "w", encoding="utf-8").write(html)
+
+    print(f"\nTotalt {total/1024:.1f} kB skrift lagt inn. Google Fonts fjernet.")
+    print(f"index.html er nå {os.path.getsize(p)/1024:.0f} kB")
+
+
+if __name__ == "__main__":
+    main()
