@@ -59,11 +59,23 @@ async def main():
         report["homeLabel"] = await pg.eval_on_selector(".comm-btn[data-k='home'] .cb-name", "e => e.textContent")
         await pg.screenshot(path="/tmp/s_comm_done.png")
 
-        # Avgangsfanen
+        # Fanefarger
+        colors = {}
+        for tab in ["plan", "depart", "map", "saved"]:
+            await pg.click(f".nav-btn[data-tab='{tab}']")
+            await pg.wait_for_timeout(900)
+            colors[tab] = await pg.evaluate(
+                "() => getComputedStyle(document.getElementById('navInd')).backgroundColor")
+            await pg.screenshot(path=f"/tmp/t_{tab}.png")
+        report["navIndPerTab"] = colors
+        report["uniqueTabColors"] = len(set(colors.values()))
+
         await pg.click(".nav-btn[data-tab='depart']")
-        await pg.wait_for_timeout(1200)
+        await pg.wait_for_timeout(1500)
         report["depFilter"] = await widths("#depModeFilter .mf-chip")
         report["depFilterRows"] = await rows("#depModeFilter .mf-chip")
+        report["ctaTop"] = await pg.evaluate(
+            "() => { const b=document.querySelector('#viewPlan .cta'); return b?Math.round(b.getBoundingClientRect().bottom):null }")
         await pg.screenshot(path="/tmp/s_depart.png")
 
         # Via-stopp
@@ -74,7 +86,8 @@ async def main():
         report["stopRows"] = await pg.eval_on_selector_all("#stops .stop-row", "e => e.length")
         await pg.screenshot(path="/tmp/s_via.png")
 
-        report["pageErrors"] = errors
+        report["pageErrors"] = sorted(set(errors))
+        report["pageErrorCount"] = len(errors)
         print(json.dumps(report, indent=2, ensure_ascii=False))
         await b.close()
 

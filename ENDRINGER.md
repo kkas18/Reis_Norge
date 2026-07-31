@@ -2,8 +2,9 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (13 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (65 tester),
-`python3 shot.py` måler layouten i ekte Chromium på Galaxy S24-bredde. Alle grønne.
+`node test-dom.js` tester grensesnitt og logikk i jsdom (73 tester),
+`python3 shot.py` og `python3 measure.py` måler layout, farger og kontrast i ekte
+Chromium på Galaxy S24-bredde. Alle grønne.
 
 ---
 
@@ -159,6 +160,55 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Norsk flaggpalett, farge per fane, kompaktere flate
+
+**Paletten.** Flaggblå (`#0A2A57`) bærer topplinje, bunnmeny og app-ikon.
+Flaggrød (`#C8102E`) er reservert primærhandlingen – «Finn reise», målpunktet B
+og innstilte avganger. Ikonet er tegnet på nytt i flaggets tre farger: blå flate,
+hvit rute, rød destinasjon med hvit ring rundt. Mørk modus bruker samme to farger,
+bare lysnet så kontrasten holder.
+
+**Egen farge per fane.** Hver fane har sin identitet, brukt kun på topplinjens
+glød, den stiplede stripa, indikatoren og det aktive ikonet – aldri på innholdet:
+
+| Fane | Farge | |
+|---|---|---|
+| Plan | `#1B4FA0` | flaggblå |
+| Avganger | `#C8102E` | flaggrød |
+| Kart | `#0F6F6C` | fjord |
+| Lagret | `#8A5A12` | messing |
+
+Fargen ligger i `--tab` på `#app[data-tab]`, og elementene som bruker den har
+`transition: background .45s`, så skiftet **glir** over i stedet for å hoppe.
+
+**Bevegelse, uten å overdrive.** Alt er kort og enveis:
+- Fanebytte glir sidelengs i den retningen du trykket – rekkefølgen i menyen
+  bestemmer om det går framover eller bakover.
+- Avgangsrader og reisekort kommer inn forskjøvet, 26 ms per rad med tak på
+  260 ms, så en lang liste aldri føles treg.
+- Avganger som går straks får et lavmælt lysstrøk over raden.
+- Indikatoren i bunnmenyen fjærer på plass, ikoner skalerer lett ved trykk.
+- Alt slås av under `prefers-reduced-motion`.
+
+**Kompaktering.** Målt i Chromium på 384 px:
+
+| | Før | Etter |
+|---|---|---|
+| Topplinje | 64 px | 56 px |
+| Bunnmeny | 67 px | 56 px |
+| Bunnen av Plan-skjemaet | 688 px | 610 px |
+
+Hele reiseskjemaet – hurtigreise, A/B, verktøy, tidsvalg, transport og
+«Finn reise» – får nå plass over skjermkanten med 130 px til overs, mot 54 px før.
+
+Kontrasten er målt etter endringen: laveste forhold er 5,0:1 (brødtekst), altså
+over WCAG AA på alt.
+
+**Bonus fra måleoppsettet:** Leaflet kaster hardt på `NaN`-koordinater og river da
+med seg hele kartvisningen. Alt som skal på kartet passerer nå en `okLL()`-vakt.
 
 ---
 
