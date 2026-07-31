@@ -84,12 +84,14 @@ mens appen er åpen.
 ## Tester
 ```
 npm install jsdom      # kun for test-dom.js
-node test-dom.js       # 105 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
+node test-dom.js       # 118 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
 node test-live.js      # 15 tester: appens egne spørringer mot Entur (krever nett)
 python3 swipe_test.py  # sveip og kartlag med ekte touch i Chromium
 python3 measure.py     # tetthet, fanefarger og kontrast
 python3 fill_test.py   # utfylling av Plan-fanen og zoom-sperre
 python3 qt_test.py     # hurtigreiser ende-til-ende
+python3 sec_test.py    # sammenleggbare seksjoner og kartkort
+python3 overlap_test.py # at kartpanelene ikke dekker hverandre
 ```
 
 ## Feilretting

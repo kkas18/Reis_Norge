@@ -372,9 +372,13 @@ a{color:inherit}
 .mb-btn.on svg{color:var(--tab-2)}
 #mapCtxChip{position:absolute;top:64px;left:12px;z-index:1040;background:var(--navy);color:#fff;font-size:12px;padding:8px 13px;border-radius:999px;box-shadow:var(--sh-2);display:flex;gap:7px;align-items:center;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #mapCtxChip b{font-family:var(--font-m)}
-.fabs{position:absolute;right:12px;bottom:18px;z-index:1050;display:flex;flex-direction:column;gap:9px;transition:bottom .3s}
-#viewMap.has-card .fabs{bottom:216px}
-#viewMap:has(#layerSheet.open) .fabs{bottom:224px}
+/* Kartkortet, lagvelgeren og knappene lå alle forankret til bunnen med faste
+   pikselverdier – derfor la de seg oppå hverandre. Nå stables de: --card-h og
+   --layer-h måles i JS, og alt over regner seg ut fra dem. */
+#viewMap{--card-h:0px;--layer-h:0px}
+.fabs{position:absolute;right:12px;z-index:1050;display:flex;flex-direction:column;gap:9px;
+  bottom:calc(18px + var(--card-h) + var(--layer-h));
+  transition:bottom .28s cubic-bezier(.22,1,.36,1)}
 .fab{position:relative;width:46px;height:46px;border-radius:14px;background:var(--card);box-shadow:var(--sh-2);display:grid;place-items:center;color:var(--ink);transition:transform .18s,background .18s,color .18s;border:1px solid var(--line)}
 .fab svg{width:20px;height:20px;display:block}
 .fab:active{transform:scale(.88)}
@@ -521,7 +525,8 @@ a{color:inherit}
 .sheet-body{flex:1;min-height:0;padding-top:0}
 
 /* ---------- kartets lagvelger ---------- */
-#layerSheet{position:absolute;left:12px;right:12px;bottom:12px;z-index:1065;background:var(--card);
+#layerSheet{position:absolute;left:12px;right:12px;z-index:1065;background:var(--card);
+  bottom:calc(12px + var(--card-h));
   border:1px solid var(--line);border-radius:18px;box-shadow:0 14px 40px rgba(4,20,43,.3);padding:12px 13px 13px;
   opacity:0;transform:translateY(14px);transition:opacity .22s ease,transform .22s cubic-bezier(.22,1,.36,1)}
 #layerSheet.open{opacity:1;transform:none}
@@ -541,6 +546,32 @@ a{color:inherit}
 :root[data-theme="dark"] .ls-item.on b,:root[data-theme="dark"] .ls-item.on .ls-ic{color:var(--tab-2)}
 /* Satellitt og topografi er lyse flater – hold kortene lesbare over dem. */
 :root[data-base="satellitt"] #mapCtxChip{background:rgba(6,20,40,.86)}
+
+/* ---------- sammenleggbare seksjoner ---------- */
+.sec-label.toggle{width:100%;cursor:pointer;user-select:none}
+.sec-label.toggle::after{display:none}
+.sl-line{flex:1;height:1px;background:var(--line);border:none}
+.sec-chev{flex:none;display:grid;place-items:center;width:20px;height:20px;color:var(--faint);
+  transition:transform .28s cubic-bezier(.22,1,.36,1),color .2s}
+.sec-chev svg{width:14px;height:14px;display:block}
+.sec-label.toggle:hover .sec-chev{color:var(--tab)}
+.sec.closed .sec-chev{transform:rotate(-90deg)}
+/* grid-template-rows 0fr→1fr gir myk høydeanimasjon uten å måtte måle innholdet */
+.sec-body{display:grid;grid-template-rows:1fr;transition:grid-template-rows .28s cubic-bezier(.22,1,.36,1),opacity .2s ease}
+.sec-inner{overflow:hidden;min-height:0}
+.sec.closed .sec-body{grid-template-rows:0fr;opacity:0}
+.sec-count{flex:none;font-family:var(--font-m);font-size:10px;color:var(--faint);
+  background:var(--paper);border-radius:99px;padding:2px 7px;letter-spacing:0}
+
+/* ---------- kartkortet kan legges ned ---------- */
+.mc-grip{display:block;width:100%;padding:0 0 8px;background:none;border:none;cursor:pointer}
+.mc-grip::before{content:"";display:block;width:40px;height:4px;margin:0 auto;border-radius:99px;
+  background:var(--line-2);transition:background .2s,width .2s}
+.mc-grip:active::before{width:52px;background:var(--tab-2)}
+#mapCard.collapsed{padding-bottom:10px}
+#mapCard.collapsed>*:not(.mc-grip):not(.mc-head){display:none}
+#mapCard.collapsed .mc-head{align-items:center}
+
 
 /* ---------- hurtigreiser (fra A til B) ---------- */
 #quickTrips{display:flex;flex-direction:column;gap:8px;margin-top:9px}
@@ -680,9 +711,15 @@ a{color:inherit}
             <div class="pb-head"><span class="pb-ic" id="pbIc"></span><div><b id="pbTitle"></b><p id="pbText"></p></div></div>
             <div class="pb-acts"><button class="mini-btn" id="pbAlt">Se alternativ rute</button><button class="mini-btn ghost" id="pbDismiss">Skjul</button></div>
           </div>
-          <div class="sec-label">Hurtigreise</div>
-          <div class="commuter" id="commuter"></div>
-          <div id="quickTrips"></div>
+          <div class="sec" data-sec="quick">
+            <button class="sec-label toggle" type="button" aria-expanded="true">
+              <span>Hurtigreise</span><i class="sl-line"></i><span class="sec-count" id="quickCount" hidden></span><span class="sec-chev"></span>
+            </button>
+            <div class="sec-body"><div class="sec-inner">
+              <div class="commuter" id="commuter"></div>
+              <div id="quickTrips"></div>
+            </div></div>
+          </div>
           <div class="comm-setup" id="commSetup">
             <div class="cs-title" id="commTitle">Sett opp Hjem</div>
             <div class="search-field" id="commField">
@@ -709,13 +746,27 @@ a{color:inherit}
             <button data-mode="arrive">Ankomst innen</button>
           </div>
           <input type="datetime-local" id="timeInput">
-          <div class="sec-label">Transport</div>
-          <div class="modes" id="planModes"></div>
+          <div class="sec" data-sec="modes">
+            <button class="sec-label toggle" type="button" aria-expanded="true">
+              <span>Transport</span><i class="sl-line"></i><span class="sec-count" id="modeCount" hidden></span><span class="sec-chev"></span>
+            </button>
+            <div class="sec-body"><div class="sec-inner">
+              <div class="modes" id="planModes"></div>
+            </div></div>
+          </div>
           <button class="cta" id="btnSearch">Finn reise <span class="arr" id="ctaArr"></span></button>
-          <div id="recentsWrap" hidden><div class="sec-label">Nylige</div><div class="recents" id="recents"></div></div>
-          <div id="nearbyWrap">
-            <div class="sec-label">I nærheten <span class="auto-tag" id="nearbyTag" hidden>LIVE</span></div>
-            <div id="nearby"></div>
+          <div id="recentsWrap" class="sec" data-sec="recents" hidden>
+            <button class="sec-label toggle" type="button" aria-expanded="true">
+              <span>Nylige</span><i class="sl-line"></i><span class="sec-chev"></span>
+            </button>
+            <div class="sec-body"><div class="sec-inner"><div class="recents" id="recents"></div></div></div>
+          </div>
+          <div id="nearbyWrap" class="sec" data-sec="nearby">
+            <button class="sec-label toggle" type="button" aria-expanded="true">
+              <span>I nærheten</span><span class="auto-tag" id="nearbyTag" hidden>LIVE</span>
+              <i class="sl-line"></i><span class="sec-chev"></span>
+            </button>
+            <div class="sec-body"><div class="sec-inner"><div id="nearby"></div></div></div>
           </div>
         </div>
 
@@ -928,6 +979,7 @@ const IC={
   bookmark:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>',
   edit:S('<path d="M4 20h4l10-10a2.83 2.83 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
   chevL:S('<path d="M15 5l-7 7 7 7"/>'),
+  chevD:S('<path d="M6 9l6 6 6-6"/>'),
   swapV:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3 5 6.99h3V14h2V6.99h3L9 3z"/></svg>',
   sun:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 0 0 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>',
   moon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8A9.06 9.06 0 0 0 12 3z"/></svg>'
@@ -1842,6 +1894,40 @@ function startNearby(){
   },45000);
 }
 
+/* ================= sammenleggbare seksjoner =================
+   Seksjoner du sjelden rører kan legges ned, og valget huskes. Innholdet
+   animeres med grid-template-rows 0fr→1fr, som slipper å måle høyden. */
+const SEC_DEFAULT={quick:true,modes:true,recents:true,nearby:true};
+function secOpen(){return {...SEC_DEFAULT,...loadLS('sections',{})}}
+function setSec(key,open){
+  const all=secOpen();all[key]=open;saveLS('sections',all);
+  const sec=document.querySelector(`.sec[data-sec="${key}"]`);
+  if(!sec)return;
+  sec.classList.toggle('closed',!open);
+  const btn=sec.querySelector('.sec-label.toggle');
+  if(btn)btn.setAttribute('aria-expanded',String(open));
+}
+function initSections(){
+  const st=secOpen();
+  $$('.sec[data-sec]').forEach(sec=>{
+    const key=sec.dataset.sec,btn=sec.querySelector('.sec-label.toggle');
+    if(!btn)return;
+    btn.querySelector('.sec-chev').innerHTML=IC.chevD;
+    setSec(key,st[key]!==false);
+    btn.onclick=()=>{
+      const open=!sec.classList.contains('closed');
+      setSec(key,!open);
+      try{if(navigator.vibrate)navigator.vibrate(6)}catch(e){}
+    };
+  });
+}
+/* Tellere på lukkede seksjoner, så du ser hva som ligger der uten å åpne */
+function updateSecCounts(){
+  const q=$('#quickCount'),m=$('#modeCount');
+  if(q){const n=quickTrips().length;q.hidden=!n;q.textContent=n+(n===1?' reise':' reiser')}
+  if(m){const n=state.modes.size;m.hidden=!n;m.textContent=n===0?'':n+' valgt'}
+}
+
 /* ================= hurtigreiser (fra A til B) =================
    «Lagrede reiser» og «hurtigreise» var to navn på det samme. De er slått sammen:
    en lagret reise ER en hurtigreise, og vises øverst i Plan med neste avgang.
@@ -1918,6 +2004,7 @@ function renderQuickTrips(){
   box.querySelectorAll('.qt-edit').forEach(b=>b.onclick=()=>openQuickEditor(+b.dataset.edit));
   $('#qtAdd').onclick=()=>openQuickEditor(-1);
   if(list.length)loadQuickLive();
+  updateSecCounts();
 }
 function runQuickTrip(x){
   if(!x)return;
@@ -2238,6 +2325,7 @@ $('#planModes').addEventListener('click',e=>{
   if(b.dataset.m==='all')state.modes.clear();
   else{const m=b.dataset.m;state.modes.has(m)?state.modes.delete(m):state.modes.add(m)}
   syncModeChips('#planModes','mode-chip',state.modes);
+  updateSecCounts();
 });
 
 /* ================= søk + resultater ================= */
@@ -2270,7 +2358,7 @@ async function findJourney(fromMap=false){
     const sub=`${from.name} → ${to.name}`+(vias.length?` · via ${vias.map(v=>v.name).join(', ')}`:'');
     if(!fromMap){showPlanSection('results');$('#resSub').textContent=sub;$('#resList').innerHTML=skelCards(3)}
     else{$('#viewMap').classList.add('has-card');const card=$('#mapCard');card.hidden=false;
-      card.innerHTML=`<div class="mc-head"><div><b>Søker etter kollektivreiser…</b><span>${esc(sub)}</span></div></div><div class="skel" style="height:44px;margin-top:10px"></div>`;$('#mapCtxChip').textContent='Søker…'}
+      card.innerHTML=mapCardHTML(`<div class="mc-head"><div><b>Søker etter kollektivreiser…</b><span>${esc(sub)}</span></div></div><div class="skel" style="height:44px;margin-top:10px"></div>`);bindCardGrip();$('#mapCtxChip').textContent='Søker…'}
     let patterns;
     try{patterns=await planTrip(from,to,vias,dt.toISOString(),state.timeMode==='arrive',[...state.modes])}
     catch(err){if(fromMap){toast('Kunne ikke hente reiser: '+err.message,'err',err.raw);applyMapContext()}else resError(err);return}
@@ -2540,6 +2628,40 @@ function routeForCurrentMode(){
   else computeStreetRoute(state.routeMode);
 }
 function mapCardH(){const c=$('#mapCard');return c.hidden?0:c.offsetHeight}
+/* Kortet dekket store deler av kartet. Nå kan det legges ned til bare
+   overskriften, og valget huskes gjennom økten. */
+let mapCardCollapsed=loadLS('mapCardCollapsed',false);
+function mapCardHTML(inner){return `<button class="mc-grip" aria-label="Vis eller skjul kortet"></button>`+inner}
+function applyCardCollapse(){
+  const c=$('#mapCard');if(!c)return;
+  c.classList.toggle('collapsed',mapCardCollapsed);
+  $('#viewMap').classList.toggle('card-collapsed',mapCardCollapsed&&!c.hidden);
+  measureStack();
+}
+/* Måler hva som faktisk står nederst, slik at ingenting overlapper uansett
+   hvor høyt kortet blir. Kalles ved hver endring, og av en ResizeObserver. */
+function measureStack(){
+  const vm=$('#viewMap'),card=$('#mapCard'),ls=$('#layerSheet');
+  if(!vm)return;
+  const ch=(card&&!card.hidden)?card.offsetHeight+12:0;
+  const lh=(ls&&!ls.hidden)?ls.offsetHeight+8:0;
+  vm.style.setProperty('--card-h',ch+'px');
+  vm.style.setProperty('--layer-h',lh+'px');
+}
+if(window.ResizeObserver){
+  const ro=new ResizeObserver(()=>measureStack());
+  ['#mapCard','#layerSheet'].forEach(sel=>{const el2=$(sel);if(el2)ro.observe(el2)});
+}
+function bindCardGrip(){
+  const g=$('#mapCard .mc-grip');
+  if(g)g.onclick=()=>{
+    mapCardCollapsed=!mapCardCollapsed;saveLS('mapCardCollapsed',mapCardCollapsed);
+    applyCardCollapse();
+    try{if(navigator.vibrate)navigator.vibrate(6)}catch(e){}
+    if(!mapCardCollapsed&&lastBounds)setTimeout(()=>{try{map.fitBounds(lastBounds,{paddingTopLeft:[26,110],paddingBottomRight:[26,mapCardH()+80],maxZoom:16})}catch(e){}},260);
+  };
+  applyCardCollapse();
+}
 function nodeMarker(ll,cls,txt){if(!map||!routeLayer||!okLL(ll))return null;return L.marker(ll,{icon:L.divIcon({className:'',html:`<div class="rt-node ${cls}">${txt}</div>`,iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:300}).addTo(routeLayer)}
 function fitRoute(ll){const pts=(ll||[]).filter(okLL);if(!map||pts.length<1)return;lastBounds=L.latLngBounds(pts);map.fitBounds(lastBounds,{paddingTopLeft:[26,110],paddingBottomRight:[26,mapCardH()+80],maxZoom:16,animate:true,duration:.6})}
 function clearRoute(){if(routeLayer)routeLayer.clearLayers();state.selectedPattern=null;state.streetRoute=null;lastBounds=null;applyMapContext()}
@@ -2562,7 +2684,7 @@ function fillFareMeta(){const slot=$('#mcMeta');if(slot&&state.fare)slot.innerHT
 function showRouteCard(p){
   const from=state.stops[0],to=state.stops[state.stops.length-1];const transit=p.legs.filter(l=>modeOf(l)!=='foot');
   const card=$('#mapCard');card.hidden=false;$('#viewMap').classList.add('has-card');
-  card.innerHTML=`
+  card.innerHTML=mapCardHTML(`
    <div class="mc-head"><div><b>${esc(from.name)} → ${esc(to.name)}</b><span>Kollektiv · ${fmtDur(p.duration)}${p.legs.some(l=>l.realtime)?' · sanntid':''}</span></div>
    <button class="mini-btn ghost" id="mcClear" aria-label="Fjern rute">${IC.x}</button></div>
    <div class="mc-times"><b>${fmtTime(p.expectedStartTime)}</b><span>→</span><b>${fmtTime(p.expectedEndTime)}</b>
@@ -2570,7 +2692,8 @@ function showRouteCard(p){
    <div id="mcCmp" class="mc-slot"></div>
    <div class="mc-extras"><span id="mcWx"></span><span id="mcMeta"></span></div>
    <div class="tools-row" id="mcTools">${toolsHTML(true)}</div>
-   <div class="mc-acts"><button class="mini-btn" id="mcDetail">Vis detaljer</button><button class="mini-btn ghost" id="mcSetB">${IC.pin}Sett mål på kartet</button></div>`;
+   <div class="mc-acts"><button class="mini-btn" id="mcDetail">Vis detaljer</button><button class="mini-btn ghost" id="mcSetB">${IC.pin}Sett mål på kartet</button></div>`);
+  bindCardGrip();
   $('#mcDetail').onclick=()=>openDetail(state.results.indexOf(p));
   $('#mcClear').onclick=clearRoute;$('#mcSetB').onclick=armMapTap;bindTools($('#mcTools'),true);
   $('#mapCtxChip').innerHTML=`Kollektiv · <b>${fmtDur(p.duration)}</b> · ${p.legs.length} etapper`;
@@ -2580,7 +2703,7 @@ async function computeStreetRoute(m){
   const pts=state.stops.filter(s=>s.lat);
   if(pts.length<2){toast('Sett start og mål i Plan-fanen først','err');switchTab('plan');return}
   state.selectedPattern=null;const card=$('#mapCard');card.hidden=false;$('#viewMap').classList.add('has-card');
-  card.innerHTML=`<div class="mc-head"><div><b>Beregner ${STREET[m].l.toLowerCase()}-rute…</b><span>${esc(pts.map(p=>p.name).join(' → '))}</span></div></div><div class="skel" style="height:44px;margin-top:10px"></div>`;
+  card.innerHTML=mapCardHTML(`<div class="mc-head"><div><b>Beregner ${STREET[m].l.toLowerCase()}-rute…</b><span>${esc(pts.map(p=>p.name).join(' → '))}</span></div></div><div class="skel" style="height:44px;margin-top:10px"></div>`);bindCardGrip();
   $('#mapCtxChip').textContent='Beregner rute…';
   try{const route=await osrmRoute(m,pts.map(p=>[p.lat,p.lon]));state.streetRoute={route,mode:m};drawStreetRoute(route,m,pts);showStreetCard(route,m,pts)}
   catch(e){logErr('osrm',e);card.innerHTML=`<div class="err-box" style="margin:0"><div class="err-ic">${IC.alert}</div><b>Kunne ikke beregne rute</b><p>${esc(e.message)}</p><button class="chip-btn" id="mcRetry">Prøv igjen</button></div>`;$('#mcRetry').onclick=()=>computeStreetRoute(m);$('#mapCtxChip').textContent='Rute feilet'}
@@ -2597,14 +2720,15 @@ function drawStreetRoute(route,m,pts){
 }
 function showStreetCard(route,m,pts){
   const st=STREET[m];const b=pts[pts.length-1];const card=$('#mapCard');card.hidden=false;
-  card.innerHTML=`
+  card.innerHTML=mapCardHTML(`
    <div class="mc-head"><div><b>${fmtDur(route.duration)} · ${fmtWalk(route.distance)}</b>
    <span>${st.l} · ${esc(pts.map(p=>p.name).join(' → '))}</span></div>
    <button class="mini-btn ghost" id="mcClear" aria-label="Fjern rute">${IC.x}</button></div>
    <div id="mcCmp" class="mc-slot"></div>
    <div class="mc-extras"><span id="mcWx"></span><span id="mcMeta"></span></div>
    <div class="tools-row" id="mcTools">${toolsHTML(false)}</div>
-   <div class="mc-acts"><button class="mini-btn" id="mcSetB">${IC.pin}Sett mål på kartet</button></div>`;
+   <div class="mc-acts"><button class="mini-btn" id="mcSetB">${IC.pin}Sett mål på kartet</button></div>`);
+  bindCardGrip();
   $('#mcClear').onclick=clearRoute;$('#mcSetB').onclick=armMapTap;bindTools($('#mcTools'),false);
   $('#mapCtxChip').innerHTML=`${st.l} · <b>${fmtDur(route.duration)}</b> · ${fmtWalk(route.distance)}`;
   fillCompare(m);fillWeather(b.lat,b.lon);
@@ -2641,17 +2765,27 @@ $('#fabSetB').onclick=armMapTap;
 /* Lagvelgeren samler kartstil og de tre datalagene på ett sted, slik at
    kartflaten ikke drukner i knapper. */
 function layersOpen(){return !$('#layerSheet').hidden}
+let cardWasOpen=false;
 async function toggleLayers(){
   if(layersOpen()){closeLayers();return}
   if(!await ensureMap())return;
+  /* Er kortet åpent, legges det ned mens du velger lag – ellers ville de to
+     til sammen dekket nesten hele kartet. Det spretter opp igjen etterpå. */
+  const card=$('#mapCard');
+  cardWasOpen=!!(card&&!card.hidden&&!mapCardCollapsed);
+  if(cardWasOpen){mapCardCollapsed=true;applyCardCollapse()}
   $('#layerSheet').hidden=false;
-  requestAnimationFrame(()=>$('#layerSheet').classList.add('open'));
+  requestAnimationFrame(()=>{$('#layerSheet').classList.add('open');measureStack()});
   $('#fabLayers').classList.add('on');
   syncLayerUI();
 }
 function closeLayers(){
   $('#layerSheet').classList.remove('open');$('#fabLayers').classList.remove('on');
-  setTimeout(()=>{$('#layerSheet').hidden=true},220);
+  setTimeout(()=>{
+    $('#layerSheet').hidden=true;
+    if(cardWasOpen){cardWasOpen=false;mapCardCollapsed=false;saveLS('mapCardCollapsed',false)}
+    applyCardCollapse();measureStack();
+  },220);
 }
 function syncLayerUI(){
   $('#fabVehicles').classList.toggle('on',state.vehiclesOn);
@@ -2674,11 +2808,12 @@ async function onMapClick(e){
 }
 function showStopCard(s){
   const card=$('#mapCard');card.hidden=false;
-  card.innerHTML=`<div class="mc-head"><div><b>${esc(s.name)}</b><span>Stoppested · sanntid</span></div>
+  card.innerHTML=mapCardHTML(`<div class="mc-head"><div><b>${esc(s.name)}</b><span>Stoppested · sanntid</span></div>
     <button class="mini-btn" id="mcAll">Alle avganger →</button></div>
     <div id="mcReports">${reportsHTML(s.id)}</div>
     <div class="tools-row" id="mcTools"><button class="tool-btn" data-act="report">${IC.flag} Rapporter</button></div>
-    <div id="mcRows"><div class="skel" style="height:40px;margin-top:8px"></div></div>`;
+    <div id="mcRows"><div class="skel" style="height:40px;margin-top:8px"></div></div>`);
+  bindCardGrip();
   $('#mcAll').onclick=()=>switchTab('depart');bindTools($('#mcTools'),false,s.id,s.name);
   $('#mapCtxChip').innerHTML=`Stoppested · ${esc(s.name)}`;
   (async()=>{try{if(state.departuresFor!==s.id||!state.departures.length){const sp=await getDepartures(s.id);state.departures=mapCalls(sp);state.departuresFor=s.id}
@@ -2691,7 +2826,7 @@ function centerOnStop(){const s=state.departStop;if(!s||!map||!okLL([s.lat,s.lon
   if(stopMarker)stopMarker.setLatLng([s.lat,s.lon]);
   else stopMarker=L.marker([s.lat,s.lon],{icon:L.divIcon({className:'',html:'<div class="rt-node rt-via">S</div>',iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:300}).addTo(map);
   map.flyTo([s.lat,s.lon],16,{duration:.7})}
-function hideMapCard(){$('#mapCard').hidden=true}
+function hideMapCard(){$('#mapCard').hidden=true;$('#viewMap').classList.remove('card-collapsed');measureStack()}
 function applyMapContext(){
   if(!map)return;
   const vm=$('#viewMap');
@@ -2760,7 +2895,7 @@ function tickClock(){try{$('#clock').textContent=new Intl.DateTimeFormat('nb-NO'
 setInterval(tickClock,15000);tickClock();
 
 $('#app').dataset.tab='plan';
-renderNearby();loadNearby();startNearby();renderQuickTrips();
+initSections();renderNearby();loadNearby();startNearby();renderQuickTrips();updateSecCounts();
 document.documentElement.dataset.base=state.basemap;
 $$('#baseSeg button').forEach(b=>b.classList.toggle('on',b.dataset.base===state.basemap));
 applyTheme();renderStops();renderRecents();renderCommuter();positionNav();renderErrLog();

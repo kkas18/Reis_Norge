@@ -2,8 +2,9 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (105 tester),
-`python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py` og `qt_test.py` måler layout,
+`node test-dom.js` tester grensesnitt og logikk i jsdom (118 tester),
+`python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
+`sec_test.py` og `overlap_test.py` måler layout,
 farger, kontrast, sveip og zoom-sperre med ekte touch-hendelser i Chromium på
 Galaxy S24-bredde. Alle grønne.
 
@@ -161,6 +162,45 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Sammenleggbare seksjoner, og paneler som ikke dekker hverandre
+
+**Seksjoner kan legges ned.** Hurtigreise, Transport, Nylige og I nærheten har
+fått en pil du kan trykke på. Valget huskes til neste gang du åpner appen.
+
+- Animasjonen bruker `grid-template-rows: 1fr → 0fr`, som gir myk høyde uten at
+  koden må måle innholdet – ingen hopp når listene endrer lengde.
+- Lukket seksjon viser en teller («2 reiser», «3 valgt»), så du ser hva som
+  ligger der uten å måtte åpne den.
+- **Planlegg reisen** og **Når** er bevisst *ikke* sammenleggbare. De er selve
+  skjemaet; å kunne skjule dem ville bare gitt en tilstand der appen ser ødelagt ut.
+
+Målt: «I nærheten» går fra 118 px til 34 px.
+
+**Kartkortet kan legges ned.** Det dekket store deler av kartet. Nå har det et
+grep øverst – ett trykk gjør det om til bare overskriften, og valget huskes.
+Målt: 265 px → 75 px, altså 22 % av skjermen tilbake til kartet.
+
+**Panelene overlappet hverandre.** Kartkortet, lagvelgeren og knappekolonnen lå
+alle forankret til bunnen med *faste* pikselverdier (`bottom: 216px`, `224px`,
+`104px`). Verdiene stemte bare for én bestemt korthøyde, så i praksis la
+lagvelgeren seg oppå stoppestedskortet og skjulte innholdet – akkurat som på
+skjermbildet.
+
+Nå stables de:
+
+- `--card-h` og `--layer-h` måles i JS og settes som CSS-variabler.
+- Lagvelgeren ligger på `bottom: calc(12px + var(--card-h))`, knappene på
+  `calc(18px + var(--card-h) + var(--layer-h))`.
+- En `ResizeObserver` måler på nytt når et panel endrer høyde, så det holder
+  uansett hvor langt kortet blir.
+- Åpner du lagvelgeren mens kortet er oppe, legges kortet ned automatisk – to
+  fulle paneler ville dekket nesten hele kartet. Det spretter opp igjen etterpå.
+
+Verifisert med en test som regner ut faktisk overlappende areal mellom alle
+panelparene i tre tilstander: **0 px² i samtlige.**
 
 ---
 
