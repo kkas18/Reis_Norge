@@ -542,6 +542,47 @@ a{color:inherit}
 /* Satellitt og topografi er lyse flater – hold kortene lesbare over dem. */
 :root[data-base="satellitt"] #mapCtxChip{background:rgba(6,20,40,.86)}
 
+/* ---------- hurtigreiser (fra A til B) ---------- */
+#quickTrips{display:flex;flex-direction:column;gap:8px;margin-top:9px}
+.qt-cell{position:relative;display:flex}
+.qt-card{flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;
+  background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:10px 40px 10px 12px;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s;
+  animation:rowIn .32s cubic-bezier(.22,1,.36,1) both}
+.qt-card:active{transform:scale(.98)}
+.qt-card:hover{box-shadow:var(--sh-1);border-color:var(--line-2)}
+.qt-ic{flex:none;width:30px;height:30px;border-radius:10px;background:var(--tab-soft);color:var(--tab);display:grid;place-items:center}
+.qt-ic svg{width:16px;height:16px;display:block}
+.qt-body{flex:1;min-width:0}
+.qt-route{display:flex;align-items:center;gap:6px;min-width:0}
+.qt-route b{font-family:var(--font-d);font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qt-route i{font-style:normal;color:var(--faint);flex:none;font-size:12px}
+.qt-live{display:flex;align-items:center;gap:6px;margin-top:5px;min-height:20px;font-size:11.5px;color:var(--muted)}
+.qt-live .leg-badge{height:19px;padding:0 6px;font-size:10.5px}
+.qt-when{font-family:var(--font-m);font-weight:600;color:var(--ink)}
+.qt-when.due{color:var(--signal-2)}
+.qt-edit{position:absolute;top:50%;right:8px;transform:translateY(-50%);z-index:2;
+  width:28px;height:28px;border-radius:9px;color:var(--faint);display:grid;place-items:center;background:var(--card)}
+.qt-edit svg{width:13px;height:13px;display:block}
+.qt-edit:hover{background:var(--paper);color:var(--ink)}
+.qt-add{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:42px;
+  border:1.5px dashed var(--line-2);border-radius:13px;background:transparent;color:var(--muted);
+  font-size:12.5px;font-weight:600;transition:border-color .2s,color .2s,transform .16s}
+.qt-add svg{width:15px;height:15px;display:block}
+.qt-add:active{transform:scale(.97)}
+.qt-add:hover{border-color:var(--tab-2);color:var(--tab)}
+/* redigering */
+.qte-row{margin-top:12px}
+.qte-row>span{display:block;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 2px 7px}
+.qte-chips{display:flex;flex-wrap:wrap;gap:6px}
+.qte-chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;
+  border:1.5px solid var(--line);background:var(--card);font-size:12.5px;font-weight:600;color:var(--muted);
+  transition:all .18s;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.qte-chip svg{width:14px;height:14px;flex:none;display:block}
+.qte-chip.on{border-color:var(--tab);color:var(--tab);background:var(--tab-soft)}
+.qte-pick{margin-top:8px;font-size:12.5px;color:var(--muted)}
+.qte-pick b{color:var(--ink)}
+
 /* ---------- «I nærheten» ---------- */
 #nearbyWrap{padding-bottom:6px}
 .near-card{display:block;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);
@@ -566,7 +607,7 @@ a{color:inherit}
 .near-ask p{flex:1;min-width:0;font-size:12.5px;color:var(--muted);line-height:1.4}
 .near-ask b{display:block;color:var(--ink);font-size:13.5px;font-family:var(--font-d);margin-bottom:2px}
 
-#ac{position:fixed;z-index:2000;background:var(--card);border:1.5px solid var(--line);border-radius:14px;box-shadow:var(--sh-2);max-height:264px;overflow-y:auto;display:none}
+#ac{position:fixed;z-index:4600;background:var(--card);border:1.5px solid var(--line);border-radius:14px;box-shadow:var(--sh-2);max-height:264px;overflow-y:auto;display:none}
 #ac.open{display:block;animation:viewIn .18s}
 .ac-item{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer;border-bottom:1px solid var(--paper)}
 .ac-item:last-child{border:none}
@@ -641,6 +682,7 @@ a{color:inherit}
           </div>
           <div class="sec-label">Hurtigreise</div>
           <div class="commuter" id="commuter"></div>
+          <div id="quickTrips"></div>
           <div class="comm-setup" id="commSetup">
             <div class="cs-title" id="commTitle">Sett opp Hjem</div>
             <div class="search-field" id="commField">
@@ -794,7 +836,7 @@ a{color:inherit}
           <button data-th="dark">Mørk</button>
         </div>
         <p class="hint">Auto følger systeminnstillingene dine – også kartflisene.</p>
-        <div class="sec-label">Lagrede reiser</div><div id="favJourneys"></div>
+        <div class="sec-label">Hurtigreiser</div><div id="favJourneys"></div>
         <div class="sec-label">Lagrede steder</div><div id="favPlaces"></div>
         <div class="sec-label">Feillogg</div>
         <p class="hint">De siste feilene appen har møtt. Trykk «Kopier» og lim inn hvis noe skal feilsøkes.</p>
@@ -806,9 +848,12 @@ a{color:inherit}
       </div>
   </aside>
 
-  <div id="ac" role="listbox"></div>
   <div id="toasts" aria-live="polite"></div>
 </div>
+
+<!-- Forslagslisten må ligge UTENFOR #app: #app har sin egen stablingskontekst,
+     så ingen z-index inni den kan legge seg over dialogen. -->
+<div id="ac" role="listbox"></div>
 
 <div id="modal" aria-hidden="true"><div class="modal-card" id="modalCard"></div></div>
 <div id="wakeFlash"><div class="wf-ic" id="wfIc"></div><h2 id="wfTitle">Du er fremme!</h2><p id="wfText"></p><button id="wfClose">Slå av alarm</button></div>
@@ -1508,7 +1553,7 @@ function switchTab(name,dir){
   Object.entries(views).forEach(([k,v])=>v.classList.toggle('active',k===name));
   if(name==='map')ensureMap().then(m=>{if(m)setTimeout(()=>{m.invalidateSize({pan:false});applyMapContext()},60)});
   if(name==='depart')ensureDepartFilled();
-  if(name==='plan'){renderCommuter();checkProactive();renderNearby();loadNearby()}
+  if(name==='plan'){renderCommuter();checkProactive();renderNearby();loadNearby();renderQuickTrips()}
   pushHistory();
 }
 navBtns.forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
@@ -1797,6 +1842,173 @@ function startNearby(){
   },45000);
 }
 
+/* ================= hurtigreiser (fra A til B) =================
+   «Lagrede reiser» og «hurtigreise» var to navn på det samme. De er slått sammen:
+   en lagret reise ER en hurtigreise, og vises øverst i Plan med neste avgang.
+   Du lager dem enten ved å lagre et søkeresultat, eller direkte med «+». */
+const QT_MAX_LIVE=3;
+function quickTrips(){return loadLS('favJourneys',[])}
+function saveQuickTrips(list){saveLS('favJourneys',list.slice(0,8))}
+const qtPoint=p=>p?{name:p.n||p.name,lat:p.lat,lon:p.lon,id:p.id||null}:null;
+
+function quickQuery(n){
+  const vars=['$dt:DateTime!'],body=[];
+  for(let i=0;i<n;i++){
+    vars.push(`$f${i}:Location!`,`$t${i}:Location!`);
+    body.push(`q${i}: trip(from:$f${i},to:$t${i},dateTime:$dt,numTripPatterns:1,walkSpeed:1.3){`+
+      `tripPatterns{expectedStartTime expectedEndTime duration legs{mode realtime `+
+      `line{publicCode transportMode presentation{colour}}}}}`);
+  }
+  return `query Quick(${vars.join(',')}){${body.join(' ')}}`;
+}
+let qtLive={},qtAt=0,qtBusy=false;
+async function loadQuickLive(force){
+  const list=quickTrips().slice(0,QT_MAX_LIVE);
+  if(!list.length||qtBusy)return;
+  if(!force&&Date.now()-qtAt<60000)return;
+  qtBusy=true;
+  try{
+    const vars={dt:new Date().toISOString()};
+    list.forEach((x,i)=>{vars['f'+i]=toLocation(qtPoint(x.from));vars['t'+i]=toLocation(qtPoint(x.to))});
+    const d=await enturGQL(quickQuery(list.length),vars);
+    const next={};
+    list.forEach((x,i)=>{
+      const pat=((d['q'+i]||{}).tripPatterns||[])[0];
+      if(pat)next[qtKey(x)]={t:new Date(pat.expectedStartTime),end:new Date(pat.expectedEndTime),
+        dur:pat.duration,legs:pat.legs.filter(l=>l.line).map(l=>({
+          code:l.line.publicCode,mode:l.line.transportMode,
+          colour:l.line.presentation&&l.line.presentation.colour}))};
+    });
+    qtLive=next;qtAt=Date.now();
+  }catch(e){logErr('quicktrips',e)}
+  finally{qtBusy=false;renderQuickTrips()}
+}
+const qtKey=x=>`${x.from.n}>${x.to.n}`;
+
+function renderQuickTrips(){
+  const box=$('#quickTrips');if(!box)return;
+  const list=quickTrips();
+  box.innerHTML=list.map((x,i)=>{
+    const live=qtLive[qtKey(x)];
+    let liveHTML='<span style="color:var(--faint)">—</span>';
+    if(live){
+      const diff=live.t-Date.now();
+      const when=diff<=45000?'nå':(diff<3600000?'om '+Math.max(1,Math.round(diff/60000))+' min':fmtTime(live.t));
+      const badges=live.legs.slice(0,3).map(l=>{
+        const mm=MODE[l.mode]||MODE.bus;const hex=l.colour?('#'+l.colour):mm.hex;
+        return `<i class="leg-badge" style="background:${esc(hex)}">${esc(l.code)}</i>`}).join('');
+      liveHTML=`${badges||''}<span class="qt-when${diff<=45000?' due':''}">${when}</span>`+
+               `<span style="color:var(--faint)">· ${fmtDur(live.dur)}</span>`;
+    }
+    return `<div class="qt-cell">
+      <button class="qt-card" data-i="${i}" style="animation-delay:${Math.min(i*45,180)}ms"
+              aria-label="Reis fra ${esc(x.from.n)} til ${esc(x.to.n)}">
+        <span class="qt-ic">${IC.route}</span>
+        <span class="qt-body">
+          <span class="qt-route"><b>${esc(x.from.n)}</b><i>→</i><b>${esc(x.to.n)}</b></span>
+          <span class="qt-live">${liveHTML}</span>
+        </span>
+      </button>
+      <button class="qt-edit" data-edit="${i}" aria-label="Endre hurtigreise">${IC.edit}</button>
+    </div>`;
+  }).join('')+
+  `<button class="qt-add" id="qtAdd">${IC.plus}Ny hurtigreise</button>`;
+
+  box.querySelectorAll('.qt-card').forEach(c=>c.onclick=()=>runQuickTrip(list[+c.dataset.i]));
+  box.querySelectorAll('.qt-edit').forEach(b=>b.onclick=()=>openQuickEditor(+b.dataset.edit));
+  $('#qtAdd').onclick=()=>openQuickEditor(-1);
+  if(list.length)loadQuickLive();
+}
+function runQuickTrip(x){
+  if(!x)return;
+  state.stops=[{uid:uid(),name:x.from.n,lat:x.from.lat,lon:x.from.lon,id:x.from.id||null},
+    ...(x.vias||[]).map(v=>({uid:uid(),name:v.n,lat:v.lat,lon:v.lon,id:v.id||null})),
+    {uid:uid(),name:x.to.n,lat:x.to.lat,lon:x.to.lon,id:x.to.id||null}];
+  renderStops();switchTab('plan');showPlanSection('form');findJourney(false);
+}
+
+/* ---- redigering ---- */
+let qtEdit=null;
+function anchorOptions(){
+  const out=[];
+  if(state.home)out.push({k:'home',label:'Hjem',ic:IC.house,p:{n:state.home.name,lat:state.home.lat,lon:state.home.lon,id:state.home.id||null}});
+  if(state.work)out.push({k:'work',label:'Jobb',ic:IC.briefcase,p:{n:state.work.name,lat:state.work.lat,lon:state.work.lon,id:state.work.id||null}});
+  out.push({k:'pos',label:'Min posisjon',ic:IC.locate,p:null});
+  return out;
+}
+function qtChips(side){
+  const cur=qtEdit[side];
+  return anchorOptions().map(o=>{
+    const on=cur&&((o.k==='pos'&&cur.__pos)||(o.p&&cur.n===o.p.n));
+    return `<button class="qte-chip${on?' on':''}" data-side="${side}" data-k="${o.k}">${o.ic}${esc(o.label)}</button>`;
+  }).join('')+`<button class="qte-chip${cur&&!cur.__pos&&!anchorOptions().some(o=>o.p&&o.p.n===cur.n)?' on':''}" data-side="${side}" data-k="search">${IC.search}Søk…</button>`;
+}
+function qtEditorHTML(){
+  const label=p=>p?(p.__pos?'Min posisjon':p.n):'<span style="color:var(--faint)">ikke valgt</span>';
+  return `<div class="mc-title"><h3>${qtEdit.i>=0?'Endre':'Ny'} hurtigreise</h3><button class="x" aria-label="Lukk">${IC.x}</button></div>
+    <p class="hint" style="margin:2px 0 0">For eksempel «Hjem → treningssenteret». Ett trykk søker reisen.</p>
+    <div class="qte-row" data-row="from"><span>Fra</span><div class="qte-chips">${qtChips('from')}</div>
+      <div class="qte-pick">Valgt: <b>${label(qtEdit.from)}</b></div></div>
+    <div class="qte-row" data-row="to"><span>Til</span><div class="qte-chips">${qtChips('to')}</div>
+      <div class="qte-pick">Valgt: <b>${label(qtEdit.to)}</b></div></div>
+    <div class="search-field" id="qtField" style="margin-top:10px;display:${qtEdit.searching?'block':'none'}">
+      <span class="s-ic">${IC.search}</span>
+      <input type="text" id="qtInput" data-ac="1" autocomplete="off" placeholder="Søk etter adresse eller stoppested…">
+    </div>
+    <div class="tools-row" style="margin-top:14px">
+      <button class="tool-btn" id="qtSave" style="flex:1;justify-content:center">Lagre hurtigreise</button>
+      ${qtEdit.i>=0?`<button class="tool-btn" id="qtDel" style="color:var(--signal-2)">Slett</button>`:''}
+    </div>`;
+}
+function openQuickEditor(i){
+  const list=quickTrips();
+  qtEdit=i>=0
+    ? {i,from:{...list[i].from,n:list[i].from.n},to:{...list[i].to,n:list[i].to.n},searching:false,side:null}
+    : {i:-1,from:state.home?{n:state.home.name,lat:state.home.lat,lon:state.home.lon,id:state.home.id||null}:null,to:null,searching:false,side:null};
+  paintQuickEditor();
+}
+function paintQuickEditor(){
+  openModal(qtEditorHTML());
+  $$('#modalCard .qte-chip').forEach(b=>b.onclick=()=>{
+    const side=b.dataset.side,k=b.dataset.k;
+    if(k==='search'){qtEdit.searching=true;qtEdit.side=side;paintQuickEditor();
+      setTimeout(()=>{const el2=$('#qtInput');if(el2)el2.focus()},60);return}
+    if(k==='pos'){qtEdit[side]={__pos:true,n:'Min posisjon'};}
+    else{const o=anchorOptions().find(x=>x.k===k);qtEdit[side]=o?{...o.p}:null}
+    qtEdit.searching=false;paintQuickEditor();
+  });
+  const save=$('#qtSave');
+  if(save)save.onclick=saveQuickEditor;
+  const del=$('#qtDel');
+  if(del)del.onclick=()=>{const l=quickTrips();l.splice(qtEdit.i,1);saveQuickTrips(l);closeModal();
+    renderQuickTrips();renderSaved();toast('Hurtigreisen er slettet','ok')};
+}
+function qtPickFromSearch(it){
+  if(!qtEdit||!qtEdit.side)return;
+  qtEdit[qtEdit.side]={n:it.name,lat:it.lat,lon:it.lon,id:isNSR(it.id)?it.id:null};
+  qtEdit.searching=false;qtEdit.side=null;paintQuickEditor();
+}
+async function saveQuickEditor(){
+  let {from,to,i}=qtEdit;
+  if(!from||!to){toast('Velg både fra og til','err');return}
+  const resolve=async p=>{
+    if(!p.__pos)return p;
+    const q=await getPos();state.userPos=q;setUser(q.lat,q.lon);
+    const n=await reverseGeocode(q.lat,q.lon).catch(()=>'Min posisjon');
+    return {n,lat:q.lat,lon:q.lon,id:null};
+  };
+  try{from=await resolve(from);to=await resolve(to)}catch(e){toast(e.message,'err');return}
+  if(from.n===to.n){toast('Fra og til kan ikke være samme sted','err');return}
+  const list=quickTrips();
+  const item={from,to,vias:[],t:Date.now()};
+  if(i>=0)list[i]=item;else{
+    if(list.some(x=>x.from.n===from.n&&x.to.n===to.n)){toast('Den hurtigreisen finnes allerede','');closeModal();return}
+    list.unshift(item);
+  }
+  saveQuickTrips(list);closeModal();qtAt=0;renderQuickTrips();renderSaved();
+  toast(`Hurtigreise lagret: ${from.n} → ${to.n}`,'ok');
+}
+
 /* ================= proaktivt varsel ================= */
 $('#pbClose').onclick=$('#pbDismiss').onclick=()=>$('#proactiveBanner').classList.remove('show');
 $('#pbAlt').onclick=()=>{$('#proactiveBanner').classList.remove('show');
@@ -1973,6 +2185,7 @@ function pickAC(i){
   acClose();
   if(inp.id==='depSearchInput'){inp.blur();chooseDepartTarget(it)}
   else if(inp.id==='commInput'){inp.blur();pickCommuter(it)}
+  else if(inp.id==='qtInput'){inp.blur();qtPickFromSearch(it)}
   else{
     const s=findStop(+inp.dataset.uid);
     if(s){s.name=it.name;s.lat=it.lat;s.lon=it.lon;s.id=it.id;
@@ -2202,8 +2415,9 @@ $('#btnSaveJ').onclick=()=>{
   const fj=loadLS('favJourneys',[]);
   const item={from:{n:from.name,lat:from.lat,lon:from.lon},to:{n:to.name,lat:to.lat,lon:to.lon},vias:vias.filter(v=>v.lat).map(v=>({n:v.name,lat:v.lat,lon:v.lon})),t:Date.now()};
   const dup=fj.findIndex(x=>x.from.n===item.from.n&&x.to.n===item.to.n);
-  if(dup>-1){fj.splice(dup,1);saveLS('favJourneys',fj);$('#btnSaveJ').textContent='Lagre';toast('Fjernet fra lagrede')}
-  else{fj.unshift(item);saveLS('favJourneys',fj.slice(0,10));$('#btnSaveJ').textContent='Lagret';toast('Reisen er lagret','ok')}
+  if(dup>-1){fj.splice(dup,1);saveLS('favJourneys',fj);$('#btnSaveJ').textContent='Lagre';toast('Fjernet fra hurtigreiser')}
+  else{fj.unshift(item);saveLS('favJourneys',fj.slice(0,8));$('#btnSaveJ').textContent='Lagret';toast('Lagret som hurtigreise','ok')}
+  qtAt=0;renderQuickTrips();
 };
 async function loadTips(p){
   const refs=[],push=(lat,lon,name)=>{if(lat==null)return;if(!refs.some(r=>haversine(r.lat,r.lon,lat,lon)<120))refs.push({lat,lon,name})};
@@ -2517,12 +2731,12 @@ function renderSaved(){
   const fj=loadLS('favJourneys',[]),fp=loadLS('favPlaces',[]);
   $('#favJourneys').innerHTML=fj.length?fj.map((x,i)=>`<div class="fav-card"><span class="fav-ic">${IC.route}</span>
     <div class="fav-body"><b>${esc(x.from.n)} → ${esc(x.to.n)}</b><span>${x.vias&&x.vias.length?'via '+esc(x.vias.map(v=>v.n).join(', ')):'direkte'}</span></div>
-    <button class="mini-btn" data-j="${i}">Åpne</button><button class="mini-btn ghost" data-jd="${i}">${IC.x}</button></div>`).join(''):'<p class="hint">Lagre en reise i reisevisningen for å beholde den her.</p>';
+    <button class="mini-btn" data-j="${i}">Åpne</button><button class="mini-btn ghost" data-jd="${i}">${IC.x}</button></div>`).join(''):'<p class="hint">Lag en hurtigreise med «+» øverst i Plan, eller lagre et søkeresultat.</p>';
   $('#favPlaces').innerHTML=fp.length?fp.map((p,i)=>`<div class="fav-card"><span class="fav-ic">${IC.pin}</span>
     <div class="fav-body"><b>${esc(p.n)}</b><span>lagret sted</span></div>
     <button class="mini-btn" data-pu="${i}">Bruk</button><button class="mini-btn ghost" data-pd="${i}">${IC.x}</button></div>`).join(''):'<p class="hint">Lagre severdigheter med stjerne-knappen.</p>';
   $('#favJourneys').querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>applyJourney(fj[+b.dataset.j]));
-  $('#favJourneys').querySelectorAll('[data-jd]').forEach(b=>b.onclick=()=>{fj.splice(+b.dataset.jd,1);saveLS('favJourneys',fj);renderSaved()});
+  $('#favJourneys').querySelectorAll('[data-jd]').forEach(b=>b.onclick=()=>{fj.splice(+b.dataset.jd,1);saveLS('favJourneys',fj);renderSaved();renderQuickTrips()});
   $('#favPlaces').querySelectorAll('[data-pu]').forEach(b=>b.onclick=()=>{const p=fp[+b.dataset.pu];const t=state.stops[state.stops.length-1];t.name=p.n;t.lat=p.lat;t.lon=p.lon;t.id=null;renderStops();switchTab('plan');showPlanSection('form');toast('Mål satt','ok')});
   $('#favPlaces').querySelectorAll('[data-pd]').forEach(b=>b.onclick=()=>{fp.splice(+b.dataset.pd,1);saveLS('favPlaces',fp);renderSaved()});
 }
@@ -2546,11 +2760,11 @@ function tickClock(){try{$('#clock').textContent=new Intl.DateTimeFormat('nb-NO'
 setInterval(tickClock,15000);tickClock();
 
 $('#app').dataset.tab='plan';
-renderNearby();loadNearby();startNearby();
+renderNearby();loadNearby();startNearby();renderQuickTrips();
 document.documentElement.dataset.base=state.basemap;
 $$('#baseSeg button').forEach(b=>b.classList.toggle('on',b.dataset.base===state.basemap));
 applyTheme();renderStops();renderRecents();renderCommuter();positionNav();renderErrLog();
-setInterval(()=>{if($('#viewPlan').classList.contains('active')&&$('#plan-form').classList.contains('active'))updateCommuterLive()},30000);
+setInterval(()=>{if($('#viewPlan').classList.contains('active')&&$('#plan-form').classList.contains('active')){updateCommuterLive();loadQuickLive()}},30000);
 
 (async function prefill(){
   try{history.replaceState({reis:{tab:'plan',section:'form',modal:false}},'')}catch(e){}

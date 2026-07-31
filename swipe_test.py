@@ -24,7 +24,7 @@ async def main():
                 await pg.wait_for_timeout(ms)
             await cdp.send("Input.dispatchTouchEvent",
                 {"type":"touchEnd","touchPoints":[]})
-            await pg.wait_for_timeout(650)
+            await pg.wait_for_timeout(900)
 
         async def tab():
             return await pg.evaluate("()=>document.getElementById('app').dataset.tab")

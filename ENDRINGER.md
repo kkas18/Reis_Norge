@@ -1,9 +1,9 @@
 # REIS Norge – hva som ble fikset
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
-`node test-live.js` kjører appens egne spørringer mot API-et (14 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (94 tester),
-`python3 shot.py`, `measure.py`, `swipe_test.py` og `fill_test.py` måler layout,
+`node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (105 tester),
+`python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py` og `qt_test.py` måler layout,
 farger, kontrast, sveip og zoom-sperre med ekte touch-hendelser i Chromium på
 Galaxy S24-bredde. Alle grønne.
 
@@ -161,6 +161,41 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Hurtigreiser fra A til B
+
+Hurtigreise besto av to faste steder – Hjem og Jobb. Nå kan du lagre hele ruter:
+**«Hjem → treningen»**, **«Hjem → mormor»**, hva som helst. Kortet viser neste
+avgang med linjenummer og nedtelling, og ett trykk søker reisen.
+
+**«Lagrede reiser» og «hurtigreise» var to navn på det samme**, så de er slått
+sammen. En lagret reise *er* en hurtigreise. Du lager dem på to måter:
+
+- **«+ Ny hurtigreise»** øverst i Plan. «Fra» er forhåndsvalgt til Hjem, og du
+  velger «Til» med Hjem/Jobb/Min posisjon-snarveier eller søk.
+- **«Lagre»** på et søkeresultat, som før.
+
+Under panseret:
+
+- Sanntid for alle hurtigreisene hentes i **ett** HTTP-kall. GraphQL-aliaser
+  (`q0: trip(…) q1: trip(…)`) gjør at tre reiser koster én forespørsel i stedet
+  for tre. Maks tre kort får sanntid, og ikke oftere enn hvert 60. sekund.
+- «Min posisjon» løses opp til et stedsnavn først når du lagrer, ikke ved hvert
+  oppslag.
+- Holdeplasser lagres med NSR-id, adresser med koordinater – samme skille som
+  reiseplanleggeren ellers.
+
+**To feil testen fanget underveis:**
+
+1. **Forslagslisten lå bak dialogen.** `#ac` lå inne i `#app`, som har sin egen
+   stablingskontekst – da hjelper ingen z-index mot en dialog utenfor. Resultatet
+   var at man *ikke kunne velge et sted i det hele tatt* i editoren. Lista er nå
+   flyttet ut av `#app`. Dette rammet enhver dialog med søkefelt, ikke bare denne.
+2. **Nøstede knapper igjen.** Endre-knappen på hurtigreise-kortet havnet nesten
+   inni kortets egen knapp – samme felle som Hjem/Jobb-kortet hadde. Testen leter
+   nå etter `button button` begge steder.
 
 ---
 
