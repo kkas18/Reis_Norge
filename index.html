@@ -37,6 +37,7 @@
   --mint:#4A82D8;
   /* Faneidentitet – settes av [data-tab] under. */
   --tab:#1B4FA0; --tab-2:#4A82D8; --tab-soft:rgba(27,79,160,.12);
+  --chip-neutral:#0A2A57;
   --green:#16A34A; --green-soft:#E3F6E9; --green-txt:#0E7A3D;
   --amber:#D98A06; --amber-soft:#FCF1D8; --amber-txt:#9A6200;
   --foot:#64748B; --tram:#0B87C7; --metro:#E8590C; --bus:#C2255C; --rail:#3457D5; --water:#0C8599; --coach:#8447C9;
@@ -50,7 +51,7 @@
   --ink:#E8F0F9; --muted:#9BB2CA; --faint:#6C86A3;
   --signal:#E8455E; --signal-2:#C8102E;
   --signal-soft:rgba(232,69,94,.16); --teal-soft:rgba(74,130,216,.16); --green-soft:rgba(22,163,74,.15); --amber-soft:rgba(217,138,6,.16);
-  --teal-txt:#8FBBF0; --green-txt:#86E3AC; --amber-txt:#E8B65A;
+  --teal-txt:#8FBBF0; --chip-neutral:#9FC4F0; --green-txt:#86E3AC; --amber-txt:#E8B65A;
   --sh-1:0 2px 10px rgba(0,0,0,.4); --sh-2:0 10px 30px rgba(0,0,0,.55);
   --skel-a:#14293C; --skel-b:#1B3550; --err-bg:rgba(255,122,77,.10); --err-bd:rgba(243,184,172,.35);
 }
@@ -247,7 +248,9 @@ a{color:inherit}
 /* Seks like celler i to rader – ingen løs «Båt» alene på linje tre. */
 .modes,.mode-filter{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .modes .mode-chip,.mode-filter .mf-chip{width:100%;padding:0 6px;gap:6px}
-.mode-chip,.mf-chip{--mc:var(--navy);display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;font-weight:600;color:var(--muted);background:var(--card);transition:border-color .2s,color .2s,background .2s,transform .16s;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* FIX: standardfargen var flaggblå, som forsvant mot mørk bakgrunn –
+   «Alle» hadde 1,09:1 i kontrast. Nøytralfargen følger nå temaet. */
+.mode-chip,.mf-chip{--mc:var(--chip-neutral);display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;font-weight:600;color:var(--muted);background:var(--card);transition:border-color .2s,color .2s,background .2s,transform .16s;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mode-chip:active,.mf-chip:active{transform:scale(.94)}
 .mode-chip i,.mf-chip i{width:8px;height:8px;border-radius:50%;background:var(--mc);flex:0 0 auto}
 .mode-chip.on,.mf-chip.on{border-color:var(--mc);color:var(--mc);background:color-mix(in srgb,var(--mc) 12%,var(--card))}
@@ -666,6 +669,19 @@ a{color:inherit}
 .near-ask p{flex:1;min-width:0;font-size:12.5px;color:var(--muted);line-height:1.4}
 .near-ask b{display:block;color:var(--ink);font-size:13.5px;font-family:var(--font-d);margin-bottom:2px}
 
+/* Er transportfilteret aktivt, sier appen fra der du faktisk ser det – rett
+   under søkeknappen – i stedet for å ta plass med hele velgeren. */
+.filter-note{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:44px;
+  margin-top:2px;padding:0 12px;background:none;border:none;font-size:12px;font-weight:600;
+  color:var(--muted);border-radius:11px;transition:color .2s,background .2s}
+.filter-note:hover{color:var(--tab);background:var(--tab-soft)}
+.filter-note .fn-dots{display:inline-flex;gap:4px;flex:none}
+.filter-note .fn-dots i{width:8px;height:8px;border-radius:50%}
+.filter-note u{text-decoration:none;color:var(--tab);text-decoration:underline;text-underline-offset:2px}
+
+/* «Ny hurtigreise» er en sekundær handling – den skal ikke rope like høyt. */
+.qt-add{border-style:dashed;font-size:12px;color:var(--faint)}
+
 #ac{position:fixed;z-index:4600;background:var(--card);border:1.5px solid var(--line);border-radius:14px;box-shadow:var(--sh-2);max-height:264px;overflow-y:auto;display:none}
 #ac.open{display:block;animation:viewIn .18s}
 .ac-item{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer;border-bottom:1px solid var(--paper)}
@@ -675,6 +691,17 @@ a{color:inherit}
 .ac-item .ic svg{width:15px;height:15px;display:block}
 .ac-item b{font-size:13.5px;display:block;color:var(--ink)}
 .ac-item span{font-size:11px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+/* Oppdateringsbanner: uten dette kjørte appen videre på gammel kode helt til
+   den ble lukket og åpnet på nytt. */
+#updateBar{position:absolute;left:12px;right:12px;bottom:calc(12px + var(--sab));z-index:3200;
+  display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;
+  background:var(--navy);color:#fff;box-shadow:0 12px 34px rgba(4,20,43,.45);
+  animation:cardUp .34s cubic-bezier(.3,1.3,.4,1)}
+#updateBar .ub-txt{flex:1;min-width:0;font-size:12.5px;font-weight:600;line-height:1.35}
+#updateBar .ub-btn{flex:none;height:36px;padding:0 14px;border-radius:10px;background:var(--signal);
+  color:#fff;font-weight:700;font-size:12.5px}
+#updateBar .ub-x{flex:none;width:30px;height:30px;border-radius:9px;color:#A9C6E4;display:grid;place-items:center}
+#updateBar .ub-x svg{width:13px;height:13px;display:block}
 #toasts{position:absolute;top:calc(70px + var(--sat));left:12px;right:12px;z-index:3000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:var(--navy);color:#fff;font-size:13px;padding:11px 14px;border-radius:12px;box-shadow:var(--sh-2);animation:toastIn .3s cubic-bezier(.3,1.3,.4,1);pointer-events:auto;display:flex;align-items:flex-start;gap:10px;line-height:1.45}
 .toast span{flex:1;min-width:0;word-break:break-word}
@@ -774,15 +801,8 @@ a{color:inherit}
             <button data-mode="arrive">Ankomst innen</button>
           </div>
           <input type="datetime-local" id="timeInput">
-          <div class="sec" data-sec="modes">
-            <button class="sec-label toggle" type="button" aria-expanded="true">
-              <span>Transport</span><i class="sl-line"></i><span class="sec-count" id="modeCount" hidden></span><span class="sec-chev"></span>
-            </button>
-            <div class="sec-body"><div class="sec-inner">
-              <div class="modes" id="planModes"></div>
-            </div></div>
-          </div>
           <button class="cta" id="btnSearch">Finn reise <span class="arr" id="ctaArr"></span></button>
+          <button class="filter-note" id="filterNote" hidden></button>
           <div id="recentsWrap" class="sec" data-sec="recents" hidden>
             <button class="sec-label toggle" type="button" aria-expanded="true">
               <span>Nylige</span><i class="sl-line"></i><span class="sec-chev"></span>
@@ -913,6 +933,9 @@ a{color:inherit}
           <p>Legg appen til på hjemskjermen for fullskjermsvisning og offline-skall. Lang-trykk på ikonet for snarveier til Plan, Avganger og Kart. Android: Chrome-menyen → «Legg til på startsiden». iPhone: Del → «Legg til på Hjem-skjerm».</p>
           <button id="installBig">Installér appen</button>
         </div>
+        <div class="sec-label">Transportmidler</div>
+        <p class="hint" style="margin-top:0">Gjelder alle reisesøk. Er ingen valgt, søkes det med alt.</p>
+        <div class="modes" id="planModes"></div>
         <div class="sec-label">Utseende</div>
         <div class="seg" id="themeSeg">
           <button data-th="auto" class="on">Auto</button>
@@ -922,6 +945,9 @@ a{color:inherit}
         <p class="hint">Auto følger systeminnstillingene dine – også kartflisene.</p>
         <div class="sec-label">Hurtigreiser</div><div id="favJourneys"></div>
         <div class="sec-label">Lagrede steder</div><div id="favPlaces"></div>
+        <div class="sec-label">Versjon</div>
+        <p class="hint" style="margin-top:0" id="verInfo">Ser etter oppdatering…</p>
+        <button class="chip-btn" id="btnCheckUpdate">Se etter oppdatering</button>
         <div class="sec-label">Systemtid</div>
         <p class="hint" id="clockInfo">Sjekker mot Entur…</p>
         <div class="sec-label">Feillogg</div>
@@ -934,6 +960,11 @@ a{color:inherit}
       </div>
   </aside>
 
+  <div id="updateBar" role="status" hidden>
+    <span class="ub-txt">Ny versjon av REIS er klar</span>
+    <button class="ub-btn" id="btnUpdate">Oppdater</button>
+    <button class="ub-x tap" id="btnUpdateLater" aria-label="Ikke nå"></button>
+  </div>
   <div id="toasts" aria-live="polite"></div>
 </div>
 
@@ -968,6 +999,14 @@ let errLog=loadLS('errlog',[]);
 function logErr(where,detail){
   errLog.unshift({t:new Date().toISOString(),where,msg:String(detail&&detail.message?detail.message:detail).slice(0,900)});
   errLog=errLog.slice(0,40);saveLS('errlog',errLog);renderErrLog();
+}
+function renderVersion(){
+  const el2=$('#verInfo');if(!el2)return;
+  el2.textContent=waitingSW
+    ? 'En ny versjon er klar. Trykk «Oppdater» i banneret nederst.'
+    : (navigator.serviceWorker&&navigator.serviceWorker.controller
+        ? 'Du kjører nyeste versjon som er lastet ned.'
+        : 'Appen kjøres uten offline-støtte (ingen service worker).');
 }
 function renderClockInfo(){
   const el2=$('#clockInfo');if(!el2)return;
@@ -1059,6 +1098,7 @@ $('#fabVehicles').querySelector('.ls-ic').innerHTML='<svg viewBox="0 0 24 24" fi
 $('#fabBikes').querySelector('.ls-ic').innerHTML=IC.bike;
 $('#fabAttract').querySelector('.ls-ic').innerHTML=IC.star;
 $('#wfIc').innerHTML=IC.bell; $('#mfIc').innerHTML=IC.alert;
+$('#btnUpdateLater').innerHTML=IC.x;
 
 function decodePolyline(encoded){
   const out=[];let index=0,len=encoded.length,lat=0,lng=0;
@@ -1224,12 +1264,46 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    FIX: ingen canvas-generert ikon lenger – ekte PNG/SVG-filer ligger i icons/,
    og manifestet peker på dem. Det var canvas-triksingen som gjorde
    installasjonsikonet uskarpt/feil på Android. */
+/* ================= oppdateringer =================
+   Symptomet «må lukke og åpne appen før endringer virker» kommer av at en
+   allerede åpen side beholder gammel HTML og JS selv om en ny service worker
+   er installert. Nå oppdages det, og du får velge når. */
+let swReg=null,waitingSW=null,reloading=false;
+function showUpdateBar(sw){
+  waitingSW=sw;
+  const bar=$('#updateBar');if(!bar)return;
+  bar.hidden=false;
+}
+function applyUpdate(){
+  if(!waitingSW){location.reload();return}
+  $('#btnUpdate').textContent='Oppdaterer…';
+  $('#btnUpdate').disabled=true;
+  waitingSW.postMessage('SKIP_WAITING');
+  /* Går noe galt, last om uansett etter et par sekunder. */
+  setTimeout(()=>{if(!reloading){reloading=true;location.reload()}},2500);
+}
 (function setupPWA(){
-  if('serviceWorker' in navigator&&(location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname))){
-    window.addEventListener('load',()=>{
-      navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(e=>logErr('sw',e));
-    });
-  }
+  if(!('serviceWorker' in navigator))return;
+  if(!(location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname)))return;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(reloading)return;reloading=true;location.reload();
+  });
+  window.addEventListener('load',async()=>{
+    try{
+      swReg=await navigator.serviceWorker.register('sw.js',{scope:'./'});
+      if(swReg.waiting&&navigator.serviceWorker.controller)showUpdateBar(swReg.waiting);
+      swReg.addEventListener('updatefound',()=>{
+        const sw=swReg.installing;if(!sw)return;
+        sw.addEventListener('statechange',()=>{
+          if(sw.state==='installed'&&navigator.serviceWorker.controller)showUpdateBar(sw);
+        });
+      });
+      /* Se etter ny versjon ved oppstart og hver gang appen hentes fram. */
+      const check=()=>{if(swReg&&visible())swReg.update().catch(()=>{})};
+      whenVisible(check);
+      every(30*60*1000,check,{net:true});
+    }catch(e){logErr('sw',e)}
+  });
 })();
 let installEvt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;const b=$('#installBig');if(b)b.textContent='Installér nå'});
@@ -1239,6 +1313,8 @@ async function doInstall(){
   else toast('Følg installasjonsveiledningen over','');
 }
 $('#installBig').onclick=doInstall;
+$('#btnUpdate').onclick=applyUpdate;
+$('#btnUpdateLater').onclick=()=>{$('#updateBar').hidden=true};
 
 /* ================= kart =================
    FIX: Leaflet lå som en vanlig <script src> fra unpkg. Hvis den forespørselen
@@ -1329,6 +1405,30 @@ $('#mfRetry').onclick=async()=>{const m=await ensureMap();if(m){m.invalidateSize
 /* Leaflet kaster hardt på NaN-koordinater og river med seg hele visningen.
    Alt som skal på kartet passerer denne vakten først. */
 const okLL=ll=>Array.isArray(ll)&&Number.isFinite(+ll[0])&&Number.isFinite(+ll[1]);
+/* ROTÅRSAK til «virker etter omstart»:
+   Leaflet projiserer mot containerens størrelse. Er kartet lastet, men skjult
+   (du står i Plan- eller Avgangsfanen), er størrelsen 0×0 og all matematikk gir
+   NaN – flyTo/fitBounds kaster «Invalid LatLng». Kastet skjedde i clearRoute(),
+   som kalles FØR try-blokken i findJourney, så hele reisesøket ble avbrutt uten
+   en eneste feilmelding. Etter omstart er kartet ikke lastet ennå, og da virket
+   alt igjen – helt til du hadde vært innom Kart-fanen på nytt.
+   Løsning: ingen karthandling uten at containeren faktisk har flate. */
+function mapUsable(){
+  if(!map)return false;
+  const c=map.getContainer&&map.getContainer();
+  if(!c)return false;
+  return c.offsetWidth>0&&c.offsetHeight>0;
+}
+/* Handlinger som må vente til kartet er synlig, kjøres når fanen åpnes. */
+let pendingMapWork=null;
+function whenMapVisible(fn){
+  if(mapUsable()){fn();return}
+  pendingMapWork=fn;
+}
+function flushMapWork(){
+  const fn=pendingMapWork;pendingMapWork=null;
+  if(fn&&mapUsable()){try{fn()}catch(e){logErr('kart',e)}}
+}
 function mapCenter(){return map?{lat:map.getCenter().lat,lon:map.getCenter().lng}:OSLO}
 
 function applyTheme(){
@@ -1351,6 +1451,7 @@ function setBasemap(name){
 }
 function setUser(lat,lon){
   if(!map||!okLL([lat,lon]))return;
+  if(!mapUsable()){whenMapVisible(()=>setUser(lat,lon));return}
   if(!userMarker)userMarker=L.marker([lat,lon],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[18,18],iconAnchor:[9,9]}),zIndexOffset:500}).addTo(map);
   else userMarker.setLatLng([lat,lon]);
 }
@@ -1742,6 +1843,8 @@ const state={stops:[{uid:uid()},{uid:uid()}],timeMode:'now',modes:new Set(),resu
   home:loadLS('home',null),work:loadLS('work',null),favLine:loadLS('favLine',null),
   departStop:null,departures:[],departuresFor:null,depFilter:new Set(),attractOn:false,
   basemap:loadLS('basemap','standard')};
+/* Transportvalget er en innstilling nå, ikke noe du setter for hvert søk. */
+state.modes=new Set(loadLS('modes',[]));
 let commuterTarget=null;
 
 /* ================= faner ================= */
@@ -1760,7 +1863,10 @@ function switchTab(name,dir){
   saveLS('lastTab',name);
   navBtns.forEach(t=>{const on=t.dataset.tab===name;t.classList.toggle('active',on);t.setAttribute('aria-selected',String(on))});positionNav();
   Object.entries(views).forEach(([k,v])=>v.classList.toggle('active',k===name));
-  if(name==='map')ensureMap().then(m=>{if(m)setTimeout(()=>{m.invalidateSize({pan:false});applyMapContext()},60)});
+  if(name==='map')ensureMap().then(m=>{if(m)setTimeout(()=>{
+    m.invalidateSize({pan:false});
+    if(pendingMapWork)flushMapWork();else applyMapContext();
+  },60)});
   if(name==='depart')ensureDepartFilled();
   if(name==='plan'){renderCommuter();checkProactive();renderNearby();loadNearby();renderQuickTrips()}
   pushHistory();
@@ -1780,7 +1886,7 @@ function currentSection(){return ['form','results','detail'].find(n=>$('#plan-'+
 let moreIsOpen=false;
 function openMore(){
   moreIsOpen=true;
-  renderSaved();renderErrLog();renderClockInfo();
+  renderSaved();renderErrLog();renderClockInfo();renderVersion();
   $('#moreBackdrop').hidden=false;$('#moreSheet').hidden=false;
   requestAnimationFrame(()=>{$('#moreSheet').classList.add('open');$('#moreBackdrop').classList.add('open');
     trapFocus($('#moreSheet'))});
@@ -2081,9 +2187,8 @@ function initSections(){
 }
 /* Tellere på lukkede seksjoner, så du ser hva som ligger der uten å åpne */
 function updateSecCounts(){
-  const q=$('#quickCount'),m=$('#modeCount');
+  const q=$('#quickCount');
   if(q){const n=quickTrips().length;q.hidden=!n;q.textContent=n+(n===1?' reise':' reiser')}
-  if(m){const n=state.modes.size;m.hidden=!n;m.textContent=n===0?'':n+' valgt'}
 }
 
 /* ================= hurtigreiser (fra A til B) =================
@@ -2512,9 +2617,25 @@ $('#planModes').addEventListener('click',e=>{
   const b=e.target.closest('.mode-chip');if(!b)return;
   if(b.dataset.m==='all')state.modes.clear();
   else{const m=b.dataset.m;state.modes.has(m)?state.modes.delete(m):state.modes.add(m)}
+  saveLS('modes',[...state.modes]);
   syncModeChips('#planModes','mode-chip',state.modes);
-  updateSecCounts();
+  renderFilterNote();
 });
+
+/* Merket under søkeknappen: vises bare når filteret faktisk begrenser noe. */
+function renderFilterNote(){
+  const el2=$('#filterNote');if(!el2)return;
+  const valgt=TRANSPORT.filter(([m])=>state.modes.has(m));
+  if(!valgt.length){el2.hidden=true;return}
+  el2.hidden=false;
+  const navn=valgt.map(([,l])=>l);
+  const liste=navn.length===1?navn[0]
+    :navn.slice(0,-1).join(', ')+' og '+navn[navn.length-1];
+  el2.innerHTML=`<span class="fn-dots">${valgt.map(([,,c])=>`<i style="background:${c}"></i>`).join('')}</span>`+
+    `Søker kun med ${esc(liste.toLowerCase())} · <u>endre</u>`;
+  el2.setAttribute('aria-label',`Transportfilter: kun ${liste.toLowerCase()}. Trykk for å endre.`);
+  el2.onclick=()=>{openMore();setTimeout(()=>{const m=$('#planModes');if(m)m.scrollIntoView({block:'center',behavior:'smooth'})},320)};
+}
 
 /* ================= søk + resultater ================= */
 const skelCards=n=>Array.from({length:n},()=>`<div class="trip-card" style="pointer-events:none"><div class="skel" style="height:24px;width:60%"></div><div class="skel" style="height:14px;width:85%;margin-top:12px"></div><div class="skel" style="height:14px;width:40%;margin-top:8px"></div></div>`).join('');
@@ -2528,9 +2649,12 @@ function resError(e){
   $('#btnCopyErr').onclick=()=>copyText(e.raw||e.message).then(()=>toast('Feilen er kopiert','ok'));
 }
 async function findJourney(fromMap=false){
-  acClose();clearRoute();$('#corridor').innerHTML='';
   const btn=$('#btnSearch');btn.classList.add('loading');btn.disabled=true;
   try{
+    /* Opprydding hører hjemme INNE i try – ellers kan en feil her avbryte
+       hele søket før det starter, uten at brukeren får vite hvorfor. */
+    acClose();clearRoute();
+    const cor=$('#corridor');if(cor)cor.innerHTML='';
     /* løs opp fritekst som ikke er valgt fra listen */
     for(const s of state.stops){
       if(!s.lat&&(s.name||'').trim()){
@@ -2955,11 +3079,15 @@ function bindCardGrip(){
   };
   applyCardCollapse();
 }
-function nodeMarker(ll,cls,txt){if(!map||!routeLayer||!okLL(ll))return null;return L.marker(ll,{icon:L.divIcon({className:'',html:`<div class="rt-node ${cls}">${txt}</div>`,iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:300}).addTo(routeLayer)}
-function fitRoute(ll){const pts=(ll||[]).filter(okLL);if(!map||pts.length<1)return;lastBounds=L.latLngBounds(pts);map.fitBounds(lastBounds,{paddingTopLeft:[26,110],paddingBottomRight:[26,mapCardH()+80],maxZoom:16,animate:true,duration:.6})}
-function clearRoute(){if(routeLayer)routeLayer.clearLayers();state.selectedPattern=null;state.streetRoute=null;lastBounds=null;applyMapContext()}
+function nodeMarker(ll,cls,txt){if(!mapUsable()||!routeLayer||!okLL(ll))return null;return L.marker(ll,{icon:L.divIcon({className:'',html:`<div class="rt-node ${cls}">${txt}</div>`,iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:300}).addTo(routeLayer)}
+function fitRoute(ll){const pts=(ll||[]).filter(okLL);if(!mapUsable()||pts.length<1)return;lastBounds=L.latLngBounds(pts);map.fitBounds(lastBounds,{paddingTopLeft:[26,110],paddingBottomRight:[26,mapCardH()+80],maxZoom:16,animate:true,duration:.6})}
+function clearRoute(){
+  try{if(routeLayer)routeLayer.clearLayers()}catch(e){logErr('kart',e)}
+  state.selectedPattern=null;state.streetRoute=null;lastBounds=null;
+  try{applyMapContext()}catch(e){logErr('kart',e)}
+}
 function drawPattern(p){
-  if(!map||!routeLayer)return;
+  if(!mapUsable()||!routeLayer)return;
   routeLayer.clearLayers();const pts=[];
   p.legs.forEach(leg=>{const ll=legPoints(leg).filter(okLL);if(ll.length<2)return;const hex=(MODE[modeOf(leg)]||MODE.foot).hex;
     const line=L.polyline(ll,{color:hex,weight:5,opacity:.92,lineCap:'round',lineJoin:'round'}).addTo(routeLayer);
@@ -3002,7 +3130,7 @@ async function computeStreetRoute(m){
   catch(e){logErr('osrm',e);card.innerHTML=`<div class="err-box" style="margin:0"><div class="err-ic">${IC.alert}</div><b>Kunne ikke beregne rute</b><p>${esc(e.message)}</p><button class="chip-btn" id="mcRetry">Prøv igjen</button></div>`;$('#mcRetry').onclick=()=>computeStreetRoute(m);$('#mapCtxChip').textContent='Rute feilet'}
 }
 function drawStreetRoute(route,m,pts){
-  if(!map||!routeLayer)return;
+  if(!mapUsable()||!routeLayer)return;
   routeLayer.clearLayers();const ll=route.geometry.coordinates.map(c=>[c[1],c[0]]).filter(okLL);const st=STREET[m];
   if(ll.length<2)return;
   const line=L.polyline(ll,{color:st.hex,weight:m==='foot'?4.5:5.5,opacity:.92,lineCap:'round',lineJoin:'round',dashArray:st.dash||undefined}).addTo(routeLayer);
@@ -3115,13 +3243,14 @@ function showStopCard(s){
       return `<div class="mc-row"><span class="dep-badge" style="background:${mm.hex}">${esc(d.code)}</span><span class="mc-dest">${d.rt?'<i class="rt"></i>':''}${esc(d.dest)}</span><span class="cdwrap" data-ts="${d.t.getTime()}">${countdownHTML(d.t-now())}</span></div>`}).join('')||'<p class="hint">Ingen avganger</p>';
   }catch(e){logErr('departures',e);const rows=$('#mcRows');if(rows)rows.innerHTML='<p class="hint">Kunne ikke hente avganger</p>'}})();
 }
-function centerOnStop(){const s=state.departStop;if(!s||!map||!okLL([s.lat,s.lon]))return;
+function centerOnStop(){const s=state.departStop;if(!s||!mapUsable()||!okLL([s.lat,s.lon]))return;
   if(stopMarker)stopMarker.setLatLng([s.lat,s.lon]);
   else stopMarker=L.marker([s.lat,s.lon],{icon:L.divIcon({className:'',html:'<div class="rt-node rt-via">S</div>',iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:300}).addTo(map);
   map.flyTo([s.lat,s.lon],16,{duration:.7})}
 function hideMapCard(){$('#mapCard').hidden=true;$('#viewMap').classList.remove('card-collapsed');measureStack()}
 function applyMapContext(){
-  if(!map)return;
+  /* Kalles også fra Plan-fanen (via clearRoute). Da har kartet ingen flate. */
+  if(!mapUsable()){whenMapVisible(applyMapContext);return}
   const vm=$('#viewMap');
   if(state.routeMode!=='transit'&&state.streetRoute&&state.streetRoute.mode===state.routeMode){vm.classList.add('has-card');const pts=state.stops.filter(s=>s.lat);drawStreetRoute(state.streetRoute.route,state.streetRoute.mode,pts.length>=2?pts:state.stops);showStreetCard(state.streetRoute.route,state.streetRoute.mode,pts.length>=2?pts:state.stops)}
   else if(state.selectedPattern){vm.classList.add('has-card');drawPattern(state.selectedPattern);showRouteCard(state.selectedPattern)}
@@ -3172,6 +3301,14 @@ $('#btnCopyLog').onclick=()=>{
   if(!errLog.length){toast('Ingen feil registrert','');return}
   copyText(errLog.map(e=>`${e.t} [${e.where}] ${e.msg}`).join('\n\n')).then(()=>toast('Feilloggen er kopiert','ok'));
 };
+$('#btnCheckUpdate').onclick=async()=>{
+  if(!swReg){toast('Ingen service worker å oppdatere','');return}
+  toast('Ser etter ny versjon…');
+  try{await swReg.update();
+    setTimeout(()=>{renderVersion();
+      toast(waitingSW?'Ny versjon funnet':'Du har allerede nyeste versjon',waitingSW?'ok':'')},1200);
+  }catch(e){logErr('sw',e);toast('Kunne ikke se etter oppdatering','err')}
+};
 $('#btnClearLog').onclick=()=>{errLog=[];saveLS('errlog',[]);renderErrLog();toast('Feilloggen er tømt','ok')};
 $('#btnReset').onclick=()=>{if(confirm('Tømme alle lagrede reiser, steder, nylige søk, rapporter og favorittlinje?')){
   ['recents','favPlaces','favJourneys','reports','favLine','home','work','errlog'].forEach(k=>localStorage.removeItem('reis.'+k));
@@ -3188,7 +3325,8 @@ function tickClock(){try{$('#clock').textContent=new Intl.DateTimeFormat('nb-NO'
 every(15000,tickClock,{net:false});tickClock();
 
 $('#app').dataset.tab='plan';
-initSections();renderNearby();loadNearby();startNearby();renderQuickTrips();updateSecCounts();
+initSections();syncModeChips('#planModes','mode-chip',state.modes);renderFilterNote();
+renderNearby();loadNearby();startNearby();renderQuickTrips();updateSecCounts();
 document.documentElement.dataset.base=state.basemap;
 $$('#baseSeg button').forEach(b=>b.classList.toggle('on',b.dataset.base===state.basemap));
 applyTheme();renderStops();renderRecents();renderCommuter();positionNav();renderErrLog();

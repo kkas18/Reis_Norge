@@ -59,6 +59,11 @@ ser likt ut uansett hvilke skrifter enheten har.
 > HTTPS er påkrevd for både installasjon og posisjon. GitHub Pages gir HTTPS
 > automatisk. Åpner du `index.html` som fil (`file://`), virker ingen av delene.
 
+### Når du legger ut en ny versjon
+Appen oppdager den selv og viser et banner nederst med «Oppdater». Du trenger
+ikke lukke og åpne appen. Vil du fremtvinge en sjekk: **Mer → Versjon → Se etter
+oppdatering**.
+
 ### Hvis ikonet ikke oppdaterer seg
 Android cacher WebAPK-ikonet. Avinstaller appen, åpne Chrome →
 *Innstillinger → Personvern → Slett nettleserdata → Bufrede bilder og filer*,
@@ -93,7 +98,7 @@ mens appen er åpen.
 ## Tester
 ```
 npm install jsdom      # kun for test-dom.js
-node test-dom.js       # 140 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
+node test-dom.js       # 150 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
 node test-live.js      # 15 tester: appens egne spørringer mot Entur (krever nett)
 python3 swipe_test.py  # sveip og kartlag med ekte touch i Chromium
 python3 measure.py     # tetthet, fanefarger og kontrast
@@ -105,6 +110,10 @@ python3 perf_test.py   # pausing i bakgrunn, oppfriskning, offline-buffer
 python3 font_test.py   # at skriftene er lokale og dekker alle vekter
 python3 a11y.py        # trykkflater og tilgjengelige navn
 python3 polish_test.py # siste avgang, dyplenker, share target, fokus
+python3 plan_test.py   # Plan-fanens oppsett og kontrast i begge temaer
+python3 soak.py        # slitasjetest: forfall, fastlåste flagg, timerlekkasje
+python3 regress_map.py # reisesøk etter at kartfanen har vært besøkt
+python3 update_test.py # at nye versjoner oppdages uten omstart
 ```
 
 ## Feilretting

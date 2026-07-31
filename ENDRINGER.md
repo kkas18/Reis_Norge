@@ -2,10 +2,11 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (140 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (150 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
-`polish_test.py` måler layout,
+`polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
+måler layout,
 farger, kontrast, sveip og zoom-sperre med ekte touch-hendelser i Chromium på
 Galaxy S24-bredde. Alle grønne.
 
@@ -163,6 +164,85 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## «Må lukke og åpne appen før ting virker»
+
+Symptomet ble sporet med en slitasjetest (`soak.py`) som bruker appen som en
+person over fem runder og måler tilstand underveis. Den avdekket to ting.
+
+### Hovedårsaken: appen oppdaget aldri nye versjoner
+Det var ingen håndtering av oppdateringer i det hele tatt – null forekomster av
+`updatefound` eller `controllerchange`. Når en ny versjon ble lastet opp, hentet
+nettleseren riktignok ny `sw.js`, men **siden som allerede kjørte beholdt gammel
+HTML og JavaScript**. Først når appen ble lukket og åpnet lastet den nye koden.
+
+Det er ikke tilfeldig – det skjer hver gang det kommer en ny build.
+
+Rettet i begge ender:
+
+- **Service workeren tar ikke lenger over i det skjulte.** `skipWaiting()` kjørte
+  automatisk ved installasjon, slik at ny worker serverte nye filer til en side
+  som fortsatt kjørte gammel kode. Nå venter den, med mindre ingen side er åpen.
+- **Appen sier fra.** Et banner nederst: «Ny versjon av REIS er klar» med
+  «Oppdater». Ett trykk ber ny worker ta over, og siden lastes på nytt én gang.
+- Det ses etter oppdatering ved oppstart, hver gang appen hentes fram igjen, og
+  hver halvtime. **Mer → Versjon** har også en manuell knapp.
+
+Bevist ende-til-ende: en ny versjon legges ut mens appen står åpen, banneret
+dukker opp uten omstart, og ett trykk laster den nye koden.
+
+### Bifunn: en unntaksstorm fra kartet
+Slitasjetesten viste at feilloggen fyltes til taket (40) allerede etter to søk,
+med `Invalid LatLng object: (NaN, NaN)` – **43 unntak** i en kort økt.
+
+Årsaken: Leaflet projiserer mot containerens størrelse. Er kartet lastet, men
+skjult, er størrelsen 0×0 og all matematikk gir `NaN`. `clearRoute()` kalte
+`applyMapContext()` → `centerOnStop()` → `map.flyTo()` fra Plan-fanen.
+
+- Alle karthandlinger krever nå at containeren faktisk har flate (`mapUsable()`),
+  ikke bare at kartet finnes.
+- Arbeid som kommer for tidlig legges i kø og kjøres når kartfanen åpnes.
+- `clearRoute()` er pakket inn, og oppryddingen i `findJourney()` flyttet **inn**
+  i try-blokken – lå den utenfor, kunne en feil avbryte et søk før det startet.
+
+> Ærlig forbehold: jeg klarte å bevise unntaksstormen og at den er borte
+> (43 → 0), men **ikke** at den var det som blokkerte reisesøket. `flyTo` kaster
+> i en animasjonsramme, ikke i vår egen kallstakk, så den avbrøt ikke søket i
+> reproduksjonen min. Hovedforklaringen på symptomet er oppdateringshåndteringen.
+
+---
+
+## Ryddigere Plan-fane
+
+**Transportvelgeren er flyttet til innstillingene.** Seks knapper for trikk,
+t-bane, buss, tog og båt tok ~200 px i den viktigste fanen for noe man endrer
+sjelden. De ligger nå under **Mer → Transportmidler**, og valget huskes mellom
+økter i stedet for å nullstilles hver gang.
+
+Er filteret aktivt, sier appen fra der du faktisk ser det – en diskré linje rett
+under søkeknappen: *«● ● Søker kun med buss · endre»*. Trykk på den, så åpnes
+innstillingen og ruller til velgeren. Er ingenting valgt, vises den ikke.
+
+Plan-fanen leser nå som en historie ovenfra og ned:
+
+| | |
+|---|---|
+| Hurtigreise | dine lagrede ruter med neste avgang |
+| Planlegg reisen | A → B og verktøy |
+| Når | reis nå / avreise / ankomst |
+| **Finn reise** | ligger nå 597 px oppe, godt over skjermkanten |
+| I nærheten | fyller resten med noe du kan handle på |
+
+«Ny hurtigreise» er dempet til en sekundær handling – den ropte like høyt som
+søkeknappen før.
+
+### FIX: «Alle» var nesten usynlig i mørk modus
+Den valgte «Alle»-knappen brukte flaggblå som tekstfarge mot et mørkt kort:
+**1,09:1 i kontrast**, altså praktisk talt uleselig. Nøytralfargen følger nå
+temaet. Målt etter endringen: **11,2:1 i lys modus, 6,6:1 i mørk** – begge godt
+over WCAG AA.
 
 ---
 

@@ -5,7 +5,7 @@
      kartfliser → cache-first med tak på antall fliser
      API-er     → network-first med cachet fallback (tunnel/dårlig dekning)
 */
-const VERSION = 'v4.2.0';
+const VERSION = 'v4.4.0';
 const SHELL_CACHE = `reis-shell-${VERSION}`;
 const TILE_CACHE = `reis-tiles-${VERSION}`;
 const DATA_CACHE = `reis-data-${VERSION}`;
@@ -44,7 +44,13 @@ self.addEventListener('install', (e) => {
           c.add(new Request(url, { cache: 'reload' })).catch(() => {})
         )
       );
-      await self.skipWaiting();
+      /* Ikke ta over automatisk. Er en side allerede åpen, ville den fortsatt
+         kjørt GAMMEL HTML mens en ny service worker serverte nye filer – det
+         var derfor appen måtte lukkes og åpnes for at endringer skulle virke.
+         Nå venter vi til brukeren sier fra (SKIP_WAITING). Er ingen side åpen
+         fra før, tar vi over med én gang. */
+      const clients = await self.clients.matchAll({ includeUncontrolled: true });
+      if (clients.length === 0) await self.skipWaiting();
     })
   );
 });
