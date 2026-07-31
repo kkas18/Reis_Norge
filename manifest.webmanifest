@@ -1,0 +1,86 @@
+{
+  "id": "./",
+  "name": "REIS Norge – reise, sanntid og kart",
+  "short_name": "REIS",
+  "description": "Reiseplanlegger for hele Norge med sanntidsavganger, kart, sykkel og gange. Bygget på åpne data fra Entur og OpenStreetMap.",
+  "lang": "no",
+  "dir": "ltr",
+  "start_url": "./?src=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait",
+  "theme_color": "#0B2136",
+  "background_color": "#0B2136",
+  "categories": ["travel", "navigation", "utilities"],
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/monochrome-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "monochrome"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Avganger nær meg",
+      "short_name": "Nær meg",
+      "description": "Sanntidsavganger fra stoppestedene rundt deg",
+      "url": "./?tab=avganger&near=1",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Planlegg reise",
+      "short_name": "Planlegg",
+      "description": "Finn reise fra A til B",
+      "url": "./?tab=plan",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Kart",
+      "short_name": "Kart",
+      "description": "Stoppesteder og kjøretøy på kartet",
+      "url": "./?tab=kart",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Lagrede reiser",
+      "short_name": "Lagret",
+      "description": "Favoritter og lagrede reiser",
+      "url": "./?tab=lagret",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

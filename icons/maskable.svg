@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="REIS">
+  <title>REIS</title>
+  <defs>
+    <linearGradient id="mbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#123C58"/><stop offset="1" stop-color="#0B2136"/>
+    </linearGradient>
+    <linearGradient id="mroute" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#3FCF9B"/><stop offset="1" stop-color="#7DE8C4"/>
+    </linearGradient>
+    <linearGradient id="msheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".14"/>
+      <stop offset=".55" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="mglow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="9.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" fill="url(#mbg)"/>
+  <rect width="512" height="512" fill="url(#msheen)"/>
+  <g transform="translate(256 256) scale(.66) translate(-256 -256)">
+    
+  <g filter="url(#mglow)">
+    <path d="M150 384 C150 300 252 322 256 256 C260 190 362 214 362 128" fill="none" stroke="url(#mroute)" stroke-width="44"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <circle cx="362" cy="128" r="40.5" fill="#FF7A4D"/>
+  <circle cx="150" cy="384" r="37.8" fill="#FFFFFF"/>
+  <circle cx="150" cy="384" r="15.0" fill="#0B2136"/>
+  </g>
+</svg>
