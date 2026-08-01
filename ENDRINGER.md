@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (189 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (204 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,96 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Automatisk oppdatering, levende posisjon, mindre støy
+
+### Appen oppdaterer seg selv fra GitHub
+Ja, det lar seg gjøre. Laster du opp nye filer, oppdager appen det innen ti
+minutter – eller med én gang du henter den fram igjen – og **bytter til den nye
+versjonen av seg selv**.
+
+Men aldri midt i noe. Automatikken krever at *alt* dette stemmer:
+
+- du står på Plan-fanen, på selve skjemaet
+- ingen dialog, ark eller søkeliste er åpen
+- ingen søk pågår
+- kartet følger deg ikke (du er ikke underveis et sted)
+- du har ikke rørt skjermen på ti sekunder
+
+Er du opptatt, viser den banneret i stedet og prøver igjen hvert femte sekund
+til du blir stående stille. Å laste om under fingeren på noen er verre enn å
+vente. Automatikken kan slås av under **Mer → Teknisk**.
+
+Verifisert begge veier: ny versjon lagt ut mens appen sto i ro ble byttet inn
+uten spørsmål; ny versjon lagt ut med et ark åpent ga banner, ingen omlasting,
+og oppdaterte først ved trykk.
+
+### Posisjonen viser at den lever
+Følger kartet deg, sender prikken ut ringer – to forskjøvne pulser, som et
+ekkolodd. Står ringene stille, har appen ikke fersk kontakt. Mister vi signalet,
+stopper ringene og prikken blekner i stedet, så forskjellen på «følger deg» og
+«leter» er synlig uten å lese noe.
+
+> Ryddet samtidig opp i to funksjoner som gjorde det samme (`setDotLive` med
+> argumenter og `setDotState` som leser tilstanden). To kilder til samme sannhet
+> kan gå ut av synk; nå er det én.
+
+### Meldinger som gjentok seg
+Meldinger fra ting som kjører i løkke kunne komme igjen og igjen – som
+«Ingen kjøretøy i dette kartutsnittet» hvert 12. sekund utenfor byene.
+
+- `toastOnce()` viser samme tekst maks én gang i minuttet, uansett hvor den kommer fra.
+- Status for kartlagene står **på laget** i lagvelgeren («12 i utsnittet»,
+  «ingen i utsnittet»), ikke som varsel midt på skjermen.
+- «Henter severdigheter…» og «Henter bysykler…» er fjernet helt – du ser jo at
+  det skjer.
+
+---
+
+## Klar for ekte brukere: ærlighet og drift
+
+Tre ting som må på plass før noen andre enn deg bruker appen.
+
+### «Om appen og personvern»
+Ny seksjon i Mer. Sier rett ut at REIS er **et uavhengig hobbyprosjekt**, ikke
+laget av Entur, Ruter eller noe transportselskap. Videre: at det ikke finnes
+noen server eller konto, at alt ligger i din egen nettleser, hva posisjonen
+brukes til, hvilke tjenester som kalles, og at det ikke finnes sporing eller
+reklame. Rutedata er kreditert Entur under NLOD.
+
+Listen over hva som er lagret **genereres fra `localStorage`**, ikke skrevet for
+hånd. Da kan den ikke bli usann når vi legger til eller fjerner noe senere.
+
+### «Rapporter» het noe den ikke var
+Funksjonen så ut som crowdsourcing – flere reisende som melder «heis ute» – men
+rapportene lå i `localStorage` på din egen telefon. Med én bruker er det en
+notatblokk; med hundre er det et løfte appen ikke kan holde.
+
+Den heter nå **Notat**, stripen er merket «Dine notater» med personikon, og
+dialogen sier tydelig at ingen andre reisende ser dem. Ordet «Rapporter»
+finnes ikke lenger i grensesnittet.
+
+### Helsesjekk
+Appen har ingen server, så endrer Entur et felt, slutter noe å virke – og
+hverken du eller brukeren ville visst hvorfor. **Mer → Teknisk → Kjør
+helsesjekk** kaller de fire viktigste spørringene og kontrollerer at svarene har
+formen koden forventer: avganger, reisesøk, stedssøk og holdeplasser i nærheten.
+
+Sjekken peker på **hvilket felt** som svikter, ikke bare at noe er galt.
+Verifisert ved å simulere at Entur fjerner `expectedDepartureTime`:
+
+```
+FEIL Avganger: expectedDepartureTime mangler
+OK   Reisesøk: svarer som forventet
+OK   Stedssøk: svarer som forventet
+OK   Holdeplasser i nærheten: svarer som forventet
+```
+
+> En test som bare kan si ja er verdiløs. Derfor kjøres helsesjekken både mot
+> ekte API-svar (alle fire grønne) og mot et manipulert svar, for å bevise at
+> den faktisk fanger en endring.
 
 ---
 
