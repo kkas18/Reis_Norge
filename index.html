@@ -439,6 +439,9 @@ a{color:inherit}
 /* Posisjonsknappen lyser når «følg meg» er på */
 .fab.following{background:var(--tab);color:#fff}
 .fab.following svg{color:#fff}
+/* Mistet signalet, men følger fortsatt – knappen pulserer i stedet for å slukne */
+.fab.following.searching{animation:seekPulse 1.4s ease-in-out infinite}
+@keyframes seekPulse{0%,100%{opacity:1}50%{opacity:.45}}
 #modeBar{position:absolute;top:12px;left:12px;z-index:1055;background:var(--card);border-radius:999px;box-shadow:var(--sh-2);display:flex;padding:4px;gap:2px;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
 #modeBar::-webkit-scrollbar{display:none}
 .mb-btn{display:flex;align-items:center;justify-content:center;gap:5px;height:38px;padding:0 12px;border-radius:999px;font-size:11.5px;font-weight:600;color:var(--muted);transition:all .2s;white-space:nowrap}
@@ -1521,6 +1524,13 @@ function loadLeaflet(){
 let map=null,tiles=null,routeLayer=null,spotLayer=null,vehicleLayer=null,bikeLayer=null;
 let userMarker=null,stopMarker=null,lastBounds=null,attrCtl=null,attrShown='';
 let stopsLayer=null,accuracyCircle=null,followMe=false,followWatch=null;
+/* Settes mens appen selv flytter kartet, så vi ikke tolker det som at
+   brukeren dro i kartet. */
+let selfMoving=0;
+function moveSelf(fn){
+  selfMoving++;
+  try{fn()}finally{setTimeout(()=>{selfMoving=Math.max(0,selfMoving-1)},700)}
+}
 const OSLO={lat:59.91125,lon:10.75031};
 
 function initMap(){
@@ -1536,7 +1546,11 @@ function initMap(){
   map.on('click',onMapClick);
   /* Hent holdeplasser og kjøretøy på nytt når utsnittet endrer seg. */
   map.on('moveend zoomend',()=>{loadStopMarkers();autoVehicles()});
-  map.on('movestart',()=>{if(followMe&&!followSelf)stopFollow()});
+  /* FIX: setView/panTo fyrer også movestart, og gjorde at følgingen slo seg av
+     i samme øyeblikk den ble slått på. Nå merkes appens egne bevegelser, og
+     bare et ekte dra-i-kartet avbryter følgingen. */
+  map.on('movestart',()=>{if(followMe&&!selfMoving)stopFollow()});
+  map.on('dragstart',()=>{if(followMe)stopFollow()});
   if(window.ResizeObserver)new ResizeObserver(()=>{if(map)map.invalidateSize({pan:false})}).observe(document.getElementById('map'));
   if(state.userPos)setUser(state.userPos.lat,state.userPos.lon);
   return map;
@@ -1637,15 +1651,18 @@ async function getPos(opts={}){
 }
 async function ensureUserPos(){if(state.userPos)return state.userPos;
   try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);loadNearby(true);return p}catch(e){return null}}
-let locTapAt=0;
+/* FIX: dobbelttrykk innen 450 ms var i praksis umulig å treffe, og få skjønte
+   at det fantes. Knappen går nå gjennom tre tilstander ved vanlige trykk:
+   sentrer → følg → av. Samme mønster som kartappene folk kjenner. */
+let locState='off';
 $('#fabLocate').onclick=async()=>{
-  /* Ett trykk sentrerer. To trykk låser kartet til deg mens du går. */
-  const now2=Date.now(),dbl=now2-locTapAt<450;locTapAt=now2;
-  if(followMe){stopFollow();toast('Slutter å følge');return}
+  if(locState==='following'){stopFollow();toast('Slutter å følge deg');return}
   try{
     const p=await getPos();state.userPos=p;setUser(p.lat,p.lon,p.acc);
-    if(map)map.setView([p.lat,p.lon],Math.max(map.getZoom(),15));
-    if(dbl)startFollow();else toast('Her er du · trykk igjen for å følge','ok');
+    if(map)moveSelf(()=>map.setView([p.lat,p.lon],Math.max(map.getZoom(),15)));
+    loadStopMarkers(true);
+    if(locState==='centered'){startFollow()}
+    else{locState='centered';toast('Her er du · trykk igjen for å følge deg','ok')}
   }catch(e){logErr('geo',e);toast(e.message,'err')}
 };
 
@@ -3296,22 +3313,51 @@ function autoVehicles(){
 }
 
 /* ================= følg meg ================= */
-let followSelf=false;
+let followLost=0,followLostTimer=null;
 function startFollow(){
-  if(!('geolocation' in navigator))return;
-  followMe=true;$('#fabLocate').classList.add('following');
-  toast('Følger posisjonen din','ok');
+  if(!('geolocation' in navigator)){toast('Enheten støtter ikke posisjon','err');return}
+  if(followWatch!=null)return;
+  followMe=true;locState='following';
+  $('#fabLocate').classList.add('following');
+  $('#fabLocate').setAttribute('aria-label','Slutt å følge posisjonen din');
+  toast('Følger deg mens du går','ok');
   followWatch=navigator.geolocation.watchPosition(p=>{
+    /* Signalet er tilbake – fjern «leter»-tilstanden. */
+    if(followLost){followLost=0;clearTimeout(followLostTimer);$('#fabLocate').classList.remove('searching')}
     state.userPos={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy};
     setUser(state.userPos.lat,state.userPos.lon,p.coords.accuracy);
-    if(followMe&&mapUsable()){followSelf=true;map.panTo([state.userPos.lat,state.userPos.lon],{animate:true});
-      setTimeout(()=>{followSelf=false},600)}
-  },e=>{logErr('geo',e);stopFollow()},{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+    if(!followMe||!mapUsable())return;
+    moveSelf(()=>map.panTo([state.userPos.lat,state.userPos.lon],{animate:true,duration:.6}));
+  },e=>{
+    /* FIX: her lå den egentlige feilen. Enhver feil slo av følgingen – også de
+       forbigående. GPS mister signalet hele tiden når du går: under en bro, inn
+       i en tunnel, mellom høye hus. Overvåkeren lever videre og henter seg inn
+       av seg selv, så vi skal IKKE avslutte den. Bare avslått tillatelse er
+       endelig. */
+    if(e.code===1){logErr('geo',e);toast('Posisjon er blokkert – kan ikke følge deg','err');stopFollow();return}
+    followLost=Date.now();
+    $('#fabLocate').classList.add('searching');
+    clearTimeout(followLostTimer);
+    followLostTimer=setTimeout(()=>{
+      if(followMe&&Date.now()-followLost>=25000){
+        toast('Finner ikke posisjonen din akkurat nå','');
+      }
+    },25000);
+  },{enableHighAccuracy:true,maximumAge:2000,timeout:30000});
 }
 function stopFollow(){
-  followMe=false;$('#fabLocate').classList.remove('following');
+  followMe=false;locState='off';followLost=0;clearTimeout(followLostTimer);
+  $('#fabLocate').classList.remove('following','searching');
+  $('#fabLocate').setAttribute('aria-label','Min posisjon');
   if(followWatch!=null){navigator.geolocation.clearWatch(followWatch);followWatch=null}
 }
+/* Sporing skal ikke gå videre når appen ligger i bakgrunnen. */
+whenVisible(()=>{if(locState==='following'&&followWatch==null)startFollow()});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible'&&followWatch!=null&&followMe){
+    navigator.geolocation.clearWatch(followWatch);followWatch=null;   // beholder locState
+  }
+});
 
 /* ================= siste avgang i kveld ================= */
 function nightCutoff(){

@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (184 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (187 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,44 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## «Følg meg» fulgte ikke
+
+Meldt av bruker, og reprodusert med simulert gange i nettleser. **Tre feil lå
+oppå hverandre**, og den siste var den alvorlige.
+
+### 1. Følgingen slo seg av i samme øyeblikk den ble slått på
+`map.setView()` fyrer `movestart`, og `movestart` var koblet til «brukeren dro i
+kartet – slutt å følge». Rekkefølgen var: sentrer kartet → start følging →
+zoom-animasjonen fyrer `movestart` → følgingen avsluttes.
+
+Appens egne bevegelser går nå gjennom `moveSelf()`, som markerer at det er vi
+som flytter. Bare `dragstart` – et ekte fingerdrag – avbryter.
+
+### 2. Dobbelttrykk innen 450 ms var i praksis umulig
+Og ingen visste at det fantes. Knappen går nå gjennom tre tilstander ved helt
+vanlige trykk: **sentrer → følg → av**. Samme mønster som kartappene folk kjenner.
+
+### 3. Ett forbigående GPS-avbrudd drepte følgingen permanent
+Dette er den viktigste. Feilhåndteringen kalte `stopFollow()` på **enhver** feil
+fra `watchPosition`. Men GPS mister signalet hele tiden når du går: under en bro,
+inn i en tunnel, mellom høye hus. Overvåkeren lever videre og henter seg inn av
+seg selv – vi kastet den bort ved første hikke.
+
+Nå avsluttes følgingen kun ved **avslått tillatelse** (kode 1). Mister vi
+signalet, pulserer knappen mens vi venter, og alt fortsetter når posisjonen er
+tilbake. Er signalet borte i mer enn 25 sekunder, sier appen fra – men slutter
+fortsatt ikke å prøve.
+
+> Målingen som avslørte det: en rå `watchPosition` i testen fikk **fem
+> posisjoner og én `POSITION_UNAVAILABLE`**. Appen fulgte pent til feilen kom,
+> og stoppet der. Etter rettelsen følger kartsenteret hele veien
+> (59.9119 → 59.9194) og følgingen står fortsatt på.
+
+I tillegg: sporingen pauses når appen går i bakgrunnen og gjenopptas når du
+henter den fram, så den ikke tapper batteri i lomma.
 
 ---
 
