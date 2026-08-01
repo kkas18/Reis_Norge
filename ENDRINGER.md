@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (187 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (189 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,44 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Gjennomgang: overlapp, fanebytte, avkuttet tekst
+
+Meldt av bruker: «Zoom inn for å se holdeplasser» la seg oppå modusraden. Det
+ble utgangspunktet for en systematisk gjennomgang (`audit_test.py`) som går
+gjennom **14 tilstander** i appen og måler faktisk overlappende areal mellom alle
+flytende elementer, om noe havner utenfor skjermen, og om tekst er avkuttet.
+
+**Feilen brukeren så:** hintet lå på `top:14px`, modusraden på `top:12px` – begge
+festet til toppen uten å vite om hverandre. Toppen av kartet stables nå etter
+målt høyde, akkurat som bunnen allerede gjorde: modusrad → hint → kontekst-chip.
+
+**To feil til som gjennomgangen fant, og som ingen hadde meldt:**
+
+1. **Kontekst-chipen overlappet modusraden med 4 557 px²** når du åpnet en reise
+   i kartet. Årsaken var timing: chipen ble tegnet i samme øyeblikk som
+   modusraden dukket opp, og målingen skjedde før nettleseren hadde lagt ut
+   endringen. Stabelen måles nå også neste bilde (`requestAnimationFrame`).
+2. **Etiketten «Stopp» ble kuttet.** Kolonnen var låst til 28 px for å passe
+   «Fra»/«Til»; «Stopp» trenger 37. Fikk egen bredde.
+
+**Resultat etter rettelsene:**
+
+| Sjekk | Resultat |
+|---|---|
+| Tilstander gjennomgått | 14 |
+| Overlappende elementer | **0** |
+| Elementer utenfor skjermen | **0** |
+| Avkuttet tekst | **0** |
+| Fanebytte (alle 6 kombinasjoner) | alle ok |
+| Sideskriptfeil | **0** |
+
+> Første versjon av gjennomgangen ga en haug med falske alarmer: den regnet
+> `.tap`-elementenes usynlige 44 px trykksone som «avkuttet tekst», og innhold
+> under skjermkanten i rullelister som «utenfor skjermen». En test som roper ulv
+> er verre enn ingen test, så den ble strammet inn før tallene ble brukt til noe.
 
 ---
 

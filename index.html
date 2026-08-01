@@ -433,7 +433,10 @@ a{color:inherit}
 .place-stop:hover{border-color:var(--tab-2)}
 .ps-name{flex:1;min-width:0;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ps-dist{flex:none;font-family:var(--font-m);font-size:11.5px;color:var(--muted)}
-#mapHint{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:1056;
+/* FIX: hintet lå på top:14px, altså rett oppå modusraden. Toppen av kartet
+   stables nå etter målt høyde, på samme måte som bunnen. */
+#viewMap{--top-h:0px}
+#mapHint{position:absolute;left:50%;top:calc(12px + var(--top-h));transform:translateX(-50%);z-index:1056;
   background:rgba(7,31,66,.86);color:#fff;font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;
   backdrop-filter:blur(6px);pointer-events:none;animation:viewIn .3s ease}
 /* Posisjonsknappen lyser når «følg meg» er på */
@@ -448,12 +451,12 @@ a{color:inherit}
 .mb-btn svg{width:17px;height:17px;flex:0 0 auto;display:block}
 .mb-btn.on{background:var(--navy);color:#fff;box-shadow:var(--sh-1)}
 .mb-btn.on svg{color:var(--tab-2)}
-#mapCtxChip{position:absolute;top:64px;left:12px;z-index:1040;background:var(--navy);color:#fff;font-size:12px;padding:8px 13px;border-radius:999px;box-shadow:var(--sh-2);display:flex;gap:7px;align-items:center;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mapCtxChip{position:absolute;top:calc(12px + var(--top-h) + var(--hint-h,0px));left:12px;z-index:1040;background:var(--navy);color:#fff;font-size:12px;padding:8px 13px;border-radius:999px;box-shadow:var(--sh-2);display:flex;gap:7px;align-items:center;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #mapCtxChip b{font-family:var(--font-m)}
 /* Kartkortet, lagvelgeren og knappene lå alle forankret til bunnen med faste
    pikselverdier – derfor la de seg oppå hverandre. Nå stables de: --card-h og
    --layer-h måles i JS, og alt over regner seg ut fra dem. */
-#viewMap{--card-h:0px;--layer-h:0px}
+#viewMap{--card-h:0px;--layer-h:0px;--top-h:0px;--hint-h:0px}
 .fabs{position:absolute;right:12px;z-index:1050;display:flex;flex-direction:column;gap:9px;
   bottom:calc(18px + var(--card-h) + var(--layer-h));
   transition:bottom .28s cubic-bezier(.22,1,.36,1)}
@@ -664,6 +667,7 @@ a{color:inherit}
 /* Fra/Til som rader med felles skillelinje – ikke to separate bokser */
 .sc-row{display:flex;align-items:center;gap:12px;min-height:48px}
 .sc-lab{flex:none;width:28px;font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.01em}
+.sc-lab-wide{width:auto;min-width:40px}
 .sc-row input{flex:1;min-width:0;height:44px;border:none;background:none;font-size:15px;
   font-family:var(--font-b);color:var(--ink)}
 .sc-row input::placeholder{color:var(--faint)}
@@ -949,7 +953,7 @@ a{color:inherit}
 
             <div class="sc-body" id="scStop" hidden>
               <div class="sc-row">
-                <span class="sc-lab">Stopp</span>
+                <span class="sc-lab sc-lab-wide">Stopp</span>
                 <input type="text" id="scStopInput" data-ac="1" autocomplete="off" placeholder="Søk etter holdeplass">
               </div>
               <div class="sc-acts">
@@ -2986,8 +2990,14 @@ function syncModeBar(){
   /* Modusraden gjelder ruteberegning. Uten en rute var den en meny uten
      funksjon, så den vises først når du faktisk har noe å regne om. */
   const bar=$('#modeBar');
-  if(bar)bar.hidden=!(state.selectedPattern||state.streetRoute||(state.stops[0]&&state.stops[0].lat&&state.stops.at(-1)&&state.stops.at(-1).lat));
-  $$('#modeBar .mb-btn').forEach(b=>b.classList.toggle('on',b.dataset.mode===state.routeMode))}
+  if(bar){
+    const før=bar.hidden;
+    bar.hidden=!(state.selectedPattern||state.streetRoute||
+      (state.stops[0]&&state.stops[0].lat&&state.stops.at(-1)&&state.stops.at(-1).lat));
+    if(før!==bar.hidden&&typeof measureStack==='function')measureStack();
+  }
+  $$('#modeBar .mb-btn').forEach(b=>b.classList.toggle('on',b.dataset.mode===state.routeMode));
+}
 function selectPattern(i){state.selectedPattern=state.results[i];if(!state.selectedPattern)return;state.routeMode='transit';state.streetRoute=null;syncModeBar();switchTab('map')}
 
 function toolsHTML(withWakeExit){
@@ -3249,8 +3259,8 @@ const STOP_ZOOM=13, MAX_PINS=45;
 async function loadStopMarkers(force){
   if(!mapUsable()||!stopsLayer)return;
   const z=map.getZoom();
-  if(z<STOP_ZOOM){stopsLayer.clearLayers();shownStopIds.clear();$('#mapHint').hidden=false;return}
-  $('#mapHint').hidden=true;
+  if(z<STOP_ZOOM){stopsLayer.clearLayers();shownStopIds.clear();$('#mapHint').hidden=false;measureStack();return}
+  if(!$('#mapHint').hidden){$('#mapHint').hidden=true;measureStack()}
   if(stopMarkersBusy)return;
   /* Bremsen skal hindre kall ved smådrag – ikke ved zoom eller nytt område. */
   const c0=map.getCenter();
@@ -3469,13 +3479,27 @@ function applyCardCollapse(){
 }
 /* Måler hva som faktisk står nederst, slik at ingenting overlapper uansett
    hvor høyt kortet blir. Kalles ved hver endring, og av en ResizeObserver. */
+let stackRaf=0;
 function measureStack(){
+  /* Elementene tegnes og måles i samme tikk. Blir noe synlig rett før, rekker
+     ikke layouten å bli oppdatert – derfor en ekstra måling neste bilde. */
+  cancelAnimationFrame(stackRaf);
+  stackRaf=requestAnimationFrame(()=>measureStackNow());
+  measureStackNow();
+}
+function measureStackNow(){
   const vm=$('#viewMap'),card=$('#mapCard'),ls=$('#layerSheet');
   if(!vm)return;
   const ch=(card&&!card.hidden)?card.offsetHeight+12:0;
   const lh=(ls&&!ls.hidden)?ls.offsetHeight+8:0;
   vm.style.setProperty('--card-h',ch+'px');
   vm.style.setProperty('--layer-h',lh+'px');
+  /* Toppen: modusraden og hintet skal stable seg, ikke overlappe. */
+  const mb=$('#modeBar'),hint=$('#mapHint');
+  const th=(mb&&!mb.hidden)?mb.offsetHeight+8:0;
+  vm.style.setProperty('--top-h',th+'px');
+  const hh=(hint&&!hint.hidden)?hint.offsetHeight+8:0;
+  vm.style.setProperty('--hint-h',hh+'px');
 }
 if(window.ResizeObserver){
   const ro=new ResizeObserver(()=>measureStack());
@@ -3551,7 +3575,7 @@ function showRouteCard(p){
   bindCardGrip();
   $('#mcDetail').onclick=()=>openDetail(state.results.indexOf(p));
   $('#mcClear').onclick=clearRoute;$('#mcSetB').onclick=armMapTap;bindTools($('#mcTools'),true);
-  $('#mapCtxChip').innerHTML=`Kollektiv · <b>${fmtDur(p.duration)}</b> · ${p.legs.length} etapper`;
+  $('#mapCtxChip').innerHTML=`Kollektiv · <b>${fmtDur(p.duration)}</b> · ${p.legs.length} etapper`;measureStack();
   fillCompare('transit');if(to.lat)fillWeather(to.lat,to.lon);if(p.distance)fillCO2(p.distance);fillFareMeta();
 }
 async function computeStreetRoute(m){
@@ -3585,7 +3609,7 @@ function showStreetCard(route,m,pts){
    <div class="mc-acts"><button class="mini-btn" id="mcSetB">${IC.pin}Sett mål på kartet</button></div>`);
   bindCardGrip();
   $('#mcClear').onclick=clearRoute;$('#mcSetB').onclick=armMapTap;bindTools($('#mcTools'),false);
-  $('#mapCtxChip').innerHTML=`${st.l} · <b>${fmtDur(route.duration)}</b> · ${fmtWalk(route.distance)}`;
+  $('#mapCtxChip').innerHTML=`${st.l} · <b>${fmtDur(route.duration)}</b> · ${fmtWalk(route.distance)}`;measureStack();
   fillCompare(m);fillWeather(b.lat,b.lon);
   if(m==='bike'||m==='foot')fillElev(route.geometry.coordinates.map(c=>[c[1],c[0]]));
   if(m==='bike'){const nb=nearestBike(b.lat,b.lon);if(nb){const slot=$('#mcMeta');if(slot)slot.innerHTML+=`<span class="meta-chip bike">${IC.bike}${esc(nb.name)} · ${nb.avail} ledige · ${fmtWalk(nb.dist)}</span>`}
@@ -3716,7 +3740,7 @@ function showStopCard(s){
     <div id="mcRows"><div class="skel" style="height:40px;margin-top:8px"></div></div>`);
   bindCardGrip();
   $('#mcAll').onclick=()=>switchTab('depart');bindTools($('#mcTools'),false,s.id,s.name);
-  $('#mapCtxChip').innerHTML=`Stoppested · ${esc(s.name)}`;
+  $('#mapCtxChip').innerHTML=`Stoppested · ${esc(s.name)}`;measureStack();
   (async()=>{try{if(state.departuresFor!==s.id||!state.departures.length){const sp=await getDepartures(s.id);state.departures=mapCalls(sp);state.departuresFor=s.id}
     const rows=$('#mcRows');if(!rows)return;
     rows.innerHTML=state.departures.slice(0,3).map(d=>{const mm=MODE[d.mode]||MODE.bus;
@@ -3731,6 +3755,7 @@ function hideMapCard(){$('#mapCard').hidden=true;$('#viewMap').classList.remove(
 function applyMapContext(){
   /* Kalles også fra Plan-fanen (via clearRoute). Da har kartet ingen flate. */
   if(!mapUsable()){whenMapVisible(applyMapContext);return}
+  setTimeout(measureStack,0);
   const vm=$('#viewMap');
   if(state.routeMode!=='transit'&&state.streetRoute&&state.streetRoute.mode===state.routeMode){vm.classList.add('has-card');const pts=state.stops.filter(s=>s.lat);drawStreetRoute(state.streetRoute.route,state.streetRoute.mode,pts.length>=2?pts:state.stops);showStreetCard(state.streetRoute.route,state.streetRoute.mode,pts.length>=2?pts:state.stops)}
   else if(state.selectedPattern){vm.classList.add('has-card');drawPattern(state.selectedPattern);showRouteCard(state.selectedPattern)}
