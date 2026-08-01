@@ -104,24 +104,28 @@ a{color:inherit}
 #app{position:relative;width:100%;height:100dvh;overflow:hidden;background:var(--paper);display:flex;flex-direction:column;z-index:2}
 @media(min-width:920px){#app{width:min(430px,44vw);height:min(920px,94vh);border-radius:32px;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.07)}}
 #netbar{position:absolute;top:0;left:0;height:2.5px;width:0;background:linear-gradient(90deg,var(--tab-2),var(--signal));z-index:1400;transition:width .3s,opacity .4s,background .45s ease;border-radius:2px;opacity:0}
-#topbar{position:relative;z-index:1200;flex:none;display:flex;align-items:center;gap:10px;min-height:56px;padding:calc(8px + var(--sat)) 12px 9px;background:linear-gradient(118deg,var(--navy),var(--navy-3) 58%,#0E3A72);color:#fff}
+#topbar{position:relative;z-index:1200;flex:none;display:flex;align-items:center;gap:11px;min-height:54px;
+  padding:calc(7px + var(--sat)) 14px 8px;background:linear-gradient(120deg,var(--navy),var(--navy-3) 62%,#0E3A72);color:#fff}
 /* Fargen siver inn i topplinjen som en mild glød når du bytter fane. */
 #topbar::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(130% 180% at 84% -40%, var(--tab-2), transparent 60%);
-  opacity:.34;transition:background .55s ease}
+  background:radial-gradient(120% 200% at 88% -60%, var(--tab-2), transparent 58%);
+  opacity:.22;transition:background .55s ease}
 #topbar>*{position:relative;z-index:1}
-#topbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;z-index:2;
-  background:repeating-linear-gradient(90deg,var(--tab-2) 0 14px,transparent 14px 26px);
-  opacity:.95;animation:slideDash 1.1s linear infinite;transition:background .45s ease}
-@keyframes slideDash{to{background-position:26px 0}}
+/* Den animerte stripa så ut som sperrebånd. En rolig hårstrek i fanens farge
+   gjør samme jobb – markerer kanten og hvor du er – uten å rope. */
+#topbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;z-index:2;
+  background:linear-gradient(90deg,var(--tab-2),color-mix(in srgb,var(--tab-2) 25%,transparent) 62%,transparent);
+  transition:background .45s ease}
 .brand{display:flex;align-items:center;gap:9px;flex:1;min-width:0}
-.brand .logo{width:36px;height:36px;flex:none;border-radius:10px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+.brand .logo{width:32px;height:32px;flex:none;border-radius:9px}
 .brand-txt{display:flex;flex-direction:column;justify-content:center;min-width:0}
-.brand-txt h1{font-family:var(--font-d);font-size:19px;letter-spacing:.09em;line-height:1}
-/* FIX: undertittelen brøt over to linjer og dyttet topplinjen ut av balanse */
-.brand-txt small{display:block;font-size:8.5px;letter-spacing:.24em;color:#A9C6E4;font-weight:600;margin-top:4px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top-clock{font-family:var(--font-m);font-size:10.5px;color:#C6DCF0;background:rgba(255,255,255,.10);padding:0 9px;border-radius:9px;white-space:nowrap;display:inline-flex;align-items:center;height:32px;flex:none}
-.icon-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.10);color:#DCEAF7;display:grid;place-items:center;transition:transform .18s,background .2s;flex:none}
+.brand-txt h1{font-family:var(--font-d);font-size:17.5px;letter-spacing:.14em;line-height:1}
+/* Undertittelen sier hvor du er, ikke hva appen heter – den skifter med fanen. */
+.brand-txt small{display:block;font-size:11px;letter-spacing:.01em;color:#B9D2EC;font-weight:500;margin-top:3px;
+  line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:opacity .22s ease}
+.brand-txt small.swap{opacity:0}
+.icon-btn{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.09);color:#DCEAF7;display:grid;place-items:center;transition:transform .18s,background .2s;flex:none}
 .icon-btn:hover{background:rgba(255,255,255,.16)}
 .icon-btn:active{transform:scale(.88)}
 .icon-btn svg{width:18px;height:18px;display:block}
@@ -216,18 +220,34 @@ a{color:inherit}
 .pace.hurry{background:var(--amber-soft);color:var(--amber-txt)}
 .pace.run{background:var(--signal-soft);color:var(--signal-2);animation:runPulse 1s infinite}
 @keyframes runPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,122,77,.4)}50%{box-shadow:0 0 0 5px rgba(255,122,77,0)}}
-.stops{position:relative;display:flex;flex-direction:column;gap:8px;padding:2px 0}
-.stops::before{content:"";position:absolute;left:11px;top:26px;bottom:26px;border-left:2px dashed var(--line-2)}
-.stop-row{position:relative;display:flex;align-items:center;gap:9px;min-height:44px;animation:rowIn .3s cubic-bezier(.22,1,.36,1) both}
-.stop-dot{position:relative;z-index:1;flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-d);font-size:11px;font-weight:700}
-.stop-dot.from{background:var(--green);color:#fff;box-shadow:0 0 0 4px var(--green-soft)}
-.stop-dot.via{background:var(--card);border:2.5px solid var(--navy);color:var(--ink)}
-.stop-dot.to{background:var(--signal);color:#fff;box-shadow:0 0 0 4px var(--signal-soft)}
+/* Skinnen tegnes INNE i prikkekolonnen, ikke som en løs strek ved siden av.
+   Da står den alltid i lodd med prikkene, uansett hvor bred etiketten er. */
+.stops{position:relative;display:flex;flex-direction:column}
+.stop-row{position:relative;display:flex;align-items:center;gap:11px;min-height:52px;
+  padding-right:52px;animation:rowIn .3s cubic-bezier(.22,1,.36,1) both}
+.stop-rail{position:relative;flex:none;width:14px;align-self:stretch;display:grid;place-items:center}
+.stop-rail::before,.stop-rail::after{content:"";position:absolute;left:50%;width:2px;margin-left:-1px;
+  background-image:linear-gradient(var(--line-2) 55%,transparent 0);background-size:2px 6px}
+.stop-rail::before{top:0;height:calc(50% - 9px)}
+.stop-rail::after{bottom:0;height:calc(50% - 9px)}
+.stop-row:first-child .stop-rail::before,
+.stop-row:last-child .stop-rail::after{display:none}
+/* Skillelinja starter der teksten starter, ikke midt i ingenting */
+.stop-row+.stop-row::before{content:"";position:absolute;left:51px;right:52px;top:0;height:1px;background:var(--line)}
+/* Små punkter i stedet for A/B-medaljonger – raden leses av teksten */
+.stop-dot{position:relative;z-index:1;flex:none;width:12px;height:12px;border-radius:50%;display:grid;place-items:center;font-size:0;
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
+.stop-dot.from{background:var(--green);box-shadow:0 0 0 3.5px var(--green-soft)}
+.stop-dot.via{background:var(--card);border:2.5px solid var(--muted);width:10px;height:10px}
+.stop-dot.to{background:var(--signal);box-shadow:0 0 0 3.5px var(--signal-soft)}
 .stop-field{flex:1;position:relative}
-.stop-field input{width:100%;height:44px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);padding:0 38px 0 12px;font-size:14.5px;color:var(--ink);transition:border-color .2s,box-shadow .2s}
-.stop-field input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(18,165,160,.18)}
+.stop-field input{width:100%;height:48px;border:none;border-radius:0;background:none;padding:0 34px 0 0;font-size:15px;color:var(--ink);transition:border-color .2s,box-shadow .2s}
+.stop-field input:focus{outline:none}
+.stop-field::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:2px;border-radius:2px;
+  background:var(--tab-2);transform:scaleX(0);transform-origin:left;transition:transform .24s cubic-bezier(.22,1,.36,1)}
+.stop-field:focus-within::after{transform:scaleX(1)}
 .stop-field input::placeholder{color:var(--faint)}
-.stop-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;color:var(--faint);display:none;place-items:center}
+.stop-clear{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;color:var(--faint);display:none;place-items:center}
 .stop-field.filled .stop-clear,.search-field.filled .stop-clear{display:grid}
 .stop-clear svg{width:13px;height:13px;display:block}
 .stop-clear:hover{background:var(--paper);color:var(--ink)}
@@ -394,6 +414,31 @@ a{color:inherit}
 .leaflet-popup-tip{background:var(--card)}
 .leaflet-popup-close-button{color:var(--muted)!important}
 .leaflet-popup-content{margin:12px 14px;font-family:var(--font-b)}
+/* Holdeplassnål på kartet – liten nok til at 40 av dem ikke drukner kartet */
+.stop-pin{width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid var(--pc,#0A2A57);
+  display:grid;place-items:center;box-shadow:0 2px 6px rgba(4,20,43,.32);cursor:pointer;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+.stop-pin:hover{transform:scale(1.18)}
+.stop-pin svg{width:12px;height:12px;display:block;color:var(--pc,#0A2A57)}
+/* Samme fargekoding i kortet som på kartet, så «hvem er hvem» henger sammen */
+.mc-from::before,.mc-to::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;
+  margin-right:6px;vertical-align:1px}
+.mc-from::before{background:var(--green)}
+.mc-to::before{background:var(--signal)}
+.place-stops{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.place-stop{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 12px;
+  border-radius:11px;background:var(--paper);border:1px solid var(--line);text-align:left;
+  transition:border-color .2s,background .2s,transform .16s}
+.place-stop:active{transform:scale(.98)}
+.place-stop:hover{border-color:var(--tab-2)}
+.ps-name{flex:1;min-width:0;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ps-dist{flex:none;font-family:var(--font-m);font-size:11.5px;color:var(--muted)}
+#mapHint{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:1056;
+  background:rgba(7,31,66,.86);color:#fff;font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;
+  backdrop-filter:blur(6px);pointer-events:none;animation:viewIn .3s ease}
+/* Posisjonsknappen lyser når «følg meg» er på */
+.fab.following{background:var(--tab);color:#fff}
+.fab.following svg{color:#fff}
 #modeBar{position:absolute;top:12px;left:12px;z-index:1055;background:var(--card);border-radius:999px;box-shadow:var(--sh-2);display:flex;padding:4px;gap:2px;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
 #modeBar::-webkit-scrollbar{display:none}
 .mb-btn{display:flex;align-items:center;justify-content:center;gap:5px;height:38px;padding:0 12px;border-radius:999px;font-size:11.5px;font-weight:600;color:var(--muted);transition:all .2s;white-space:nowrap}
@@ -458,10 +503,25 @@ a{color:inherit}
 .meta-chip.bike{background:var(--amber-soft);color:var(--amber-txt)}
 .rt-node{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-d);font-weight:700;font-size:11px;color:#fff;border:2.5px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.35);animation:pinDrop .35s cubic-bezier(.3,1.6,.5,1)}
 .rt-start{background:var(--green)} .rt-via{background:var(--navy)} .rt-end{background:var(--signal)}
+/* Startpunkt: sirkel. Mål: dråpe med spiss ned mot punktet. Ulik form gjør at
+   du ser forskjellen uten å lese, og uten å stole på farge alene. */
+.rt-wrap{position:relative;display:grid;place-items:center;pointer-events:none}
+.rt-round{width:28px;height:28px;border-radius:50%}
+.rt-pin{width:28px;height:34px;border-radius:50% 50% 50% 50%/55% 55% 45% 45%;
+  clip-path:path('M14 34C14 34 28 20.5 28 13A14 14 0 1 0 0 13C0 20.5 14 34 14 34Z')}
+.rt-node svg{width:14px;height:14px;display:block;color:#fff}
+.rt-pin svg{margin-top:-5px}
+.rt-me{background:var(--tab);box-shadow:0 0 0 4px rgba(74,130,216,.30),0 2px 8px rgba(4,20,43,.4)}
+.rt-label{position:absolute;top:calc(100% + 3px);left:50%;transform:translateX(-50%);
+  font-size:10.5px;font-weight:700;letter-spacing:.02em;color:#fff;white-space:nowrap;
+  background:rgba(7,31,66,.86);padding:2px 7px;border-radius:999px;backdrop-filter:blur(4px)}
+.rt-pin+.rt-label{top:2px}
 .spot-pin{width:30px;height:30px;border-radius:50%;background:var(--teal);border:2.5px solid #fff;display:grid;place-items:center;color:#fff;box-shadow:0 4px 10px rgba(0,0,0,.32);animation:pinDrop .4s cubic-bezier(.3,1.6,.5,1)}
 .spot-pin svg{width:14px;height:14px;display:block}
 @keyframes pinDrop{from{transform:translateY(-14px) scale(.5);opacity:0}}
-.user-dot{width:16px;height:16px;background:#2680EB;border:3px solid #fff;border-radius:50%;animation:pulse2 2s infinite}
+/* Din posisjon: mindre og lavere i stabelen, så den ikke skygger for målet. */
+.user-dot{width:14px;height:14px;background:#2680EB;border:2.5px solid #fff;border-radius:50%;
+  box-shadow:0 1px 4px rgba(4,20,43,.45);animation:pulse2 2s infinite}
 @keyframes pulse2{0%{box-shadow:0 0 0 0 rgba(38,128,235,.35)}70%{box-shadow:0 0 0 14px rgba(38,128,235,0)}100%{box-shadow:0 0 0 0 rgba(38,128,235,0)}}
 .veh{position:relative;width:22px;height:22px;border-radius:7px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);display:grid;place-items:center}
 .veh-arr{display:grid;place-items:center}
@@ -577,6 +637,80 @@ a{color:inherit}
 /* Satellitt og topografi er lyse flater – hold kortene lesbare over dem. */
 :root[data-base="satellitt"] #mapCtxChip{background:rgba(6,20,40,.86)}
 
+.near-toggle{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:44px;
+  margin-top:10px;border-radius:12px;background:none;border:1.5px dashed var(--line-2);
+  font-size:12.5px;font-weight:600;color:var(--muted);transition:color .2s,border-color .2s,background .2s}
+.near-toggle:hover{color:var(--tab);border-color:var(--tab-2);background:var(--tab-soft)}
+.near-toggle svg{width:14px;height:14px;display:block;transition:transform .26s cubic-bezier(.22,1,.36,1)}
+.near-toggle.open svg{transform:rotate(180deg)}
+#depChips{margin-top:8px}
+
+/* ---------- samlet søkekort ---------- */
+.search-card{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:18px;
+  margin-top:6px;overflow:hidden;box-shadow:var(--sh-1)}
+.sc-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--paper)}
+.sc-tabs button{position:relative;height:48px;font-family:var(--font-d);font-size:14.5px;font-weight:600;
+  color:var(--muted);background:none;transition:color .22s}
+.sc-tabs button.on{color:var(--ink);background:var(--card);border-radius:0 0 14px 0}
+.sc-tabs button.on[data-sc="stop"]{border-radius:0 0 0 14px}
+.sc-tabs button.on::after{content:"";position:absolute;left:18px;right:18px;top:0;height:3px;
+  background:var(--tab-2);border-radius:0 0 3px 3px}
+.sc-tabs button:not(.on):hover{color:var(--ink)}
+.sc-body{padding:14px 14px 15px;animation:viewIn .24s cubic-bezier(.22,1,.36,1)}
+
+/* Fra/Til som rader med felles skillelinje – ikke to separate bokser */
+.sc-row{display:flex;align-items:center;gap:12px;min-height:48px}
+.sc-lab{flex:none;width:28px;font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.01em}
+.sc-row input{flex:1;min-width:0;height:44px;border:none;background:none;font-size:15px;
+  font-family:var(--font-b);color:var(--ink)}
+.sc-row input::placeholder{color:var(--faint)}
+.sc-row input:focus{outline:none}
+
+.sc-when{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:12px;
+  background:var(--paper);border-radius:12px;padding:4px}
+.sc-when button{height:44px;border-radius:10px;font-size:12.5px;font-weight:600;color:var(--muted);
+  background:none;transition:background .2s,color .2s}
+.sc-when button.on{background:var(--card);color:var(--ink);box-shadow:var(--sh-1)}
+
+.sc-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.sc-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border-radius:11px;
+  font-size:12.5px;font-weight:600;color:var(--tab);background:none;transition:background .2s,opacity .2s}
+.sc-link svg{width:14px;height:14px;display:block}
+.sc-link:hover{background:var(--tab-soft)}
+.sc-link:disabled{opacity:.4;pointer-events:none}
+:root[data-theme="dark"] .sc-link{color:var(--tab-2)}
+
+/* Bytt-knappen ligger i marg, loddrett midt mellom Fra og Til */
+.sc-swap{position:absolute;right:20px;top:var(--swap-y,86px);transform:translateY(-50%);z-index:2;
+  width:42px;height:42px;border-radius:12px;background:var(--paper);border:1.5px solid var(--line);
+  color:var(--tab);display:grid;place-items:center;transition:transform .2s cubic-bezier(.34,1.56,.64,1),background .2s}
+.sc-swap span{display:grid;place-items:center;transform:rotate(var(--turn,0deg));
+  transition:transform .42s cubic-bezier(.34,1.4,.5,1)}
+.sc-swap svg{width:17px;height:17px;display:block}
+.sc-swap:active{transform:translateY(-50%) scale(.9)}
+.sc-swap:hover{background:var(--tab-soft);border-color:var(--tab-2)}
+/* Radene glir forbi hverandre mens de bytter plass */
+#stops.swapping .stop-row:first-child{animation:swapDown .32s cubic-bezier(.4,0,.2,1)}
+#stops.swapping .stop-row:last-child{animation:swapUp .32s cubic-bezier(.4,0,.2,1)}
+@keyframes swapDown{0%{transform:none}45%{transform:translateY(10px);opacity:.35}100%{transform:none}}
+@keyframes swapUp{0%{transform:none}45%{transform:translateY(-10px);opacity:.35}100%{transform:none}}
+:root[data-theme="dark"] .sc-swap{color:var(--tab-2)}
+
+/* «Din posisjon» ligger i selve Fra-feltet, ikke som en egen lenke under.
+   Ett element mindre, og valget står der du faktisk skal fylle inn. */
+.sc-pos{position:absolute;left:0;top:50%;transform:translateY(-50%);display:none;
+  align-items:center;gap:9px;height:44px;padding:0 10px 0 0;background:none;
+  font-size:15px;font-weight:600;color:var(--tab);white-space:nowrap}
+.sc-pos i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;flex:none;
+  background:var(--tab-soft);color:var(--tab);transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+.sc-pos i svg{width:15px;height:15px;display:block}
+.sc-pos:active i{transform:scale(.88)}
+:root[data-theme="dark"] .sc-pos,:root[data-theme="dark"] .sc-pos i{color:var(--tab-2)}
+/* Vises bare når feltet er tomt og ikke i fokus – da er den ikke i veien. */
+.stop-field.empty:not(:focus-within) .sc-pos{display:flex}
+/* Ledeteksten skjules bare der posisjonsknappen faktisk står. */
+.stop-field.empty:not(:focus-within):has(.sc-pos:not([hidden])) input::placeholder{color:transparent}
+
 /* ---------- sammenleggbare seksjoner ---------- */
 .sec-label.toggle{width:100%;cursor:pointer;user-select:none;min-height:44px;margin:6px 0 4px}
 .sec-label.toggle::after{display:none}
@@ -663,7 +797,7 @@ a{color:inherit}
 .nc-when.due{color:var(--signal-2)}
 .near-ask{display:flex;align-items:center;gap:11px;background:var(--card);border:1.5px dashed var(--line-2);
   border-radius:14px;padding:12px;margin-top:8px}
-.near-ask .chip-btn{height:44px;min-width:52px;flex:none}
+.near-ask .chip-btn{height:46px;min-width:62px;flex:none}
 .near-ask .na-ic{flex:none;width:34px;height:34px;border-radius:11px;background:var(--tab-soft);color:var(--tab);display:grid;place-items:center}
 .near-ask .na-ic svg{width:17px;height:17px;display:block}
 .near-ask p{flex:1;min-width:0;font-size:12.5px;color:var(--muted);line-height:1.4}
@@ -750,9 +884,8 @@ a{color:inherit}
         <circle cx="362" cy="128" r="41" fill="#fff"/><circle cx="362" cy="128" r="31" fill="#C8102E"/>
         <circle cx="150" cy="384" r="33" fill="#fff"/><circle cx="150" cy="384" r="13" fill="#0A2A57"/>
       </svg>
-      <div class="brand-txt"><h1>REIS</h1><small>NORGE · SANNTID</small></div>
+      <div class="brand-txt"><h1>REIS</h1><small id="topContext">Planlegg reisen</small></div>
     </div>
-    <span class="top-clock" id="clock">--:--</span>
     <button class="icon-btn tap" id="btnMore" aria-label="Mer – lagret, utseende og innstillinger"></button>
   </header>
 
@@ -787,22 +920,40 @@ a{color:inherit}
               <button class="chip-btn" id="commCancel">Avbryt</button>
             </div>
           </div>
-          <div class="sec-label">Planlegg reisen</div>
-          <div class="stops" id="stops"></div>
-          <div class="plan-tools">
-            <button class="chip-btn" id="btnAddStop"><span id="addIc"></span>Via-stopp</button>
-            <button class="chip-btn" id="btnSwap" aria-label="Bytt retning"><span id="swapIc"></span>Bytt</button>
-            <button class="chip-btn" id="btnUseLoc"><span id="locIc"></span>Din posisjon</button>
-          </div>
-          <div class="sec-label">Når</div>
-          <div class="seg" id="timeSeg">
-            <button data-mode="now" class="on">Reis nå</button>
-            <button data-mode="depart">Avreise kl.</button>
-            <button data-mode="arrive">Ankomst innen</button>
-          </div>
-          <input type="datetime-local" id="timeInput">
-          <button class="cta" id="btnSearch">Finn reise <span class="arr" id="ctaArr"></span></button>
-          <button class="filter-note" id="filterNote" hidden></button>
+          <!-- Ett samlet søkekort: modusvelger, Fra/Til som rader, og handlingene
+               inne i samme flate. Færre kanter å lese enn to separate bokser. -->
+          <section class="search-card" aria-label="Søk">
+            <div class="sc-tabs" role="tablist">
+              <button role="tab" data-sc="trip" class="on" aria-selected="true">Finn reise</button>
+              <button role="tab" data-sc="stop" aria-selected="false">Se avganger</button>
+            </div>
+
+            <div class="sc-body" id="scTrip">
+              <div class="stops" id="stops"></div>
+              <button class="sc-swap tap" id="btnSwap" aria-label="Bytt start og mål"><span id="swapIc"></span></button>
+              <div class="sc-when" id="timeSeg" role="tablist" aria-label="Når">
+                <button data-mode="now" class="on" aria-selected="true">Reis nå</button>
+                <button data-mode="depart" aria-selected="false">Avreise kl.</button>
+                <button data-mode="arrive" aria-selected="false">Ankomst innen</button>
+              </div>
+              <input type="datetime-local" id="timeInput">
+              <div class="sc-acts">
+                <button class="sc-link" id="btnAddStop"><span id="addIc"></span>Via-stopp</button>
+              </div>
+              <button class="cta" id="btnSearch">Finn reise <span class="arr" id="ctaArr"></span></button>
+              <button class="filter-note" id="filterNote" hidden></button>
+            </div>
+
+            <div class="sc-body" id="scStop" hidden>
+              <div class="sc-row">
+                <span class="sc-lab">Stopp</span>
+                <input type="text" id="scStopInput" data-ac="1" autocomplete="off" placeholder="Søk etter holdeplass">
+              </div>
+              <div class="sc-acts">
+                <button class="sc-link" id="scNearMe"><span id="scNearIc"></span>Nær meg</button>
+              </div>
+            </div>
+          </section>
           <div id="recentsWrap" class="sec" data-sec="recents" hidden>
             <button class="sec-label toggle" type="button" aria-expanded="true">
               <span>Nylige</span><i class="sl-line"></i><span class="sec-chev"></span>
@@ -846,30 +997,23 @@ a{color:inherit}
 
     <section id="viewDepart" class="view">
       <div class="scrollpad">
-        <div class="sec-label">Sanntidstavle</div>
-        <div class="dep-search">
-          <div class="search-field" id="depField">
-            <span class="s-ic" id="depSic"></span>
-            <input type="text" id="depSearchInput" data-ac="1" autocomplete="off" placeholder="Søk etter stoppested – f.eks. Jernbanetorget">
-            <button class="stop-clear tap" id="depSearchClear" type="button" aria-label="Tøm"></button>
-          </div>
-          <button class="loc-btn" id="depNearMe" aria-label="Nær meg"></button>
-        </div>
-        <div class="dep-stop-chips" id="depChips"></div>
+        <!-- Søkefeltet lå både her og i søkekortet på Plan. Ett sted holder:
+             «Bytt stopp» tar deg dit, i stedet for å gjenta hele grensesnittet. -->
         <div class="board-head">
           <div>
             <h2 id="depTitle">Hva går nå?</h2>
-            <div class="bh-sub" id="depSub">Søk etter et stoppested, eller trykk «Nær meg»<span id="depUpdated"></span></div>
+            <div class="bh-sub" id="depSub">Trykk «Bytt stopp» for å velge holdeplass<span id="depUpdated"></span></div>
           </div>
           <div class="bh-right">
             <span class="live-pill" id="depLive" hidden><i></i>LIVE</span>
-            <button class="chip-btn" id="depMapBtn" hidden>Vis på kart</button>
+            <button class="chip-btn" id="depSwitch"><span id="depSwitchIc"></span>Bytt stopp</button>
           </div>
         </div>
         <div class="dep-stale" id="depStale" role="status" hidden></div>
         <div id="depAvvik" role="region" aria-label="Avvik"></div>
         <div id="depReports"></div>
-        <div class="mode-filter" id="depModeFilter"></div>
+        <button class="near-toggle" id="depNearToggle" hidden></button>
+        <div class="dep-stop-chips" id="depChips" hidden></div>
         <div id="depList" role="list" aria-live="polite" aria-relevant="text" aria-busy="false"><div class="empty"><b>Ingen avganger ennå</b><p>Søk etter et stoppested for å se trikk, t-bane, buss, tog og båt i sanntid – med fargekodet tidsstatus og forsinkelser.</p></div></div>
         <div class="tools-row" id="depExtras" hidden>
           <button class="tool-btn" id="btnLastDep" style="flex:1;justify-content:center"></button>
@@ -881,7 +1025,8 @@ a{color:inherit}
 
     <section id="viewMap" class="view">
       <div id="map"></div>
-      <div id="modeBar"></div>
+      <div id="modeBar" hidden></div>
+      <div id="mapHint" hidden>Zoom inn for å se holdeplasser</div>
       <div id="mapCtxChip">Kart – utforsk området</div>
       <div class="fabs">
         <button class="fab" id="fabLayers" aria-label="Kartlag og visning"><span class="fab-dot"></span></button>
@@ -945,15 +1090,21 @@ a{color:inherit}
         <p class="hint">Auto følger systeminnstillingene dine – også kartflisene.</p>
         <div class="sec-label">Hurtigreiser</div><div id="favJourneys"></div>
         <div class="sec-label">Lagrede steder</div><div id="favPlaces"></div>
-        <div class="sec-label">Versjon</div>
+        <!-- Versjon, systemtid og feillogg er feilsøking, ikke innstillinger.
+             De ligger samlet bak ett punkt i stedet for tre egne seksjoner. -->
+        <div class="sec" data-sec="tech">
+          <button class="sec-label toggle" type="button" aria-expanded="false">
+            <span>Teknisk</span><i class="sl-line"></i><span class="sec-chev"></span>
+          </button>
+          <div class="sec-body"><div class="sec-inner">
         <p class="hint" style="margin-top:0" id="verInfo">Ser etter oppdatering…</p>
         <button class="chip-btn" id="btnCheckUpdate">Se etter oppdatering</button>
-        <div class="sec-label">Systemtid</div>
         <p class="hint" id="clockInfo">Sjekker mot Entur…</p>
-        <div class="sec-label">Feillogg</div>
         <p class="hint">De siste feilene appen har møtt. Trykk «Kopier» og lim inn hvis noe skal feilsøkes.</p>
         <div class="tools-row"><button class="chip-btn" id="btnCopyLog">Kopier feillogg</button><button class="chip-btn" id="btnClearLog">Tøm logg</button></div>
         <div class="log-box" id="errLogBox">Ingen feil registrert.</div>
+          </div></div>
+        </div>
         <div class="about"><b>Datakilder (alle gratis og åpne)</b> – kollektiv, sanntid, geosøk, utganger og kjøretøyposisjoner: Entur; bil/sykkel/gå-ruting: OSRM (FOSSGIS); bysykkel: Oslo bysykkels åpne GBFS-feed; vær og høydedata: Open-Meteo; kart: OpenStreetMap + CARTO; severdigheter: Wikipedia og OpenStreetMap. Ingen API-nøkler, ingen kontoer.</div>
         <div class="limits"><b>Ærlig om begrensninger i en web-app:</b> Ekte iOS Live Activities / Android låsskjerm-widgets og «venn følger bussen live»-deling krever native-kode eller en server. I denne web-appen oppdateres i stedet nettleserfanens tittel live mens en reise pågår, og passasjerrapporter lagres lokalt (med tidsstempel) og kan deles som lenke. «Vekk meg»-alarmen virker mens appen er åpen. Prisene er anslag, ikke ekte billettpriser.</div>
         <button class="chip-btn" id="btnReset" style="margin-top:12px">Tøm lagrede data</button>
@@ -1086,10 +1237,10 @@ const VEH_ARROW='<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2l8 18-8-5-8 
 
 $('#pbClose').innerHTML=IC.x; $('#pbIc').innerHTML=IC.alert;
 $('#commSic').innerHTML=IC.search; $('#commClear').innerHTML=IC.x;
-$('#swapIc').innerHTML=IC.swapV; $('#locIc').innerHTML=IC.locate; $('#ctaArr').innerHTML=IC.arrowR;
+$('#swapIc').innerHTML=IC.swapV; $('#ctaArr').innerHTML=IC.arrowR;
 $('#addIc').innerHTML=IC.plus; $('#commHereIc').innerHTML=IC.locate;
 $('#btnResBack').innerHTML=IC.chevL; $('#btnDetBack').innerHTML=IC.chevL;
-$('#depSic').innerHTML=IC.search; $('#depSearchClear').innerHTML=IC.x; $('#depNearMe').innerHTML=IC.locate;
+$('#depSwitchIc').innerHTML=IC.search; $('#scNearIc').innerHTML=IC.locate;
 $('#fabLocate').innerHTML=IC.locate; $('#fabSetB').innerHTML=IC.pin;
 $('#btnMore').innerHTML=IC.menu;
 $('#fabLayers').insertAdjacentHTML('afterbegin',IC.layers);
@@ -1369,6 +1520,7 @@ function loadLeaflet(){
 
 let map=null,tiles=null,routeLayer=null,spotLayer=null,vehicleLayer=null,bikeLayer=null;
 let userMarker=null,stopMarker=null,lastBounds=null,attrCtl=null,attrShown='';
+let stopsLayer=null,accuracyCircle=null,followMe=false,followWatch=null;
 const OSLO={lat:59.91125,lon:10.75031};
 
 function initMap(){
@@ -1379,8 +1531,12 @@ function initMap(){
   attrCtl=L.control.attribution({position:'topright',prefix:false}).addTo(map);
   attrCtl.addAttribution(BASEMAPS[bm].attr);attrShown=BASEMAPS[bm].attr;
   routeLayer=L.layerGroup().addTo(map);spotLayer=L.layerGroup().addTo(map);
+  stopsLayer=L.layerGroup().addTo(map);
   vehicleLayer=L.layerGroup().addTo(map);bikeLayer=L.layerGroup().addTo(map);
   map.on('click',onMapClick);
+  /* Hent holdeplasser og kjøretøy på nytt når utsnittet endrer seg. */
+  map.on('moveend zoomend',()=>{loadStopMarkers();autoVehicles()});
+  map.on('movestart',()=>{if(followMe&&!followSelf)stopFollow()});
   if(window.ResizeObserver)new ResizeObserver(()=>{if(map)map.invalidateSize({pan:false})}).observe(document.getElementById('map'));
   if(state.userPos)setUser(state.userPos.lat,state.userPos.lon);
   return map;
@@ -1449,10 +1605,15 @@ function setBasemap(name){
   map.removeLayer(tiles);tiles=nt;
   if(attrCtl){if(attrShown)attrCtl.removeAttribution(attrShown);attrShown=BASEMAPS[name].attr;attrCtl.addAttribution(attrShown)}
 }
-function setUser(lat,lon){
+function setUser(lat,lon,acc){
   if(!map||!okLL([lat,lon]))return;
-  if(!mapUsable()){whenMapVisible(()=>setUser(lat,lon));return}
-  if(!userMarker)userMarker=L.marker([lat,lon],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[18,18],iconAnchor:[9,9]}),zIndexOffset:500}).addTo(map);
+  if(!mapUsable()){whenMapVisible(()=>setUser(lat,lon,acc));return}
+  if(acc&&acc>25){
+    if(!accuracyCircle)accuracyCircle=L.circle([lat,lon],{radius:acc,color:'#4A82D8',weight:1,
+      fillColor:'#4A82D8',fillOpacity:.10}).addTo(map);
+    else{accuracyCircle.setLatLng([lat,lon]);accuracyCircle.setRadius(acc)}
+  }else if(accuracyCircle){map.removeLayer(accuracyCircle);accuracyCircle=null}
+  if(!userMarker)userMarker=L.marker([lat,lon],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:200,interactive:false}).addTo(map);
   else userMarker.setLatLng([lat,lon]);
 }
 /* FIX: tydelige, handlingsrettede posisjonsfeil i stedet for «Fant ikke posisjonen din» */
@@ -1476,8 +1637,17 @@ async function getPos(opts={}){
 }
 async function ensureUserPos(){if(state.userPos)return state.userPos;
   try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);loadNearby(true);return p}catch(e){return null}}
-$('#fabLocate').onclick=async()=>{try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);
-  if(map)map.setView([p.lat,p.lon],15);toast('Her er du','ok')}catch(e){logErr('geo',e);toast(e.message,'err')}};
+let locTapAt=0;
+$('#fabLocate').onclick=async()=>{
+  /* Ett trykk sentrerer. To trykk låser kartet til deg mens du går. */
+  const now2=Date.now(),dbl=now2-locTapAt<450;locTapAt=now2;
+  if(followMe){stopFollow();toast('Slutter å følge');return}
+  try{
+    const p=await getPos();state.userPos=p;setUser(p.lat,p.lon,p.acc);
+    if(map)map.setView([p.lat,p.lon],Math.max(map.getZoom(),15));
+    if(dbl)startFollow();else toast('Her er du · trykk igjen for å følge','ok');
+  }catch(e){logErr('geo',e);toast(e.message,'err')}
+};
 
 /* ================= Entur ================= */
 const CLIENT={'ET-Client-Name':'reis-norge-web'};
@@ -1861,11 +2031,13 @@ function switchTab(name,dir){
   currentTab=name;
   $('#app').dataset.tab=name;
   saveLS('lastTab',name);
+  setTopContext(name);
   navBtns.forEach(t=>{const on=t.dataset.tab===name;t.classList.toggle('active',on);t.setAttribute('aria-selected',String(on))});positionNav();
   Object.entries(views).forEach(([k,v])=>v.classList.toggle('active',k===name));
   if(name==='map')ensureMap().then(m=>{if(m)setTimeout(()=>{
     m.invalidateSize({pan:false});
     if(pendingMapWork)flushMapWork();else applyMapContext();
+    loadStopMarkers(true);autoVehicles();
   },60)});
   if(name==='depart')ensureDepartFilled();
   if(name==='plan'){renderCommuter();checkProactive();renderNearby();loadNearby();renderQuickTrips()}
@@ -2063,7 +2235,7 @@ async function commuterGo(k){
   else{try{
     toast(`Sett opp ${k==='home'?'Jobb':'Hjem'} også for å planlegge hele reisen – viser avganger nær ${p.name} nå`,'');
     const stops=await nearestStops(p.lat,p.lon);if(!stops.length){toast('Ingen stopp i nærheten','err');return}
-    switchTab('depart');$('#depSearchInput').value=p.name;$('#depField').classList.add('filled');
+    switchTab('depart');
     $('#depChips').innerHTML=`<button class="stop-chip on">${esc(stops[0].name)}<span>${Math.round(stops[0].dist)} m</span></button>`;
     selectDepartStop(stops[0]);}catch(e){toast(e.message,'err',e.raw)}}
 }
@@ -2114,7 +2286,6 @@ function renderNearby(){
   box.innerHTML=nearbyStops.map(nearbyCardHTML).join('');
   box.querySelectorAll('.near-card').forEach(c=>c.onclick=()=>{
     const st=nearbyStops[+c.dataset.i];if(!st)return;
-    $('#depSearchInput').value=st.name;$('#depField').classList.add('filled');
     $('#depChips').innerHTML=`<button class="stop-chip on">${esc(st.name)}<span>${Math.round(st.dist)} m</span></button>`;
     switchTab('depart');selectDepartStop(st);
   });
@@ -2161,7 +2332,7 @@ function startNearby(){
 /* ================= sammenleggbare seksjoner =================
    Seksjoner du sjelden rører kan legges ned, og valget huskes. Innholdet
    animeres med grid-template-rows 0fr→1fr, som slipper å måle høyden. */
-const SEC_DEFAULT={quick:true,modes:true,recents:true,nearby:true};
+const SEC_DEFAULT={quick:true,recents:true,nearby:true,tech:false};
 function secOpen(){return {...SEC_DEFAULT,...loadLS('sections',{})}}
 function setSec(key,open){
   const all=secOpen();all[key]=open;saveLS('sections',all);
@@ -2522,26 +2693,87 @@ function renderStops(){
   state.stops.forEach((s,i)=>{
     const kind=i===0?'from':i===state.stops.length-1?'to':'via';
     const row=el('div','stop-row');
-    row.append(el('div','stop-dot '+kind,kind==='from'?'A':kind==='to'?'B':String(i)));
-    const field=el('div','stop-field'+(s.name?' filled':''));
+    /* Tekstetikett i stedet for A/B – leses direkte, også av skjermleser. */
+    row.append(el('span','sc-lab',kind==='from'?'Fra':kind==='to'?'Til':'Via'));
+    const rail=el('div','stop-rail');rail.append(el('div','stop-dot '+kind));row.append(rail);
+    const field=el('div','stop-field'+(s.name?' filled':' empty'));
     const inp=el('input');inp.type='text';inp.value=s.name||'';inp.dataset.uid=s.uid;inp.dataset.ac='1';inp.autocomplete='off';
-    inp.placeholder=kind==='from'?'Start – f.eks. Oslo S':kind==='to'?'Mål – f.eks. Vigelandsparken':'Via-stopp – f.eks. Majorstuen';
+    inp.placeholder=kind==='from'?'Hvor reiser du fra?':kind==='to'?'Hvor skal du?':'Innom hvor?';
     const clr=el('button','stop-clear tap',IC.x);clr.type='button';clr.setAttribute('aria-label','Tøm');
-    clr.onclick=()=>{const st=findStop(s.uid);st.name='';st.lat=st.lon=null;st.id=null;inp.value='';field.classList.remove('filled');inp.focus()};
-    field.append(inp,clr);row.append(field);
+    clr.onclick=()=>{const st=findStop(s.uid);st.name='';st.lat=st.lon=null;st.id=null;inp.value='';
+      field.classList.remove('filled');field.classList.add('empty');inp.focus()};
+    field.append(inp,clr);
+    /* «Din posisjon» ligger inne i feltet, slik Ruter gjør det. */
+    /* Bare startpunktet får snarveien. Å tilby «Din posisjon» på begge rader
+       leste som en feil – to like knapper over hverandre. */
+    const pos=el('button','sc-pos');pos.type='button';
+    pos.hidden=kind!=='from';
+    pos.innerHTML=`<i>${IC.locate}</i>Din posisjon`;
+    pos.setAttribute('aria-label','Bruk din posisjon som startpunkt');
+    /* FIX: trykket ga feltet fokus, og :focus-within skjulte knappen midt i
+       bevegelsen – da fullførte aldri klikket. Hindre fokusflyttingen. */
+    pos.addEventListener('pointerdown',ev=>ev.preventDefault());
+    pos.addEventListener('mousedown',ev=>ev.preventDefault());
+    pos.onclick=ev=>{ev.preventDefault();useMyPosition(s.uid)};
+    field.append(pos);
+    row.append(field);
     if(kind==='via'){const del=el('button','stop-del tap',IC.x);del.type='button';del.setAttribute('aria-label','Fjern stopp');
       del.onclick=()=>{state.stops=state.stops.filter(x=>x.uid!==s.uid);renderStops()};row.append(del)}
     box.append(row);
   });
   $('#btnAddStop').disabled=state.stops.length>=4;
+  /* Mål etter at nettleseren har lagt ut radene – ellers regner vi på
+     gårsdagens posisjoner og knappen havner skjevt. */
+  requestAnimationFrame(placeSwap);
 }
+/* Bytt-knappen skal ligge midt mellom første og siste rad, uansett hvor mange
+   via-stopp som er lagt til. Måles i stedet for å gjettes. */
+function placeSwap(){
+  const rows=$$('#stops .stop-row'),card=$('.search-card');
+  if(!rows.length||!card)return;
+  if(!rows[0].offsetHeight)return;   // kortet er skjult – vent til det vises
+  /* offsetTop er uavhengig av rulling, i motsetning til getBoundingClientRect. */
+  const off=el2=>{let y=0,n=el2;while(n&&n!==card){y+=n.offsetTop;n=n.offsetParent}return y};
+  const a=rows[0],z=rows[rows.length-1];
+  const y=((off(a)+a.offsetHeight/2)+(off(z)+z.offsetHeight/2))/2;
+  if(Number.isFinite(y)&&y>0)card.style.setProperty('--swap-y',Math.round(y)+'px');
+}
+addEventListener('resize',placeSwap);
+/* Skriftene endrer radhøyden når de er ferdig lastet – mål på nytt da. */
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>placeSwap());
+addEventListener('load',()=>setTimeout(placeSwap,60));
+if(window.ResizeObserver){const ro2=new ResizeObserver(()=>placeSwap());
+  const st=document.getElementById('stops');if(st)ro2.observe(st)}
 $('#btnAddStop').onclick=()=>{if(state.stops.length>=4)return;state.stops.splice(state.stops.length-1,0,{uid:uid()});renderStops();
   const inputs=$$('#stops input');inputs[state.stops.length-2].focus()};
-$('#btnSwap').onclick=()=>{state.stops.reverse();renderStops()};
-$('#btnUseLoc').onclick=async()=>{try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);
-  const label=await reverseGeocode(p.lat,p.lon).catch(()=>'Min posisjon');
-  const s=state.stops[0];s.name=label;s.lat=p.lat;s.lon=p.lon;s.id=null;renderStops();toast('Startpunkt satt til din posisjon','ok');
-}catch(e){logErr('geo',e);toast(e.message,'err')}};
+/* Bytt-knappen snurr en halv runde og radene bytter plass med en kort
+   bevegelse, så det er tydelig HVA som skjedde – ikke bare at noe skjedde. */
+let swapTurns=0;
+$('#btnSwap').onclick=()=>{
+  const btn=$('#btnSwap'),box=$('#stops');
+  swapTurns+=180;
+  btn.style.setProperty('--turn',swapTurns+'deg');
+  if(!reduceMotion()){
+    box.classList.add('swapping');
+    setTimeout(()=>box.classList.remove('swapping'),320);
+  }
+  try{if(navigator.vibrate)navigator.vibrate(8)}catch(e){}
+  setTimeout(()=>{state.stops.reverse();renderStops()},reduceMotion()?0:150);
+};
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Én funksjon for alle radene – knappen vet hvilken rad den står i. */
+async function useMyPosition(uid2){
+  const s=findStop(uid2);if(!s)return;
+  const btn=[...$$('#stops .sc-pos')].find(b=>b.closest('.stop-row'));
+  try{
+    toast('Finner posisjonen din…');
+    const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);
+    const label=await reverseGeocode(p.lat,p.lon).catch(()=>'Min posisjon');
+    s.name=label;s.lat=p.lat;s.lon=p.lon;s.id=null;
+    renderStops();loadNearby(true);
+    toast(`Satt til ${label}`,'ok');
+  }catch(e){logErr('geo',e);toast(e.message,'err')}
+}
 
 const ac=$('#ac');let acFor=null,acItems=[],acIdx=-1;
 const acSearch=debounce(async inp=>{
@@ -2563,17 +2795,21 @@ function pickAC(i){
   const it=acItems[i], inp=acFor;
   if(!it||!inp)return;
   acClose();
-  if(inp.id==='depSearchInput'){inp.blur();chooseDepartTarget(it)}
+  if(inp.id==='scStopInput'){inp.blur();switchTab('depart');chooseDepartTarget(it)}
   else if(inp.id==='commInput'){inp.blur();pickCommuter(it)}
   else if(inp.id==='qtInput'){inp.blur();qtPickFromSearch(it)}
+  else if(inp.id==='scStopInput'){inp.blur();switchTab('depart');chooseDepartTarget(it)}
   else{
     const s=findStop(+inp.dataset.uid);
     if(s){s.name=it.name;s.lat=it.lat;s.lon=it.lon;s.id=it.id;
       inp.value=it.name;inp.closest('.stop-field').classList.add('filled')}
   }
 }
-document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.ac)acSearch(e.target);
-  if(e.target.id==='depSearchInput')$('#depField').classList.toggle('filled',!!e.target.value);
+document.addEventListener('input',e=>{
+  if(e.target.dataset&&e.target.dataset.ac)acSearch(e.target);
+  /* Feltet er «tomt» så lenge det ikke er skrevet noe – da vises posisjonsknappen. */
+  const f=e.target.closest&&e.target.closest('.stop-field');
+  if(f)f.classList.toggle('empty',!e.target.value);
   if(e.target.id==='commInput')$('#commField').classList.toggle('filled',!!e.target.value)});
 document.addEventListener('focusin',e=>{
   if(e.target.dataset&&e.target.dataset.ac&&e.target.value.trim().length>1)acSearch(e.target);
@@ -2588,9 +2824,8 @@ document.addEventListener('keydown',e=>{
     else if(e.key==='ArrowUp'){e.preventDefault();acIdx=(acIdx-1+acItems.length)%acItems.length;[...ac.children].forEach((c,i)=>c.classList.toggle('hl',i===acIdx))}
     else if(e.key==='Enter'){e.preventDefault();pickAC(acIdx>=0?acIdx:0)}
     else if(e.key==='Escape')acClose();
-  } else if(e.key==='Enter'&&t.id!=='depSearchInput'&&t.id!=='commInput'){e.preventDefault();findJourney(false)}
+  } else if(e.key==='Enter'&&t.id!=='scStopInput'&&t.id!=='commInput'){e.preventDefault();findJourney(false)}
 });
-$('#depSearchClear').onclick=()=>{$('#depSearchInput').value='';$('#depField').classList.remove('filled');$('#depSearchInput').focus()};
 
 $$('#timeSeg button').forEach(b=>b.onclick=()=>{
   $$('#timeSeg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
@@ -2636,6 +2871,30 @@ function renderFilterNote(){
   el2.setAttribute('aria-label',`Transportfilter: kun ${liste.toLowerCase()}. Trykk for å endre.`);
   el2.onclick=()=>{openMore();setTimeout(()=>{const m=$('#planModes');if(m)m.scrollIntoView({block:'center',behavior:'smooth'})},320)};
 }
+
+/* ================= søkekortets to moduser =================
+   «Finn reise» og «Se avganger» deler ett kort. Avgangsmodus setter samme
+   stoppested som Avganger-fanen bruker, så du slipper å søke to ganger. */
+function setSearchMode(mode){
+  $$('.sc-tabs button').forEach(b=>{
+    const on=b.dataset.sc===mode;
+    b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));
+  });
+  $('#scTrip').hidden=mode!=='trip';
+  $('#scStop').hidden=mode!=='stop';
+  saveLS('searchMode',mode);
+  if(mode==='trip')requestAnimationFrame(placeSwap);
+}
+$$('.sc-tabs button').forEach(b=>b.onclick=()=>setSearchMode(b.dataset.sc));
+$('#scNearMe').onclick=async()=>{
+  try{
+    const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);
+    const stops=await nearestStops(p.lat,p.lon,900,1);
+    if(!stops.length){toast('Fant ingen stopp i nærheten','err');return}
+    $('#scStopInput').value=stops[0].name;
+    switchTab('depart');selectDepartStop(stops[0]);
+  }catch(e){logErr('geo',e);toast(e.message,'err')}
+};
 
 /* ================= søk + resultater ================= */
 const skelCards=n=>Array.from({length:n},()=>`<div class="trip-card" style="pointer-events:none"><div class="skel" style="height:24px;width:60%"></div><div class="skel" style="height:14px;width:85%;margin-top:12px"></div><div class="skel" style="height:14px;width:40%;margin-top:8px"></div></div>`).join('');
@@ -2706,7 +2965,12 @@ function renderResults(){
   $$('#resList .trip-card').forEach(c=>c.onclick=()=>selectPattern(+c.dataset.i));
   $$('#resList .tc-go').forEach(b=>b.onclick=e=>{e.stopPropagation();openDetail(+b.dataset.i)});
 }
-function syncModeBar(){$$('#modeBar .mb-btn').forEach(b=>b.classList.toggle('on',b.dataset.mode===state.routeMode))}
+function syncModeBar(){
+  /* Modusraden gjelder ruteberegning. Uten en rute var den en meny uten
+     funksjon, så den vises først når du faktisk har noe å regne om. */
+  const bar=$('#modeBar');
+  if(bar)bar.hidden=!(state.selectedPattern||state.streetRoute||(state.stops[0]&&state.stops[0].lat&&state.stops.at(-1)&&state.stops.at(-1).lat));
+  $$('#modeBar .mb-btn').forEach(b=>b.classList.toggle('on',b.dataset.mode===state.routeMode))}
 function selectPattern(i){state.selectedPattern=state.results[i];if(!state.selectedPattern)return;state.routeMode='transit';state.streetRoute=null;syncModeBar();switchTab('map')}
 
 function toolsHTML(withWakeExit){
@@ -2836,10 +3100,6 @@ async function loadTips(p){
 
 /* ================= avgangstavle ================= */
 let depRefresh=null;
-$('#depModeFilter').innerHTML=modeChipsHTML('mf-chip');
-$('#depModeFilter').addEventListener('click',e=>{const b=e.target.closest('.mf-chip');if(!b)return;
-  if(b.dataset.m==='all')state.depFilter.clear();else{const m=b.dataset.m;state.depFilter.has(m)?state.depFilter.delete(m):state.depFilter.add(m)}
-  syncModeChips('#depModeFilter','mf-chip',state.depFilter);renderDepartures()});
 function countdownHTML(diff){
   if(diff<=30000)return '<span class="cd due">nå</span>';
   if(diff<3600000)return `<span class="cd">${Math.max(1,Math.round(diff/60000))} min</span>`;
@@ -2860,8 +3120,7 @@ function mapCalls(sp){
       quay:c.quay&&c.quay.publicCode}}).sort((a,b)=>a.t-b.t);
 }
 async function chooseDepartTarget(item){
-  $('#depSearchInput').value=item.name;$('#depField').classList.add('filled');
-  $('#depChips').innerHTML='<div class="skel" style="width:140px;height:36px;flex:none"></div><div class="skel" style="width:120px;height:36px;flex:none"></div>';
+  $('#depChips').innerHTML='';
   try{
     let stops=await nearestStops(item.lat,item.lon);
     if(isNSR(item.id)&&item.id.includes('StopPlace')&&!stops.some(s=>s.id===item.id))
@@ -2870,13 +3129,15 @@ async function chooseDepartTarget(item){
     $('#depChips').innerHTML=stops.map((s,i)=>`<button class="stop-chip${i===0?' on':''}" data-i="${i}">${esc(s.name)}<span>${Math.round(s.dist)} m</span></button>`).join('');
     $$('#depChips .stop-chip').forEach(ch=>ch.onclick=()=>{$$('#depChips .stop-chip').forEach(x=>x.classList.remove('on'));ch.classList.add('on');selectDepartStop(stops[+ch.dataset.i])});
     selectDepartStop(stops[0]);
-  }catch(e){logErr('nearest',e);$('#depChips').innerHTML='';toast('Kunne ikke finne stoppesteder: '+e.message,'err',e.raw)}
+    renderNearToggle();
+  }catch(e){logErr('nearest',e);$('#depChips').innerHTML='';renderNearToggle();
+    toast('Kunne ikke finne stoppesteder: '+e.message,'err',e.raw)}
 }
 async function selectDepartStop(s){
   state.departStop=s;saveLS('lastStop',{id:s.id,name:s.name,lat:s.lat,lon:s.lon,dist:s.dist});
   $('#depTitle').textContent=s.name;
   $('#depSub').innerHTML=`${s.dist?Math.round(s.dist)+' m fra søket · ':''}trikk, t-bane, buss, tog og båt<span id="depUpdated"></span>`;
-  $('#depMapBtn').hidden=false;$('#depReports').innerHTML=reportsHTML(s.id);syncLastDepBtn();
+  $('#depReports').innerHTML=reportsHTML(s.id);syncLastDepBtn();renderNearToggle();
   await ensureUserPos();
   state.walkMinToStop=(state.userPos?haversine(state.userPos.lat,state.userPos.lon,s.lat,s.lon):(s.dist||300))/1.3/60;
   loadDepartures(s.id);
@@ -2960,9 +3221,97 @@ function renderDepartures(){
     </div>`}).join(''):emptyHTML('Ingen avganger','Ingen avganger for dette filteret akkurat nå.');
   $$('#depList .fav-star').forEach(b=>b.onclick=()=>toggleFavLine({code:b.dataset.code,dest:b.dataset.dest}));
 }
-$('#depNearMe').onclick=async()=>{try{const p=await getPos();state.userPos=p;setUser(p.lat,p.lon);chooseDepartTarget({name:'Min posisjon',lat:p.lat,lon:p.lon})}catch(e){logErr('geo',e);toast(e.message,'err')}};
-$('#depMapBtn').onclick=()=>switchTab('map');
 every(1000,()=>{document.querySelectorAll('[data-ts]').forEach(n=>{n.innerHTML=countdownHTML(+n.dataset.ts-now())})},{net:false});
+
+/* ================= holdeplasser på kartet =================
+   Kartfanen var tom: du åpnet den og så et kart uten innhold. Nå tegnes
+   holdeplassene i utsnittet med én gang, og et trykk åpner samme kort som
+   ellers i appen. Uten dette var kartet dekorativt. */
+let stopMarkersAt=0,stopMarkersBusy=false,shownStopIds=new Set(),lastPinKey='';
+const STOP_ZOOM=13, MAX_PINS=45;
+async function loadStopMarkers(force){
+  if(!mapUsable()||!stopsLayer)return;
+  const z=map.getZoom();
+  if(z<STOP_ZOOM){stopsLayer.clearLayers();shownStopIds.clear();$('#mapHint').hidden=false;return}
+  $('#mapHint').hidden=true;
+  if(stopMarkersBusy)return;
+  /* Bremsen skal hindre kall ved smådrag – ikke ved zoom eller nytt område. */
+  const c0=map.getCenter();
+  const key=z+':'+c0.lat.toFixed(3)+','+c0.lng.toFixed(3);
+  if(!force&&key===lastPinKey)return;
+  if(!force&&Date.now()-stopMarkersAt<1500)return;
+  lastPinKey=key;
+  stopMarkersBusy=true;
+  try{
+    const c=map.getCenter(),b=map.getBounds();
+    /* Radius = halve diagonalen i utsnittet, så vi henter akkurat det du ser. */
+    const r=Math.min(3000,Math.round(haversine(b.getSouth(),b.getWest(),b.getNorth(),b.getEast())/2));
+    /* maximumResults teller plattformer FØR multiModalMode grupperer dem til
+       stoppesteder – ber vi om 20 får vi typisk bare 7 stopp. Over-etterspør,
+       og kutt heller i visningen. */
+    const d=await enturGQL(NEAR_Q,{lat:c.lat,lon:c.lng,r:Math.max(400,r),n:z>=15?120:80});
+    const edges=(d.nearest&&d.nearest.edges)||[];
+    stopsLayer.clearLayers();shownStopIds.clear();
+    edges.forEach(e=>{
+      const pl=e.node&&e.node.place;if(!pl||!okLL([pl.latitude,pl.longitude]))return;
+      if(shownStopIds.has(pl.id))return;
+      if(shownStopIds.size>=MAX_PINS)return;      // nok til å være nyttig, ikke nok til å drukne kartet
+      shownStopIds.add(pl.id);
+      const modes=(pl.transportMode||[]).filter(Boolean);
+      const mm=MODE[modes[0]]||MODE.bus;
+      const mk=L.marker([pl.latitude,pl.longitude],{
+        icon:L.divIcon({className:'',iconSize:[22,22],iconAnchor:[11,11],
+          html:`<div class="stop-pin" style="--pc:${mm.hex}" title="${esc(pl.name)}">${mm.icon||''}</div>`}),
+        keyboard:false,zIndexOffset:100});
+      mk.on('click',()=>{
+        const st={id:pl.id,name:pl.name,lat:pl.latitude,lon:pl.longitude,dist:e.node.distance||0};
+        showStopCard(st);
+      });
+      mk.addTo(stopsLayer);
+    });
+    stopMarkersAt=Date.now();
+  }catch(err){logErr('stopmarkers',err)}
+  finally{stopMarkersBusy=false}
+}
+
+/* ================= kjøretøy slås på av seg selv =================
+   Levende busser er appens mest slående funksjon, men lå begravd i lagvelgeren.
+   Fra zoomnivå 14 er de meningsfulle – under det er de bare prikker. */
+const VEH_ZOOM=14;
+let vehAuto=false;
+function autoVehicles(){
+  if(!mapUsable())return;
+  const ni=netInfo();
+  if(ni.slow||ni.save)return;
+  const z=map.getZoom();
+  if(z>=VEH_ZOOM&&!state.vehiclesOn&&!vehAuto){
+    vehAuto=true;state.vehiclesOn=true;syncLayerUI();
+    pollVehicles();stopTimer(vehTimer);
+    vehTimer=every(12000,()=>{if(state.vehiclesOn&&$('#viewMap').classList.contains('active'))pollVehicles()});
+  }else if(z<VEH_ZOOM&&vehAuto&&state.vehiclesOn){
+    /* Slå av igjen bare hvis det var VI som slo på – ikke overstyr brukeren. */
+    vehAuto=false;state.vehiclesOn=false;syncLayerUI();
+    stopTimer(vehTimer);if(vehicleLayer)vehicleLayer.clearLayers();
+  }
+}
+
+/* ================= følg meg ================= */
+let followSelf=false;
+function startFollow(){
+  if(!('geolocation' in navigator))return;
+  followMe=true;$('#fabLocate').classList.add('following');
+  toast('Følger posisjonen din','ok');
+  followWatch=navigator.geolocation.watchPosition(p=>{
+    state.userPos={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy};
+    setUser(state.userPos.lat,state.userPos.lon,p.coords.accuracy);
+    if(followMe&&mapUsable()){followSelf=true;map.panTo([state.userPos.lat,state.userPos.lon],{animate:true});
+      setTimeout(()=>{followSelf=false},600)}
+  },e=>{logErr('geo',e);stopFollow()},{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+}
+function stopFollow(){
+  followMe=false;$('#fabLocate').classList.remove('following');
+  if(followWatch!=null){navigator.geolocation.clearWatch(followWatch);followWatch=null}
+}
 
 /* ================= siste avgang i kveld ================= */
 function nightCutoff(){
@@ -3018,6 +3367,23 @@ async function showLastDepartures(){
     openModal(`<div class="mc-title"><h3>Siste avgang i kveld</h3><button class="x tap" aria-label="Lukk">${IC.x}</button></div>
       <div class="err-box" style="margin:0"><div class="err-ic">${IC.alert}</div><b>Kunne ikke hente</b><p>${esc(e.message)}</p></div>`);
   }
+}
+$('#depSwitch').onclick=()=>{
+  switchTab('plan');setSearchMode('stop');showPlanSection('form');
+  setTimeout(()=>{const i=$('#scStopInput');if(i){i.value='';i.focus()}},260);
+};
+/* Nabostoppene ligger bak én knapp – du trenger sjelden mer enn det du står på. */
+function renderNearToggle(){
+  const btn=$('#depNearToggle'),box=$('#depChips');
+  if(!btn||!box)return;
+  const n=box.querySelectorAll('.stop-chip').length-1;
+  if(n<1){btn.hidden=true;box.hidden=true;return}
+  btn.hidden=false;
+  const open=!box.hidden;
+  btn.innerHTML=`${IC.chevD}${open?'Skjul stopp i nærheten':`${n} stopp til i nærheten`}`;
+  btn.classList.toggle('open',open);
+  btn.setAttribute('aria-expanded',String(open));
+  btn.onclick=()=>{box.hidden=!box.hidden;renderNearToggle()};
 }
 function syncLastDepBtn(){
   const wrap=$('#depExtras'),btn=$('#btnLastDep');
@@ -3079,7 +3445,29 @@ function bindCardGrip(){
   };
   applyCardCollapse();
 }
-function nodeMarker(ll,cls,txt){if(!mapUsable()||!routeLayer||!okLL(ll))return null;return L.marker(ll,{icon:L.divIcon({className:'',html:`<div class="rt-node ${cls}">${txt}</div>`,iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:300}).addTo(routeLayer)}
+/* «A» og «B» sa ingenting om hva som var start og slutt – to like sirkler med
+   hver sin bokstav. Nå skiller de seg på FORM (sirkel mot dråpe), på tekst
+   («Fra»/«Til» skrevet ut), og startpunktet får et personikon når det faktisk
+   er din egen posisjon. Form + tekst virker også for fargeblinde. */
+function isOwnPosition(pt){
+  const u=state.userPos;
+  if(!u||!pt)return false;
+  return haversine(u.lat,u.lon,pt[0],pt[1])<60;
+}
+function nodeMarker(ll,cls,txt,label){
+  if(!mapUsable()||!routeLayer||!okLL(ll))return null;
+  const meg=cls==='rt-start'&&isOwnPosition(ll);
+  const tekst=label||(cls==='rt-start'?(meg?'Din posisjon':'Fra'):cls==='rt-end'?'Til':txt);
+  const inner=meg?IC.person:(cls==='rt-end'?IC.flag:txt);
+  const shape=cls==='rt-end'?'rt-pin':'rt-round';
+  return L.marker(ll,{
+    icon:L.divIcon({className:'',
+      html:`<div class="rt-wrap"><div class="rt-node ${cls} ${shape}${meg?' rt-me':''}">${inner}</div>`+
+           `<span class="rt-label">${esc(tekst)}</span></div>`,
+      iconSize:[30,30],iconAnchor:[15,cls==='rt-end'?30:15]}),
+    zIndexOffset:cls==='rt-end'?320:300,
+    interactive:false}).addTo(routeLayer);
+}
 function fitRoute(ll){const pts=(ll||[]).filter(okLL);if(!mapUsable()||pts.length<1)return;lastBounds=L.latLngBounds(pts);map.fitBounds(lastBounds,{paddingTopLeft:[26,110],paddingBottomRight:[26,mapCardH()+80],maxZoom:16,animate:true,duration:.6})}
 function clearRoute(){
   try{if(routeLayer)routeLayer.clearLayers()}catch(e){logErr('kart',e)}
@@ -3098,7 +3486,7 @@ function drawPattern(p){
   const first=p.legs[0],last=p.legs[p.legs.length-1];
   const s0=cq(first.fromPlace)||pts[0]||null,e0=cq(last.toPlace)||pts[pts.length-1]||null;
   if(s0)nodeMarker(s0,'rt-start','A');if(e0)nodeMarker(e0,'rt-end','B');
-  state.stops.slice(1,-1).forEach((v,i)=>{if(v.lat)nodeMarker([v.lat,v.lon],'rt-via',String(i+1))});
+  state.stops.slice(1,-1).forEach((v,i)=>{if(v.lat)nodeMarker([v.lat,v.lon],'rt-via',String(i+1),'Via')});
   if(pts.length)fitRoute(pts);
 }
 function fillFareMeta(){const slot=$('#mcMeta');if(slot&&state.fare)slot.innerHTML+=`<span class="meta-chip">${IC.wallet}${fmtFare(state.fare)}</span>`}
@@ -3106,7 +3494,7 @@ function showRouteCard(p){
   const from=state.stops[0],to=state.stops[state.stops.length-1];const transit=p.legs.filter(l=>modeOf(l)!=='foot');
   const card=$('#mapCard');card.hidden=false;$('#viewMap').classList.add('has-card');
   card.innerHTML=mapCardHTML(`
-   <div class="mc-head"><div><b>${esc(from.name)} → ${esc(to.name)}</b><span>Kollektiv · ${fmtDur(p.duration)}${p.legs.some(l=>l.realtime)?' · sanntid':''}</span></div>
+   <div class="mc-head"><div><b><span class="mc-from">${esc(from.name)}</span> → <span class="mc-to">${esc(to.name)}</span></b><span>Kollektiv · ${fmtDur(p.duration)}${p.legs.some(l=>l.realtime)?' · sanntid':''}</span></div>
    <button class="mini-btn ghost" id="mcClear" aria-label="Fjern rute">${IC.x}</button></div>
    <div class="mc-times"><b>${fmtTime(p.expectedStartTime)}</b><span>→</span><b>${fmtTime(p.expectedEndTime)}</b>
      <span class="mc-legs">${transit.map(l=>{const m2=modeOf(l);return `<i style="background:${MODE[m2].hex}">${esc(l.line&&l.line.publicCode?l.line.publicCode:MODE[m2].l)}</i>`}).join('')}</span></div>
@@ -3137,7 +3525,7 @@ function drawStreetRoute(route,m,pts){
   if(!st.dash){try{const path=line._path,len=path.getTotalLength();path.style.strokeDasharray=len+' '+len;path.style.strokeDashoffset=len;path.getBoundingClientRect();
     path.style.transition='stroke-dashoffset .8s ease';path.style.strokeDashoffset='0';setTimeout(()=>{path.style.strokeDasharray='none';path.style.transition=''},900)}catch(e){}}
   nodeMarker([pts[0].lat,pts[0].lon],'rt-start','A');nodeMarker([pts[pts.length-1].lat,pts[pts.length-1].lon],'rt-end','B');
-  pts.slice(1,-1).forEach((v,i)=>nodeMarker([v.lat,v.lon],'rt-via',String(i+1)));fitRoute(ll);
+  pts.slice(1,-1).forEach((v,i)=>nodeMarker([v.lat,v.lon],'rt-via',String(i+1),'Via'));fitRoute(ll);
 }
 function showStreetCard(route,m,pts){
   const st=STREET[m];const b=pts[pts.length-1];const card=$('#mapCard');card.hidden=false;
@@ -3220,12 +3608,58 @@ $('#fabLayers').onclick=toggleLayers;
 $('#baseSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setBasemap(b.dataset.base)});
 $('#map').addEventListener('pointerdown',()=>{if(layersOpen())closeLayers()});
 async function onMapClick(e){
-  if(!mapArmed)return;
-  mapArmed=false;$('#fabSetB').classList.remove('armed');map.getContainer().classList.remove('armed');
-  const {lat,lng}=e.latlng;$('#mapCtxChip').textContent='Henter stedsnavn…';
-  const name=await reverseGeocode(lat,lng).catch(()=>'Valgt punkt');
-  const t=state.stops[state.stops.length-1];t.name=name;t.lat=lat;t.lon=lng;t.id=null;renderStops();
-  toast('Mål satt – beregner rute…','ok');routeForCurrentMode();
+  const {lat,lng}=e.latlng;
+  if(mapArmed){
+    mapArmed=false;$('#fabSetB').classList.remove('armed');map.getContainer().classList.remove('armed');
+    $('#mapCtxChip').textContent='Henter stedsnavn…';
+    const name=await reverseGeocode(lat,lng).catch(()=>'Valgt punkt');
+    const t=state.stops[state.stops.length-1];t.name=name;t.lat=lat;t.lon=lng;t.id=null;renderStops();
+    toast('Mål satt – beregner rute…','ok');routeForCurrentMode();
+    return;
+  }
+  /* Uten å armere noe: et trykk svarer «hva er her?». Før måtte du først
+     trykke en knapp for at kartet skulle reagere i det hele tatt. */
+  showPlaceCard(lat,lng);
+}
+
+/* ================= «Hva er her?» ================= */
+async function showPlaceCard(lat,lon){
+  if(!okLL([lat,lon]))return;
+  const card=$('#mapCard');card.hidden=false;
+  card.innerHTML=mapCardHTML(`<div class="mc-head"><div><b>Henter stedsnavn…</b>
+    <span>${lat.toFixed(4)}, ${lon.toFixed(4)}</span></div></div>
+    <div class="skel" style="height:40px;margin-top:10px"></div>`);
+  bindCardGrip();measureStack();
+  try{
+    const [name,stops]=await Promise.all([
+      reverseGeocode(lat,lon).catch(()=>'Valgt punkt'),
+      nearestStops(lat,lon,700,3).catch(()=>[])
+    ]);
+    const liste=stops.length
+      ? stops.map(s=>`<button class="place-stop" data-id="${esc(s.id)}" data-n="${esc(s.name)}"
+            data-lat="${s.lat}" data-lon="${s.lon}" data-d="${Math.round(s.dist)}">
+          <span class="ps-name">${esc(s.name)}</span>
+          <span class="ps-dist">${fmtWalk(s.dist)}</span></button>`).join('')
+      : '<p class="hint" style="margin:8px 2px 0">Ingen holdeplass innen 700 meter.</p>';
+    card.innerHTML=mapCardHTML(`<div class="mc-head"><div><b>${esc(name)}</b>
+        <span>${stops.length?`Nærmeste holdeplass ${fmtWalk(stops[0].dist)} unna`:'Valgt punkt'}</span></div></div>
+      <div class="place-stops">${liste}</div>
+      <div class="mc-acts">
+        <button class="mini-btn" id="pcTo">${IC.pin}Reis hit</button>
+        <button class="mini-btn ghost" id="pcFrom">Reis herfra</button>
+      </div>`);
+    bindCardGrip();measureStack();
+    card.querySelectorAll('.place-stop').forEach(b=>b.onclick=()=>showStopCard({
+      id:b.dataset.id,name:b.dataset.n,lat:+b.dataset.lat,lon:+b.dataset.lon,dist:+b.dataset.d}));
+    const setStop=(idx,label)=>{
+      const t=idx==='to'?state.stops[state.stops.length-1]:state.stops[0];
+      t.name=name;t.lat=lat;t.lon=lon;t.id=null;renderStops();
+      toast(`${label} satt til ${name}`,'ok');
+      if(state.stops[0].lat&&state.stops.at(-1).lat){switchTab('plan');findJourney(false)}
+    };
+    $('#pcTo').onclick=()=>setStop('to','Mål');
+    $('#pcFrom').onclick=()=>setStop('from','Startpunkt');
+  }catch(err){logErr('place',err);hideMapCard()}
 }
 function showStopCard(s){
   const card=$('#mapCard');card.hidden=false;
@@ -3321,10 +3755,20 @@ function computeTitle(){
 }
 every(1000,()=>{const t=computeTitle();if(document.title!==t)document.title=t},{net:false});
 
-function tickClock(){try{$('#clock').textContent=new Intl.DateTimeFormat('nb-NO',{timeZone:'Europe/Oslo',hour:'2-digit',minute:'2-digit'}).format(new Date())+' · OSLO'}catch(e){}}
-every(15000,tickClock,{net:false});tickClock();
+/* Topplinja viser hvor du er, ikke klokkeslettet – telefonen har alt en klokke
+   i statuslinja, og en til var bare støy. */
+const TAB_TEXT={plan:'Planlegg reisen',depart:'Sanntidsavganger',map:'Kart og kjøretøy'};
+function setTopContext(name){
+  const el2=$('#topContext');if(!el2)return;
+  const txt=TAB_TEXT[name]||TAB_TEXT.plan;
+  if(el2.textContent===txt)return;
+  el2.classList.add('swap');
+  setTimeout(()=>{el2.textContent=txt;el2.classList.remove('swap')},180);
+}
+function tickClock(){}
 
 $('#app').dataset.tab='plan';
+setSearchMode(loadLS('searchMode','trip'));
 initSections();syncModeChips('#planModes','mode-chip',state.modes);renderFilterNote();
 renderNearby();loadNearby();startNearby();renderQuickTrips();updateSecCounts();
 document.documentElement.dataset.base=state.basemap;
@@ -3354,8 +3798,7 @@ whenVisible(away=>{
       const d=await enturGQL(`{stopPlace(id:${JSON.stringify(stopId)}){id name latitude longitude}}`,{});
       if(d.stopPlace){
         const st={id:d.stopPlace.id,name:d.stopPlace.name,lat:d.stopPlace.latitude,lon:d.stopPlace.longitude,dist:0};
-        $('#depSearchInput').value=st.name;$('#depField').classList.add('filled');
-        $('#depChips').innerHTML=`<button class="stop-chip on">${esc(st.name)}</button>`;
+            $('#depChips').innerHTML=`<button class="stop-chip on">${esc(st.name)}</button>`;
         selectDepartStop(st);return;
       }
     }catch(e){logErr('deeplink',e)}
@@ -3377,13 +3820,13 @@ whenVisible(away=>{
   }
   if(q.get('go')==='1'&&q.get('from')&&q.get('to')){parseRouteParams();return}
   const tab=q.get('tab');
-  if(tab&&views[tab]){switchTab(tab);if(q.get('near')==='1')setTimeout(()=>{const b=$('#depNearMe');if(b)b.click()},400);return}
+  if(tab&&views[tab]){switchTab(tab);if(q.get('near')==='1')setTimeout(()=>{const b=$('#scNearMe');if(b)b.click()},400);return}
   if(loadLS('seen',false)){
     /* Gjenoppta der du slapp: samme fane, og samme stoppested på tavla.
        Da koster det null trykk å åpne appen og se hva som går. */
     const last=loadLS('lastStop',null);
-    if(last&&last.id){state.departStop=last;$('#depSearchInput').value=last.name;$('#depField').classList.add('filled');
-      $('#depTitle').textContent=last.name;$('#depMapBtn').hidden=false;
+    if(last&&last.id){state.departStop=last;
+      $('#depTitle').textContent=last.name;
       $('#depChips').innerHTML=`<button class="stop-chip on">${esc(last.name)}</button>`;
       loadDepartures(last.id);}
     const lt=loadLS('lastTab',null);

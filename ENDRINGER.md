@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (150 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (184 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,222 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Hvem er start, og hvem er mål?
+
+«A» og «B» var to like sirkler med hver sin bokstav. Du måtte huske
+konvensjonen, og fargen var det eneste andre holdepunktet – som ikke hjelper
+alle. Nå skiller de seg på **tre** måter samtidig:
+
+| | Start | Mål |
+|---|---|---|
+| Form | sirkel | dråpe med spiss ned i punktet |
+| Innhold | «A», eller **personikon** hvis det er deg | flaggikon |
+| Etikett | «Fra», eller **«Din posisjon»** | «Til» |
+
+**Startpunktet vet om det er deg.** Ligger startpunktet under 60 meter fra din
+egen posisjon, byttes «A» ut med et personikon, markøren får appens blåfarge med
+en ring rundt, og etiketten sier «Din posisjon». Da er det ingen tvil om hvilken
+prikk som er deg.
+
+**Posisjonsprikken lå oppå målmarkøren.** På skjermbildet ditt dekket den blå
+GPS-prikken delvis B-markøren. Den er nå mindre og ligger under rutemarkørene i
+stablingen, så målet alltid er synlig.
+
+**Kortet fargekoder samme retning som kartet** – en grønn prikk foran
+startstedet, en rød foran målet. Da henger «Oslo S → Fjeldlund barnehage»
+visuelt sammen med markørene over.
+
+Form og tekst betyr at det virker uten å stole på farge alene.
+
+---
+
+## Kartfanen er ikke lenger tom
+
+Målingen var tydelig: kartfanen hadde bare 7 knapper og 9 % dekket flate – den
+var ryddig. Problemet var det motsatte. Du åpnet Kart og fikk et kart uten
+innhold: **én** markør, ingen holdeplasser, alle datalag avslått.
+
+**1. Holdeplasser tegnes med én gang.** Nålene følger utsnittet og oppdateres når
+du panorerer eller zoomer. Trykk på en nål → samme stoppestedskort som ellers.
+
+> To feil funnet underveis. Entur teller `maximumResults` på **plattformer**,
+> ikke stoppesteder – ber du om 20 med `multiModalMode:parent`, får du bare 7
+> stopp tilbake. Vi over-etterspør nå (80–120) og kutter i visningen i stedet,
+> med tak på 45 nåler. Bremsen bygde dessuten bare på klokka, så zoom utløste
+> ingen ny henting; den ser nå på selve utsnittet. Målt: 45 nåler på zoom 13,
+> 19 på zoom 15, 7 på zoom 16.
+
+**2. Kjøretøy slås på av seg selv.** Levende busser er appens mest slående
+funksjon, men lå begravd i lagvelgeren. Fra zoomnivå 14 kommer de automatisk, og
+forsvinner igjen når du zoomer ut – men **bare** hvis det var appen som slo dem
+på. Har du valgt selv, blir valget respektert. Hoppes over på treg forbindelse.
+
+**3. Modusraden vises bare når den betyr noe.** Kollektiv/Bil/Sykkel/Gå gjelder
+ruteberegning, og lå der som en meny uten funksjon før du hadde søkt. Nå dukker
+den opp når det finnes to punkter å regne mellom.
+
+**4. «Følg meg».** Trykk posisjonsknappen to ganger, så låser kartet seg til deg
+mens du går. Knappen lyser mens den er aktiv, og panorerer du selv, slipper den
+taket. En nøyaktighetssirkel vises når GPS-en er upresis (over 25 m).
+
+**5. «Hva er her?»** Et vanlig trykk på kartet gir nå stedsnavn, de nærmeste
+holdeplassene med gåavstand, og knappene «Reis hit» / «Reis herfra». Før måtte
+du først armere en knapp for at kartet skulle reagere i det hele tatt.
+
+Etter endringene: **46 markører** på skjermen ved åpning, mot 1 før – og
+kartflaten er *mindre* dekket enn før (4 % mot 9 %), fordi modusraden er borte
+når den ikke trengs.
+
+---
+
+## Fra/Til-raden: skinne, prikker og et bytte man ser
+
+**Skinnen henger sammen med prikkene nå.** Den stiplede linja var tegnet som et
+løst element med en fast venstremarg (`left:34px`), mens prikkene lå i et
+flex-oppsett – de kunne ikke annet enn å gli fra hverandre. Skinnen tegnes nå
+*inne i* prikkekolonnen, med halve streken over og halve under hver prikk.
+Første rad har ingen strek oppover, siste ingen nedover. Målt i nettleser:
+prikker og skinne står på **nøyaktig samme x** (74 px), uansett hvor bred
+etiketten er.
+
+**Bytt-knappen snurr.** Ett trykk gir en halv omdreining med fjærende kurve,
+radene glir kort forbi hverandre, og du kjenner et lite vibrasjonsklikk. Byttet
+skjer 150 ms inn i bevegelsen, så du ser *hva* som skjedde – ikke bare at noe
+skjedde. Under `prefers-reduced-motion` skjer byttet umiddelbart uten animasjon.
+
+**«Din posisjon» sto på begge radene.** To identiske knapper rett over hverandre
+leste som en feil. Nå står den bare på startpunktet, slik Ruter gjør det, og
+Til-raden viser i stedet ledeteksten «Hvor skal du?».
+
+Ledetekstene er samtidig kortet ned: «Start – f.eks. Oslo S» → **«Hvor reiser du
+fra?»**, «Mål – f.eks. Vigelandsparken» → **«Hvor skal du?»**.
+
+> Testrammen avslørte seg selv her: jeg skrev først en `async`-test for byttet,
+> men rammen er synkron og ventet aldri på løftet – den ville «bestått» uansett
+> resultat. Byttet verifiseres nå i nettleser (`swap_test.py`), og jsdom-testen
+> sjekker bare logikken den faktisk kan se.
+
+---
+
+## Roligere topplinje
+
+Tre ting gjorde den urolig, og alle tre var pynt uten innhold.
+
+**Den animerte stripa er borte.** En stiplet linje som løp sidelengs i loop –
+den lignet sperrebånd og trakk blikket bort fra innholdet hele tiden. Erstattet
+med en 2 px hårstrek i fanens farge som toner ut mot høyre. Den gjør samme jobb
+(markerer kanten, viser hvor du er) uten å rope. Målt: **null animasjoner** i
+topplinja nå.
+
+**Klokka er fjernet.** «14:19 · OSLO» sto rett under telefonens egen klokke i
+statuslinja – appen kjører `standalone`, så den er alltid synlig. To klokker
+10 mm fra hverandre er ikke informasjon, det er støy.
+
+**Undertittelen sier nå hvor du er.** «NORGE · SANNTID» var ren dekorasjon.
+Nå står det **Planlegg reisen**, **Sanntidsavganger** eller **Kart og kjøretøy**,
+og teksten toner mykt over når du bytter fane. Samme plass, faktisk innhold.
+
+I tillegg: logoen er lettere (32 px, uten tung slagskygge), ordmerket har
+strammere sperring, og gløden i hjørnet er dempet fra 34 % til 22 %.
+
+Topplinja rommer nå **to** elementer – merket og menyknappen – mot fire før.
+Høyde 54 px, kontrast 14,2:1 på ordmerket og 9,1:1 på konteksten.
+
+---
+
+## «Din posisjon» ligger i feltet
+
+Som i Ruter-appen: knappen står *inne* i Fra-raden i stedet for som en egen
+lenke under kortet. Ett element mindre å lese, og valget står der du faktisk
+skal fylle inn.
+
+- Vises bare når raden er tom og ikke har fokus – begynner du å skrive,
+  forsvinner den umiddelbart.
+- Ligger i **alle** radene, ikke bare Fra. «Til = min posisjon» er nyttig når
+  noen skal hente deg, og det kostet ingenting å støtte.
+- Etiketten tilpasser seg raden: «Bruk din posisjon som startpunkt / mål /
+  via-stopp».
+
+### FIX funnet av testen: knappen kunne ikke trykkes
+Å trykke knappen ga feltet fokus, og `:focus-within` skjulte knappen **midt i
+trykket**. Da fullførte aldri klikket – `mouseup` traff et annet element enn
+`mousedown`. På telefon ville den oppført seg som en død knapp.
+
+Løst ved å hindre fokusflyttingen (`pointerdown`/`mousedown` med
+`preventDefault`), så knappen står stille til trykket er ferdig.
+
+> Måleskriptet for trykkflater ga samtidig et falskt utslag: en knapp nederst på
+> siden lå delvis bak bunnmenyen, og `elementFromPoint` traff menyen i stedet.
+> Skriptet hopper nå over elementer som ikke er fritt målbare, i stedet for å
+> melde dem som for små.
+
+---
+
+## Én vei til hver funksjon
+
+Talte opp synlige kontroller per fane, og Avganger skilte seg ut med **45**.
+Årsaken var at flere ting fantes to steder.
+
+| | Før | Etter |
+|---|---|---|
+| Avganger | 45 knapper | **33** |
+| Seksjoner i «Mer» | 9 | **5** |
+
+**Transportfilteret er borte fra Avganger.** Det lå der med seks knapper
+samtidig som transportvalget nettopp var flyttet til innstillingene – to steder
+som gjorde nesten det samme, med hver sin tilstand. Nå finnes valget ett sted.
+
+**Søkefeltet er borte fra Avganger.** Det gjentok søkekortet på Plan. I stedet
+står det **«Bytt stopp»**, som tar deg til kortet i avgangsmodus med markøren i
+feltet. Én implementasjon, ett sted å vedlikeholde.
+
+**Nabostoppene ligger bak én knapp.** Fem holdeplasser ble listet opp samtidig;
+du trenger sjelden mer enn den du står på. Knappen sier hvor mange som er skjult:
+«4 stopp til i nærheten».
+
+**«Vis på kart» er fjernet.** Kartfanen ligger ett trykk unna i menyen uansett.
+
+**«Mer» er ryddet.** Versjon, Systemtid og Feillogg er feilsøking, ikke
+innstillinger. De ligger samlet bak **Teknisk**, lukket som standard, slik at
+arket viser fem meningsfulle punkter i stedet for ni blandede.
+
+> Underveis fant testene en skade i selve testrammen: tidligere Python-baserte
+> tekstbytter hadde lagt igjen bokstavelige `\n` i en JavaScript-blokk, slik at
+> hele testoppsettet kastet ved oppstart. Rettet, og verdt å merke seg – verktøy
+> kan gå i stykker på samme måte som koden de tester.
+
+---
+
+## Samlet søkekort
+
+Etter mønster fra Ruter: **«Finn reise»** og **«Se avganger»** ligger nå i ett
+kort med en fanevelger på toppen, i stedet for å være spredt over to faner og
+fire løse knapperader.
+
+**Fra og Til er rader, ikke bokser.** Hvert felt hadde sin egen ramme, avrunding
+og skygge – tre kanter å lese før man kom til teksten. Nå er kortet rammen, og
+radene deler én tynn skillelinje. Etiketten er tekst («Fra», «Til», «Via») i
+stedet for A/B-medaljonger, og punktet er redusert til en liten farget prikk.
+Fokus vises med en strek som gror ut fra venstre.
+
+**Bytt-knappen ligger i margen**, loddrett midt mellom første og siste rad. Den
+plasseres etter måling, ikke en fast verdi – legger du til via-stopp, følger den
+med. Målt avvik fra senter: **0 px**, både med og uten via-stopp.
+
+> Den satt først 18 px for lavt. Årsaken var at posisjonen ble regnet ut før
+> skriftene var ferdig lastet, slik at radene flyttet seg etterpå. Løst ved å
+> måle med `offsetTop` (uavhengig av rulling) og måle på nytt når
+> `document.fonts.ready` løser seg.
+
+**«Se avganger» sparer et steg.** Du søker etter en holdeplass rett i kortet, og
+et treff tar deg direkte til tavla. «Nær meg» finner nærmeste stopp med ett
+trykk. Valgt modus huskes.
+
+Via-stopp og «Din posisjon» er dempet til tekstlenker – de er sekundære
+handlinger og skal ikke konkurrere med «Finn reise».
 
 ---
 

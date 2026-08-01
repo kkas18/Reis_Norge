@@ -14,10 +14,8 @@ Legg filene **nøyaktig slik** i rota av repositoryet:
 ├── sw.js                      ← service worker
 ├── manifest.webmanifest       ← PWA-manifest
 ├── .nojekyll                  ← tom fil, hindrer at GitHub Pages filtrerer filer
-├── README.md
-├── ENDRINGER.md               ← hva som ble rettet (trengs ikke på nett)
-├── test-dom.js                ← tester (trengs ikke på nett)
-├── test-live.js               ← tester (trengs ikke på nett)
+├── README.md                  ← denne filen
+└── ENDRINGER.md               ← endringslogg
 └── icons/
     ├── icon.svg               vektorikon
     ├── icon-192.png           installasjonsikon (any)
@@ -69,15 +67,6 @@ Android cacher WebAPK-ikonet. Avinstaller appen, åpne Chrome →
 *Innstillinger → Personvern → Slett nettleserdata → Bufrede bilder og filer*,
 last siden på nytt og installer igjen.
 
-## Bygging av ressurser
-```
-python3 build_icons.py   # ikonsettet (SVG + PNG)
-python3 build_fonts.py   # subsetter og legger skriftene inn i index.html
-python3 mkshots.py       # skjermbildene manifestet viser ved installasjon
-```
-Skriftene ligger i `index.html` som base64-WOFF2, så appen har ingen eksterne
-avhengigheter utenom kart og API-er.
-
 ## Datakilder (alle gratis, ingen nøkkel)
 - Kollektiv, sanntid, geosøk, avvik, kjøretøyposisjoner: **Entur**
 - Bil / sykkel / gange-ruting: **OSRM** (FOSSGIS)
@@ -95,27 +84,9 @@ krever native kode eller en server. I web-appen oppdateres i stedet fanetittelen
 mens en reise pågår, og passasjerrapporter lagres lokalt. «Vekk meg»-alarmen virker
 mens appen er åpen.
 
-## Tester
-```
-npm install jsdom      # kun for test-dom.js
-node test-dom.js       # 150 tester: grensesnitt, sveip, PWA-oppsett, logikk (uten nett)
-node test-live.js      # 15 tester: appens egne spørringer mot Entur (krever nett)
-python3 swipe_test.py  # sveip og kartlag med ekte touch i Chromium
-python3 measure.py     # tetthet, fanefarger og kontrast
-python3 fill_test.py   # utfylling av Plan-fanen og zoom-sperre
-python3 qt_test.py     # hurtigreiser ende-til-ende
-python3 sec_test.py    # sammenleggbare seksjoner og kartkort
-python3 overlap_test.py # at kartpanelene ikke dekker hverandre
-python3 perf_test.py   # pausing i bakgrunn, oppfriskning, offline-buffer
-python3 font_test.py   # at skriftene er lokale og dekker alle vekter
-python3 a11y.py        # trykkflater og tilgjengelige navn
-python3 polish_test.py # siste avgang, dyplenker, share target, fokus
-python3 plan_test.py   # Plan-fanens oppsett og kontrast i begge temaer
-python3 soak.py        # slitasjetest: forfall, fastlåste flagg, timerlekkasje
-python3 regress_map.py # reisesøk etter at kartfanen har vært besøkt
-python3 update_test.py # at nye versjoner oppdages uten omstart
-```
-
 ## Feilretting
 `ENDRINGER.md` beskriver hver feil som ble funnet og rettet, med kildehenvisning
 til hva Entur-API-et faktisk returnerer.
+
+Testene og byggeskriptene (jsdom-suite, Playwright-målinger, font- og
+ikongenerering) er holdt utenfor denne pakken, siden de ikke skal på nett.
