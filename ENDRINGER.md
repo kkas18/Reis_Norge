@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (220 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (224 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,39 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## T-bane og trikk manglet i søket
+
+Meldt av bruker, og en ekte feil med tre lag.
+
+**Kjernen:** geocoderen returnerer `category` som en **liste**. Holtet har
+`['onstreetBus', 'onstreetTram', 'onstreetBus']` – men koden leste bare det
+første elementet. Trikkeholdeplassen ble dermed presentert *og rangert* som
+bussholdeplass. Entur sender også et `mode`-felt (`[{bus},{tram}]`) som vi ikke
+brukte i det hele tatt.
+
+Nå leses hele lista, stoppet rangeres etter sitt **viktigste** transportmiddel,
+og alle vises: **«Trikk · Buss»**.
+
+**To feil til, funnet underveis:**
+
+- **«Holtet» finnes 19 steder i Norge.** Uten et fokuspunkt kom de i tilfeldig
+  rekkefølge og fylte hele lista. Fokuspunktet ble bare satt hvis du hadde gitt
+  posisjonstilgang; nå faller det tilbake på kartets midtpunkt, valgt holdeplass
+  eller Oslo.
+- **Ett treff per plattform.** Samme holdeplass kom seks ganger på rad. Like
+  navn slås nå sammen, og det viktigste transportmiddelet beholdes.
+
+Før og etter, samme søk:
+
+| Søk | Før | Etter |
+|---|---|---|
+| Holtet | Buss, Buss, Buss, Buss, Buss, Buss | **Trikk · Buss**, deretter andre steder |
+| Majorstuen | (bare «Majorstuen» uten type) | **T-bane · Trikk · Buss** |
+| Storo | Buss-treff dominerte | **T-bane · Trikk · Buss** |
+| Tøyen | Buss først | **T-bane · Buss**, så **Tog · Buss** |
 
 ---
 

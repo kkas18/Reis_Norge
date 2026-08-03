@@ -1899,38 +1899,76 @@ async function autocomplete(text,focus){
   /* size:8 ga typisk ÉN holdeplass og sju POI-er – stoppet druknet. Vi henter
      flere og sorterer holdeplasser først, siden det er dem folk søker etter i
      en reiseapp. */
-  const q=new URLSearchParams({text,lang:'no',size:'20',layers:'venue,address,street,locality'});
-  const f=focus||state.userPos;
-  if(f&&f.lat){q.set('focus.point.lat',f.lat);q.set('focus.point.lon',f.lon)}
+  /* «Holtet» finnes 19 steder i Norge. Uten et fokuspunkt kommer de i tilfeldig
+     rekkefølge og fyller hele lista – da så det ut som om trikkeholdeplassen
+     ikke fantes. Vi faller nå tilbake på kartets midtpunkt, valgt holdeplass
+     eller Oslo, slik at nære treff alltid vinner. */
+  const q=new URLSearchParams({text,lang:'no',size:'40',layers:'venue,address,street,locality'});
+  const f=focus||state.userPos||(mapUsable()&&mapCenter())||state.departStop||OSLO;
+  if(f&&f.lat!=null){q.set('focus.point.lat',f.lat);q.set('focus.point.lon',f.lon)}
   const j=await fetchJSON(`${GEO}/autocomplete?${q}`,{headers:CLIENT});
   const alle=(j.features||[]).map(f2=>({
     id:f2.properties.id,
     name:f2.properties.name||f2.properties.label,
     label:f2.properties.label||f2.properties.name,
     layer:f2.properties.layer,
+    /* FIX: category er en LISTE. Holtet har ['onstreetBus','onstreetTram',
+       'onstreetBus'] – leste vi bare første element, ble trikkeholdeplassen
+       presentert som bussholdeplass, og rangert deretter. Nå brukes hele
+       lista, og `mode` som Entur også sender med. */
     kat:(f2.properties.category||[])[0]||null,
+    kats:[...new Set(f2.properties.category||[])],
+    modes:[...new Set((f2.properties.mode||[]).flatMap(m=>Object.keys(m||{})))],
+    sted:f2.properties.locality||f2.properties.county||null,
     lat:f2.geometry.coordinates[1],
     lon:f2.geometry.coordinates[0]
   }));
   const erStopp=x=>x.layer==='venue'||isNSR(x.id);
-  const stopp=alle.filter(erStopp), andre=alle.filter(x=>!erStopp(x));
-  /* Holdeplasser først, men aldri på bekostning av at adressen du skrev finnes:
-     minst tre av hver når begge deler er tilgjengelig. */
-  return [...stopp.slice(0,6),...andre.slice(0,6)].slice(0,10);
+  /* Geocoderen gir ett treff per plattform. «Holtet» ble til seks like linjer
+     med buss, mens trikken lå lenger ned og aldri kom med. Slå sammen på navn,
+     og behold det viktigste transportmiddelet for hvert navn. */
+  const RANG={railStation:0,metroStation:1,onstreetTram:2,tramStation:2,
+              ferryStop:3,harbourPort:3,busStation:4,onstreetBus:5,GroupOfStopPlaces:0};
+  /* Rangér etter det VIKTIGSTE transportmiddelet stoppet har, ikke det første
+     som tilfeldigvis sto i lista. */
+  const rang=x=>Math.min(...[...(x.kats||[]),x.kat].map(k=>RANG[k]??6));
+  const sett=new Map();
+  alle.filter(erStopp).forEach(x=>{
+    const n=(x.name||'').toLowerCase();
+    const før=sett.get(n);
+    /* Rekkefølgen fra geocoderen er allerede etter nærhet, så første treff med
+       et navn er det nærmeste. Bytt bare hvis et viktigere transportmiddel
+       dukker opp for samme navn. */
+    if(!før||rang(x)<rang(før))sett.set(n,x);
+  });
+  const stopp=[...sett.values()];
+  const andre=alle.filter(x=>!erStopp(x));
+  /* Holdeplasser først, men aldri slik at adressen du skrev forsvinner. */
+  return [...stopp.slice(0,6),...andre.slice(0,5)].slice(0,10);
 }
 /* Entur merker holdeplasser med kategori – bruk den til å vise HVA treffet er. */
 const KAT_MODE={onstreetTram:'tram',tramStation:'tram',metroStation:'metro',
   onstreetBus:'bus',busStation:'bus',railStation:'rail',ferryStop:'water',
   harbourPort:'water',airport:'air',GroupOfStopPlaces:'bus'};
+/* Alle transportmidlene stoppet betjener, viktigst først. */
+const MODE_ORD=['rail','metro','tram','water','bus','coach','air'];
+function acModes(it){
+  const fra=[...(it.modes||[]),...(it.kats||[]).map(k=>KAT_MODE[k]).filter(Boolean)];
+  const unike=[...new Set(fra)].filter(m=>MODE[m]);
+  return unike.sort((a,b)=>MODE_ORD.indexOf(a)-MODE_ORD.indexOf(b));
+}
 function acIcon(it){
-  const m=KAT_MODE[it.kat];
-  if(m&&MODE[m])return `<span class="ac-mode" style="--mc:${MODE[m].hex}">${MODE[m].icon||IC.route}</span>`;
+  const ms=acModes(it);
+  if(ms.length){
+    const m=MODE[ms[0]];
+    return `<span class="ac-mode" style="--mc:${m.hex}">${m.icon||IC.route}</span>`;
+  }
   if(it.layer==='venue'||isNSR(it.id))return `<span class="ac-mode" style="--mc:${MODE.bus.hex}">${IC.route}</span>`;
   return `<span class="ic">${IC.pin}</span>`;
 }
 function acKind(it){
-  const m=KAT_MODE[it.kat];
-  if(m&&MODE[m])return MODE[m].l;
+  const ms=acModes(it);
+  if(ms.length)return ms.slice(0,3).map(m=>MODE[m].l).join(' · ');
   if(it.layer==='venue'||isNSR(it.id))return 'Holdeplass';
   if(it.layer==='address'||it.layer==='street')return 'Adresse';
   if(it.layer==='locality')return 'Sted';
