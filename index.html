@@ -418,6 +418,20 @@ a{color:inherit}
 .leaflet-popup-close-button{color:var(--muted)!important}
 .leaflet-popup-content{margin:12px 14px;font-family:var(--font-b)}
 /* Holdeplassnål på kartet – liten nok til at 40 av dem ikke drukner kartet */
+/* Navnet ligger til høyre for nålen, med mørk plate for lesbarhet – også over
+   satellittbilder, der ren tekst forsvinner. */
+.pin-label{position:absolute;left:26px;top:50%;transform:translateY(-50%) translateX(-4px);
+  display:none;opacity:0;white-space:nowrap;pointer-events:none;
+  font-size:11.5px;font-weight:600;letter-spacing:.01em;color:#fff;
+  background:rgba(7,31,66,.82);padding:2px 7px;border-radius:7px;
+  backdrop-filter:blur(3px);box-shadow:0 1px 4px rgba(4,20,43,.35);
+  transition:opacity .22s ease,transform .22s cubic-bezier(.22,1,.36,1)}
+.pin-label.show{display:block;opacity:1;transform:translateY(-50%) translateX(0)}
+.pin-label.left{left:auto;right:26px;transform:translateY(-50%) translateX(4px)}
+.pin-label.left.show{transform:translateY(-50%) translateX(0)}
+/* Under zoom flimrer navnene – skjul dem til bevegelsen er ferdig */
+.leaflet-container.zooming .pin-label{opacity:0;transition:none}
+:root[data-base="standard"] .pin-label{background:rgba(7,31,66,.78)}
 .stop-pin{width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid var(--pc,#0A2A57);
   display:grid;place-items:center;box-shadow:0 2px 6px rgba(4,20,43,.32);cursor:pointer;
   transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
@@ -1718,7 +1732,9 @@ function initMap(){
   vehicleLayer=L.layerGroup().addTo(map);bikeLayer=L.layerGroup().addTo(map);
   map.on('click',onMapClick);
   /* Hent holdeplasser og kjøretøy på nytt når utsnittet endrer seg. */
-  map.on('moveend zoomend',()=>{loadStopMarkers();autoVehicles()});
+  map.on('moveend zoomend',()=>{loadStopMarkers();autoVehicles();layoutStopLabels()});
+  map.on('zoomstart',()=>{const c=map.getContainer();if(c)c.classList.add('zooming')});
+  map.on('zoomend',()=>{const c=map.getContainer();if(c)c.classList.remove('zooming')});
   /* FIX: setView/panTo fyrer også movestart, og gjorde at følgingen slo seg av
      i samme øyeblikk den ble slått på. Nå merkes appens egne bevegelser, og
      bare et ekte dra-i-kartet avbryter følgingen. */
@@ -3642,19 +3658,70 @@ async function loadStopMarkers(force){
       shownStopIds.add(pl.id);
       const modes=(pl.transportMode||[]).filter(Boolean);
       const mm=MODE[modes[0]]||MODE.bus;
+      const st={id:pl.id,name:pl.name,lat:pl.latitude,lon:pl.longitude,
+                dist:e.node.distance||0,mode:modes[0]||'bus'};
       const mk=L.marker([pl.latitude,pl.longitude],{
         icon:L.divIcon({className:'',iconSize:[22,22],iconAnchor:[11,11],
-          html:`<div class="stop-pin" style="--pc:${mm.hex}" title="${esc(pl.name)}">${mm.icon||''}</div>`}),
+          html:`<div class="stop-pin" style="--pc:${mm.hex}" title="${esc(pl.name)}">${mm.icon||''}`+
+               `<span class="pin-label">${esc(pl.name)}</span></div>`}),
         keyboard:false,zIndexOffset:100});
-      mk.on('click',()=>{
-        const st={id:pl.id,name:pl.name,lat:pl.latitude,lon:pl.longitude,dist:e.node.distance||0};
-        showStopCard(st);
-      });
+      mk.on('click',()=>showStopCard(st));
+      mk.stopData=st;
       mk.addTo(stopsLayer);
     });
     stopMarkersAt=Date.now();
+    layoutStopLabels();
   }catch(err){logErr('stopmarkers',err)}
   finally{stopMarkersBusy=false}
+}
+
+/* ================= navn på holdeplassene =================
+   45 navn samtidig blir en grøt. Vi plasserer dem grådig: nærmeste og
+   viktigste først, og hopper over hvert navn som ville lagt seg oppå et
+   allerede plassert. Da får du navn der det er plass, og bare prikker der
+   det er tett – uten at noe overlapper. */
+const LABEL_ZOOM=14;
+const MODE_RANG={rail:0,metro:1,tram:2,water:3,bus:4,coach:4};
+function layoutStopLabels(){
+  if(!mapUsable()||!stopsLayer)return;
+  const lag=stopsLayer.getLayers();
+  const vis=map.getZoom()>=LABEL_ZOOM;
+  if(!vis){lag.forEach(m=>{const el2=m.getElement&&m.getElement();
+    if(el2){const l=el2.querySelector('.pin-label');if(l)l.classList.remove('show')}});return}
+
+  /* Viktigst først: tog og T-bane før buss, og nærmest før fjernest. */
+  const sortert=lag.slice().sort((a,b)=>{
+    const A=a.stopData||{},B=b.stopData||{};
+    const r=(MODE_RANG[A.mode]??5)-(MODE_RANG[B.mode]??5);
+    return r||((A.dist||0)-(B.dist||0));
+  });
+
+  const tatt=[];
+  const treffer=(r)=>tatt.some(o=>!(r.x2<o.x1||r.x1>o.x2||r.y2<o.y1||r.y1>o.y2));
+  const w=map.getSize();
+  sortert.forEach(m=>{
+    const el2=m.getElement&&m.getElement();if(!el2)return;
+    const lab=el2.querySelector('.pin-label');if(!lab)return;
+    const d=m.stopData||{};
+    const p=map.latLngToContainerPoint(m.getLatLng());
+    /* Anslå bredden fra tegnantall – billigere enn å måle i DOM-en, og
+       nøyaktig nok til å hindre overlapp. */
+    const bredde=Math.min(150,(d.name||'').length*6.1+10);
+    /* Nålen er kanskje så langt til høyre at navnet ikke får plass der. Prøv
+       venstre side før vi gir opp – det er slik kartappene gjør det. */
+    const høyre={x1:p.x+15,x2:p.x+15+bredde,y1:p.y-9,y2:p.y+9};
+    const venstre={x1:p.x-15-bredde,x2:p.x-15,y1:p.y-9,y2:p.y+9};
+    const passer=r=>r.x2<=w.x-6&&r.x1>=6&&r.y1>=52&&r.y2<=w.y-6&&!treffer(r);
+    let boks=null,side='r';
+    if(passer(høyre))boks=høyre;
+    else if(passer(venstre)){boks=venstre;side='v'}
+    if(!boks){lab.classList.remove('show','left');return}
+    lab.classList.toggle('left',side==='v');
+    /* Reserver også litt rundt selve nålen, så navn ikke klistrer seg inntil. */
+    tatt.push({x1:Math.min(boks.x1,p.x-14)-2,x2:Math.max(boks.x2,p.x+14)+6,
+               y1:boks.y1-3,y2:boks.y2+3});
+    lab.classList.add('show');
+  });
 }
 
 /* ================= kjøretøy slås på av seg selv =================

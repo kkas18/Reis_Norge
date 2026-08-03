@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (214 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (220 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,37 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Navn på holdeplassene
+
+Kartet viste bare prikker – du måtte trykke på hver enkelt for å vite hva den
+var. Navn på alle 45 samtidig ville blitt en grøt, så de plasseres **grådig med
+kollisjonstest**:
+
+- Viktigst først: tog og T-bane før trikk og buss, og nærmeste før fjerneste.
+- Hvert navn får plass til høyre for nålen. Er det opptatt eller utenfor
+  skjermen, prøves venstre side. Passer ingen av delene, hoppes navnet over –
+  nålen står igjen alene.
+- Navn vises først fra zoom 14. Under det er stoppene for tett.
+- Under zooming skjules navnene, så de ikke flimrer mens kartet beveger seg.
+- Mørk plate bak teksten, så den er lesbar også over satellittbilder.
+
+Målt i nettleser på fem zoomnivåer:
+
+| Zoom | Nåler | Navn vist | Overlappende par |
+|---|---|---|---|
+| 13 | 45 | 0 (under grensen) | 0 |
+| 14 | 45 | 20 | **0** |
+| 15 | 19 | 10 | **0** |
+| 16 | 7 | 4 | **0** |
+| 17 | 5 | 1 | **0** |
+
+> Første versjon viste bare 15 navn på zoom 14, og «Oslo S» manglet selv om det
+> var god plass. Årsaken var at navnet bare ble forsøkt til høyre for nålen –
+> lå nålen langt til høyre, fikk det aldri plass. Med venstre side som reserve
+> gikk antallet opp til 20, fortsatt uten en eneste overlapp.
 
 ---
 
