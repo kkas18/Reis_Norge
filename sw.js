@@ -5,7 +5,7 @@
      kartfliser → cache-first med tak på antall fliser
      API-er     → network-first med cachet fallback (tunnel/dårlig dekning)
 */
-const VERSION = 'v5.5.0';
+const VERSION = 'v5.7.0';
 const SHELL_CACHE = `reis-shell-${VERSION}`;
 const TILE_CACHE = `reis-tiles-${VERSION}`;
 const DATA_CACHE = `reis-data-${VERSION}`;

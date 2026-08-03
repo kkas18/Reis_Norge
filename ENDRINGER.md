@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (204 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (214 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,104 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Tre meldte problemer – alle var ekte
+
+### 1. Bytteanimasjonen «snudde hele firkanten»
+Riktig observert. Animasjonen flyttet hele `.stop-row` – etikettene «Fra» og
+«Til», prikkene og skillelinja fulgte med. Det er ikke rammen som bytter plass,
+det er innholdet.
+
+Nå animeres bare selve feltet: teksten glir ut, blir usynlig, og kommer tilbake
+på motsatt rad. Etiketter og prikker står stille. Byttet skjer 168 ms inn i
+animasjonen – nøyaktig i det usynlige øyeblikket.
+
+### 2. «Finner aldri trikk eller T-bane i søk»
+Søket **returnerte** holdeplasser hele tiden – de var bare umulige å se.
+Målt på «Majorstuen»: ett metrostoppested og fem POI-er (kirke, skole,
+barnehage, politistasjon), alle med samme grå nål og ingen merking.
+
+To ting rettet:
+- Vi hentet bare 8 treff. Nå hentes 20, og **holdeplasser sorteres først** –
+  inntil seks stopp og seks adresser, aldri bare det ene eller det andre.
+- Hvert treff viser **hva det er**: fargelagt ikon for trikk, T-bane, buss, tog
+  eller båt, og teksten «Trikk», «T-bane», «Adresse» foran adresselinja.
+  Enturs `category`-felt (`onstreetTram`, `metroStation`, …) gir dette gratis;
+  vi brukte det bare ikke.
+
+### 3. «Følger meg ikke ordentlig når jeg går, reiser eller kjører»
+Målt ved simulert bevegelse i tre hastigheter. Følgingen var teknisk presis –
+2,4 m avvik ved gange, 2,1 m i bil. Det som manglet var **retning**: du så hvor
+du var, men ikke hvilken vei du vendte. Da må du gå noen meter for å skjønne om
+du går riktig vei.
+
+- Posisjonsprikken har fått en **retningskjegle**, som i kartappene. Verifisert
+  mot alle fire himmelretninger: 0° avvik i alle.
+- Retningen kommer fra GPS når den finnes, ellers regnes den ut fra bevegelsen.
+- Kjeglen glattes ut, så den ikke rykker ved hver GPS-unøyaktighet.
+- Følgingen **zoomer inn til gatenivå** (16) når den starter, hvis du er lenger
+  ute. Zoomer aldri ut – du kan ha valgt selv. Målt avvik falt fra 2,4 m til
+  0,3 m samtidig.
+
+> Retningen kom først ikke fram nettopp ved **gange**. Årsaken var min egen:
+> referansepunktet ble flyttet ved hver måling, så avstanden aldri rakk
+> terskelen når du bare går fire meter mellom hver. Punktet står nå stille til
+> du faktisk har flyttet deg seks meter.
+
+---
+
+## Feiljakt: to alvorlige kappløp
+
+Systematisk gjennomgang på jakt etter feil som påvirker funksjon, ikke utseende.
+Metoden var å kjøre appen hardt (`stress_test.py`: alle knapper i alle faner,
+uten nett, API-feil 500, tomt svar, avslått posisjon, rare inndata, rask
+fanebytting) og deretter angripe det stresstesten ikke kan se: **kappløp**.
+
+De to alvorligste feilene var av samme type – **riktig utseende, feil innhold,
+ingen feilmelding.**
+
+### 1. Reisesøket kunne vise en reise til feil sted
+Søker du Oslo S → Majorstuen, bytter mål til Nationaltheatret og søker på nytt
+før første svar er kommet, overskrev det trege gamle svaret det nye.
+Skjemaet sa **Nationaltheatret**, resultatene gjaldt **Majorstuen**. Ingenting
+tydet på at noe var galt.
+
+### 2. Avgangstavla kunne vise feil stopps avganger
+Samme mønster: overskriften sa **Majorstuen**, mens listen under tilhørte
+**Jernbanetorget**. Målt direkte: `departuresFor` pekte på det gamle stoppet
+mens `departStop` og overskriften pekte på det nye.
+
+Dette er verre enn en tom skjerm. En tom skjerm ser man; feil avgangstid gjør at
+man går til feil holdeplass.
+
+**Rettelse:** hvert søk og hver henting får et løpenummer. Kommer et svar som
+ikke er det siste, kastes det – også i feilhåndteringen, der en gammel feil
+ellers kunne overskrive et nytt, gyldig resultat.
+
+### Mindre funn samtidig
+- **Taket på hurtigreiser gjaldt bare ved lagring.** Lå det flere fra en eldre
+  versjon, ble alle tegnet, men bare de tre øverste fikk sanntid. Kappes nå ved
+  lesing også, med én felles konstant.
+
+### Det som viste seg å være i orden
+| Sjekk | Resultat |
+|---|---|
+| Alle knapper i alle faner (27 stk.) | ingen krasj |
+| Uten nett | feilmelding vises, avgangsbuffer brukes (25 rader) |
+| API svarer 500 | feilmelding, knappen låser seg ikke |
+| API svarer tomt | «Ingen ruter funnet» med forslag |
+| `localStorage` sperret (privat modus) | appen starter og virker |
+| Posisjon avslått | forklarende melding, ingen krasj |
+| 90 tegn langt stedsnavn | sprenger ikke kortet |
+| Ugyldige koordinater | håndtert, ingen unntak |
+| Rask fanebytting ×36 | én aktiv visning, ingen feil |
+
+> Én kjøring av kappløpstesten feilet på nytt etterpå. Den falt sammen med
+> 503-svar fra Entur – jeg har kjørt mange hundre kall mot API-et i dag – og
+> fire påfølgende kjøringer var rene. Jeg kan ikke utelukke at det finnes en
+> gjenværende kant her, så testen er beholdt som `race_test.py`.
 
 ---
 
