@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (241 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (243 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,29 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## «I nærheten» viste bare ett stopp
+
+Etter at velkomsten kom på plass, målte jeg Plan-fanen på nytt – og fant at
+«I nærheten» viste **ett** stoppested, ikke fire.
+
+Samme felle som to andre steder i appen: Entur teller `maximumResults` på
+**plattformer**, ikke stoppesteder. Med `multiModalMode:parent` og `n:4` fikk vi
+ett stopp tilbake. Målt direkte mot API-et:
+
+| Etterspurt | Stoppesteder tilbake |
+|---|---|
+| 4 | **1** |
+| 20 | 7 |
+| 40 | 36 |
+
+Nå etterspørres 40 og vi kutter i visningen. Stopp uten avganger filtreres bort –
+de hjelper ingen. Resultat: **fire stopp med tre avganger hver**, mot ett før.
+
+En test sjekker nå alle tre stedene som bruker dette mønsteret samtidig, så
+fellen ikke kan snike seg inn et fjerde sted.
 
 ---
 
