@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (232 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (241 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,70 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Førstegangsopplevelsen
+
+Målte hva en ny bruker faktisk møtte: **fem tomme bokser** – «Sett opp med ett
+trykk» to ganger, «Ny hurtigreise», «Hva går rundt deg?». Førsteinntrykket var
+en oppgaveliste, ikke en app som gjør noe.
+
+**Velkomst med en grunn.** I stedet for en naken systemdialog om posisjon får
+du nå vite hva appen er og hvorfor den spør: avganger rundt deg, varsel før du
+skal av, ingen konto og ingen sporing. Sier du ja, fylles skjermen med ekte
+innhold med én gang. Sier du nei, virker appen fortsatt – du søker bare selv.
+
+**Tomme Hjem/Jobb-bokser er borte.** Har du ikke satt opp noe, vises én slank
+linje: «Legg til Hjem eller Jobb». Plassen går til innhold i stedet for rammer.
+
+Målt etter endringen: en ny bruker som sier ja ser **0 tomme bokser** og ekte
+avganger; sier han nei, står det ett kort igjen som forklarer hva han går glipp av.
+
+### FIX: hver nye bruker fikk en usynlig omlasting
+Under arbeidet viste velkomsten seg aldri. Årsaken var alvorlig og traff **alle**
+nye brukere: `controllerchange` fyrer i to helt ulike situasjoner – når en ny
+versjon avløser en gammel, *og* når service workeren tar kontroll over en side
+som ikke hadde noen fra før. Vi lastet om i begge tilfeller. Hver eneste
+førstegangsbruker fikk altså en uforklarlig omlasting midt i oppstarten, og alt
+fra den første økten forsvant.
+
+Nå skiller vi på om siden hadde en kontroller fra før.
+
+### Oppdatering uten å stole på service workeren
+Da jeg skulle bekrefte at oppdateringer fortsatt virket, oppdaget jeg at en ny
+versjon kunne bli hengende i «installing» uten å nå «waiting» – og da fyrer
+`updatefound` aldri. Appen ville sittet fast på gammel kode uten å vite det.
+
+Derfor sjekkes versjonen nå **utenom hele mekanismen**: appen leser `sw.js`
+direkte og sammenligner `VERSION` med sin egen `APP_VERSION`. Er de ulike,
+finnes det en ny versjon – punktum. Vil ikke workeren bytte, tømmes skallbufferen
+og siden lastes på nytt.
+
+En test sjekker at `APP_VERSION` og `VERSION` alltid er i takt, så de ikke kan
+komme i utakt ved en forglemmelse.
+
+Verifisert: ny versjon lagt ut → oppdaget → banner → ett trykk → ny kode kjører.
+
+---
+
+## Varsellinja flyttet til toppen
+
+Linja lå flytende nederst og dekket fanemenyen. Nå er den en **egen rad i appens
+ramme**, rett under topplinja – da tar den sin egen plass og kan ikke dekke noe.
+Målt: **0 px² overlapp** mot både bunnmenyen og innholdet.
+
+Den skifter fra grønn til rød når du nærmer deg, så du ser statusen uten å lese.
+
+**Trykk på linja gir valgene**, i stedet for én kryssknapp som bare kunne skru av:
+
+- Varsle ett stopp før — av/på
+- Varsle ved bytte — av/på
+- Vibrasjon — av/på
+- Lyd — av/på
+- Varselavstand — 200, 350 eller 600 meter
+
+Alle valgene huskes, og de styrer faktisk oppførselen – ikke bare utseendet.
 
 ---
 
