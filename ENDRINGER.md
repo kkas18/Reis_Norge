@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (243 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (252 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,36 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Tre grep for daglig bruk
+
+**Klokkeslett når det er lenge til.** «om 72 min» krever hoderegning; **22:41**
+sier det med én gang. Nedtellingen kommer tilbake av seg selv når det er under
+en time igjen.
+
+**Dra ned for å oppdatere** på både avgangstavla og Plan – gesten folk forventer
+på en sanntidsliste. Draget har motstand så det ikke føles løst, utløses ikke
+midt i en rulling, og gir et lite vibrasjonsklikk når det tar.
+
+**Trykk på en avgang for å se hvor kjøretøyet er.** Kartet åpnes, kjøretøylaget
+slås på, og treffet nærmest deg får en pulserende ring.
+
+### Og en ærlig grense det er verdt å kjenne
+Da jeg testet sporingen mot ekte data, fant jeg at den **ikke virker for Ruter**.
+Målt i Oslo sentrum sender bare disse posisjon: NBU, VYG, VYB, BRA, FLT, VYX –
+altså regionbuss, tog og flybuss. Ruter deler ikke kjøretøyposisjon for buss,
+trikk og T-bane.
+
+Det er ikke noe appen kan løse, men den kan være ærlig om det. Trykker du på en
+linje som ikke sender posisjon, forklarer appen hvorfor – og understreker at
+**avgangstidene fortsatt er sanntid**, siden de kommer fra selskapenes egne
+meldinger og ikke fra GPS i kjøretøyet. Samme forklaring står under
+**Mer → Om appen**.
+
+> Uten den forklaringen ville brukeren trodd at appen var ødelagt. En funksjon
+> som ikke kan virke overalt er greit; en funksjon som feiler taust er ikke det.
 
 ---
 
