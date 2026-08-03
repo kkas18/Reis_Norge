@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (252 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (259 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,37 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Søk der du er – ett kort, to hjem
+
+Før måtte du søke i Plan og deretter bytte til Kart for å se din egen rute. To
+skjermer for én handling.
+
+Kartet har nå sitt eget søkefelt øverst. Trykker du på det, glir **det samme
+søkekortet** opp fra bunnen – ikke en kopi, men bokstavelig talt samme
+DOM-element, flyttet dit. Søker du derfra, tegnes ruten på kartet og arket
+lukker seg. Du bytter aldri fane.
+
+At det er ett element, og ikke to, er hele poenget. To kopier ville uunngåelig
+kommet i utakt: du fyller inn i den ene, den andre husker noe annet. Med ett
+element deles all tilstand, alle lyttere og all logikk automatisk – det *kan*
+ikke bli inkonsistent.
+
+- Feltet viser hvilken reise som er tegnet: «Oslo S → Majorstuen».
+- Fanevelgeren skjules på kartet – du er allerede i reisemodus.
+- Kortet flytter seg hjem av seg selv når du forlater kartfanen.
+- Tilbakeknapp, Escape og fanebytte lukker arket. Sveip er sperret mens det er oppe.
+
+### Gjennomgangen fanget tre nye overlapp
+Da jeg utvidet kollisjonstesten med de nye elementene, viste det seg at
+søkefeltet, kontekst-chipen og stoppfilter-merket alle lå på samme sted –
+**7 380 px² overlapp** mellom to av dem. De var lagt til hver for seg, hver med
+sin egen «rett under toppen»-regel.
+
+Toppen av kartet er nå én målt stabel: modusrad → søkefelt → hint → kontekst →
+filter. Etter rettelsen: **0 overlapp i alle 15 tilstander.**
 
 ---
 

@@ -489,7 +489,7 @@ a{color:inherit}
 /* FIX: hintet lå på top:14px, altså rett oppå modusraden. Toppen av kartet
    stables nå etter målt høyde, på samme måte som bunnen. */
 #viewMap{--top-h:0px}
-#mapHint{position:absolute;left:50%;top:calc(12px + var(--top-h));transform:translateX(-50%);z-index:1056;
+#mapHint{position:absolute;left:50%;top:calc(12px + var(--top-h) + var(--bar-h));transform:translateX(-50%);z-index:1056;
   background:rgba(7,31,66,.86);color:#fff;font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;
   backdrop-filter:blur(6px);pointer-events:none;animation:viewIn .3s ease}
 /* Posisjonsknappen lyser når «følg meg» er på */
@@ -504,12 +504,15 @@ a{color:inherit}
 .mb-btn svg{width:17px;height:17px;flex:0 0 auto;display:block}
 .mb-btn.on{background:var(--navy);color:#fff;box-shadow:var(--sh-1)}
 .mb-btn.on svg{color:var(--tab-2)}
-#mapCtxChip{position:absolute;top:calc(12px + var(--top-h) + var(--hint-h,0px));left:12px;z-index:1040;background:var(--navy);color:#fff;font-size:12px;padding:8px 13px;border-radius:999px;box-shadow:var(--sh-2);display:flex;gap:7px;align-items:center;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mapCtxChip{position:absolute;top:calc(12px + var(--top-h) + var(--bar-h) + var(--hint-h));left:12px;z-index:1040;background:var(--navy);color:#fff;font-size:12px;padding:8px 13px;border-radius:999px;box-shadow:var(--sh-2);display:flex;gap:7px;align-items:center;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #mapCtxChip b{font-family:var(--font-m)}
 /* Kartkortet, lagvelgeren og knappene lå alle forankret til bunnen med faste
    pikselverdier – derfor la de seg oppå hverandre. Nå stables de: --card-h og
    --layer-h måles i JS, og alt over regner seg ut fra dem. */
-#viewMap{--card-h:0px;--layer-h:0px;--top-h:0px;--hint-h:0px}
+/* Toppen av kartet er en stabel. Hvert element legger seg under det forrige,
+   etter MÅLT høyde – ellers havner de oppå hverandre så snart ett av dem
+   endrer størrelse eller dukker opp. */
+#viewMap{--card-h:0px;--layer-h:0px;--top-h:0px;--bar-h:0px;--hint-h:0px;--ctx-h:0px}
 .fabs{position:absolute;right:12px;z-index:1050;display:flex;flex-direction:column;gap:9px;
   /* Følger stabelen, men forlater aldri skjermen uansett hvor høye kortene blir */
   bottom:min(calc(18px + var(--card-h) + var(--layer-h)), calc(100% - 210px));
@@ -697,6 +700,34 @@ a{color:inherit}
 .sheet-x svg{width:13px;height:13px;display:block}
 .sheet-body{flex:1;min-height:0;padding-top:0}
 
+/* ---------- søk direkte på kartet ---------- */
+#mapSearchBar{position:absolute;left:12px;right:12px;z-index:1058;
+  top:calc(12px + var(--top-h));
+  display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;
+  border-radius:14px;background:var(--card);border:1.5px solid var(--line);
+  box-shadow:0 4px 16px rgba(4,20,43,.22);text-align:left;
+  transition:transform .16s,box-shadow .2s}
+#mapSearchBar:active{transform:scale(.985)}
+.msb-ic{flex:none;display:grid;place-items:center;width:20px;height:20px;color:var(--tab)}
+.msb-ic svg{width:17px;height:17px;display:block}
+.msb-txt{flex:1;min-width:0;font-size:14px;font-weight:600;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mapSearchBar.filled .msb-txt{color:var(--ink)}
+:root[data-theme="dark"] .msb-ic{color:var(--tab-2)}
+
+#mapSheetBackdrop{position:absolute;inset:0;z-index:2300;background:rgba(6,20,40,.42);
+  backdrop-filter:blur(2px);opacity:0;transition:opacity .26s ease}
+#mapSheetBackdrop.open{opacity:1}
+#mapSheet{position:absolute;left:0;right:0;bottom:0;z-index:2350;max-height:88%;
+  overflow-y:auto;scrollbar-width:none;background:var(--paper);
+  border-radius:22px 22px 0 0;box-shadow:0 -14px 44px rgba(4,20,43,.42);
+  padding:0 13px calc(14px + var(--sab));
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+#mapSheet.open{transform:none}
+#mapSheet .search-card{margin-top:2px}
+/* På kartet trenger vi ikke fanevelgeren – du er allerede i reisemodus */
+#mapSheet .sc-tabs{display:none}
+
 /* ---------- kartets lagvelger ---------- */
 #layerSheet{position:absolute;left:12px;right:12px;z-index:1065;background:var(--card);
   max-height:44vh;overflow-y:auto;scrollbar-width:none;
@@ -709,7 +740,7 @@ a{color:inherit}
 .ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 .ls-grid-4{grid-template-columns:repeat(2,1fr)}
 #stopFilterChip{position:absolute;left:12px;z-index:1041;display:flex;align-items:center;gap:7px;
-  top:calc(12px + var(--top-h) + var(--hint-h,0px));min-height:36px;padding:0 12px;border-radius:999px;
+  top:calc(12px + var(--top-h) + var(--bar-h) + var(--hint-h) + var(--ctx-h));min-height:36px;padding:0 12px;border-radius:999px;
   background:rgba(7,31,66,.86);color:#fff;font-size:12px;font-weight:600;backdrop-filter:blur(6px);
   box-shadow:0 2px 10px rgba(4,20,43,.3);animation:viewIn .28s ease}
 #stopFilterChip svg{width:14px;height:14px;display:block;flex:none}
@@ -1123,7 +1154,8 @@ a{color:inherit}
           </div>
           <!-- Ett samlet søkekort: modusvelger, Fra/Til som rader, og handlingene
                inne i samme flate. Færre kanter å lese enn to separate bokser. -->
-          <section class="search-card" aria-label="Søk">
+          <div id="cardHome"></div>
+          <section class="search-card" id="searchCard" aria-label="Søk">
             <div class="sc-tabs" role="tablist">
               <button role="tab" data-sc="trip" class="on" aria-selected="true">Finn reise</button>
               <button role="tab" data-sc="stop" aria-selected="false">Se avganger</button>
@@ -1230,6 +1262,16 @@ a{color:inherit}
       <div id="mapHint" hidden>Zoom inn for å se holdeplasser</div>
       <button id="stopFilterChip" hidden></button>
       <div id="mapCtxChip">Kart – utforsk området</div>
+      <!-- Samme søkekort som i Plan, flyttet hit ved behov. Ett kort, to hjem –
+           da kan de ikke komme i utakt, og all logikk er delt. -->
+      <button id="mapSearchBar" aria-label="Søk etter reise">
+        <span class="msb-ic"></span><span class="msb-txt">Hvor skal du?</span>
+      </button>
+      <div id="mapSheetBackdrop" hidden></div>
+      <aside id="mapSheet" hidden aria-label="Søk på kartet">
+        <div class="sheet-grip"></div>
+        <div id="mapSheetSlot"></div>
+      </aside>
       <div class="fabs">
         <button class="fab" id="fabLayers" aria-label="Kartlag og visning"><span class="fab-dot"></span></button>
         <button class="fab" id="fabLocate" aria-label="Min posisjon"></button>
@@ -1534,6 +1576,7 @@ $('#addIc').innerHTML=IC.plus; $('#commHereIc').innerHTML=IC.locate;
 $('#btnResBack').innerHTML=IC.chevL; $('#btnDetBack').innerHTML=IC.chevL;
 $('#depSwitchIc').innerHTML=IC.search; $('#scNearIc').innerHTML=IC.locate;
 $('#fabLocate').innerHTML=IC.locate; $('#fabSetB').innerHTML=IC.pin;
+$('#mapSearchBar').querySelector('.msb-ic').innerHTML=IC.search;
 $('#btnMore').innerHTML=IC.menu;
 $('#fabLayers').insertAdjacentHTML('afterbegin',IC.layers);
 $('#moreClose').innerHTML=IC.x;
@@ -1693,7 +1736,8 @@ document.addEventListener('touchend',e=>{
   lastTouchEnd=now;
 },{passive:false});
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeWakeFlash();if(typeof closeMore==='function'&&!$('#moreSheet').hidden)closeMore()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeWakeFlash();if(typeof closeMore==='function'&&!$('#moreSheet').hidden)closeMore();
+  if(typeof lukkKartsøk==='function')lukkKartsøk()}});
 
 const MODE={foot:{l:'Gange',hex:'#64748B'},tram:{l:'Trikk',hex:'#0B87C7'},metro:{l:'T-bane',hex:'#E8590C'},bus:{l:'Buss',hex:'#C2255C'},rail:{l:'Tog',hex:'#3457D5'},water:{l:'Båt',hex:'#0C8599'},coach:{l:'Ekspress',hex:'#8447C9'},air:{l:'Fly',hex:'#5C6B7A'},funicular:{l:'Bane',hex:'#5C6B7A'},lift:{l:'Gondol',hex:'#5C6B7A'},cableway:{l:'Kabelbane',hex:'#5C6B7A'},trolleybus:{l:'Buss',hex:'#C2255C'},monorail:{l:'Bane',hex:'#5C6B7A'},taxi:{l:'Taxi',hex:'#8A8F98'}};
 const modeOf=leg=>{const m=(leg.line&&leg.line.transportMode)||leg.mode;return MODE[m]?m:'foot'};
@@ -1721,7 +1765,7 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    allerede åpen side beholder gammel HTML og JS selv om en ny service worker
    er installert. Nå oppdages det, og du får velge når. */
 /* Denne må holdes lik VERSION i sw.js. Byggeskriptet sjekker at de stemmer. */
-const APP_VERSION='v6.4.0';
+const APP_VERSION='v6.5.0';
 let swReg=null,waitingSW=null,reloading=false,byttetSelv=false;
 
 /* Service worker-livssyklusen er lunefull: en ny versjon kan bli hengende i
@@ -2563,6 +2607,7 @@ function switchTab(name,dir){
   currentTab=name;
   $('#app').dataset.tab=name;
   saveLS('lastTab',name);
+  if(name!=='map'&&kortPåKart)lukkKartsøk();
   setTopContext(name);
   navBtns.forEach(t=>{const on=t.dataset.tab===name;t.classList.toggle('active',on);t.setAttribute('aria-selected',String(on))});positionNav();
   Object.entries(views).forEach(([k,v])=>v.classList.toggle('active',k===name));
@@ -2700,6 +2745,7 @@ function applyState(st){
 }
 window.addEventListener('popstate',e=>{
   if($('#wakeFlash').classList.contains('show')){closeWakeFlash();return}
+  if(kortPåKart){popping=true;lukkKartsøk();popping=false;return}
   if(moreOpen()&&!(e.state&&e.state.reis&&e.state.reis.more)){popping=true;closeMore();popping=false;return}
   const st=e.state&&e.state.reis;
   if(st)applyState(st);
@@ -2750,14 +2796,14 @@ function bindPull(padSel,oppdater){
    Rundgang: fra Lagret sveiper du videre til Plan, og motsatt vei fra Plan til
    Lagret – du treffer aldri en vegg. Kartet får panorere i fred; der starter
    sveipet bare fra ytterkantene av skjermen. */
-const SWIPE_BLOCK='input,textarea,select,.dep-stop-chips,#modeBar,#ac,.leaflet-container,.modal-card,#mapCard,#moreSheet,#layerSheet';
+const SWIPE_BLOCK='input,textarea,select,.dep-stop-chips,#modeBar,#ac,.leaflet-container,.modal-card,#mapCard,#moreSheet,#layerSheet,#mapSheet';
 /* MIN_DX hindrer at en rask, bitteliten bevegelse – et skjelvent trykk – regnes
    som et sveip. Uten den holdt det med høy fart alene. */
 const EDGE=32, MIN_DX=40, THRESHOLD=64, FLICK=.45;
 let sw=null;
 function swipeStart(e){
   if(e.touches.length!==1)return;
-  if($('#modal').classList.contains('open')||$('#ac').classList.contains('open')||moreOpen())return;
+  if($('#modal').classList.contains('open')||$('#ac').classList.contains('open')||moreOpen()||kortPåKart)return;
   const t=e.touches[0],r=$('#app').getBoundingClientRect();
   /* Faller tilbake på vindusbredden hvis oppsettet ikke har målt appen ennå. */
   const left=r.width?r.left:0, right=r.width?r.right:(window.innerWidth||0);
@@ -3525,6 +3571,7 @@ function renderStops(){
     box.append(row);
   });
   $('#btnAddStop').disabled=state.stops.length>=4;
+  if(typeof oppdaterKartsøk==='function')oppdaterKartsøk();
   /* Tegner vi midt i en bytteanimasjon, må de nye feltene fortsette der de
      gamle slapp – ellers hopper teksten synlig på plass. */
   if(midtIBytte)$$('#stops .stop-field').forEach(f=>{
@@ -3726,6 +3773,9 @@ function resError(e){
    reise til et annet sted enn det som står i skjemaet. */
 let tripSeq=0;
 async function findJourney(fromMap=false){
+  /* Søker du mens kortet står på kartet, skal du bli der og se ruten tegnet –
+     ikke sendes til en resultatliste i en annen fane. */
+  if(kortPåKart)fromMap=true;
   const meg=++tripSeq;
   const btn=$('#btnSearch');btn.classList.add('loading');btn.disabled=true;
   try{
@@ -3754,6 +3804,7 @@ async function findJourney(fromMap=false){
     catch(err){if(meg!==tripSeq)return;
       if(fromMap){toast('Kunne ikke hente reiser: '+err.message,'err',err.raw);applyMapContext()}else resError(err);return}
     if(meg!==tripSeq)return;                 // et nyere søk har overtatt
+    if(kortPåKart)lukkKartsøk();
     state.results=patterns;
     state.fare=patterns.length?estimateFare(patterns[0].distance):null;
     if(!fromMap){renderResults();if(patterns.length){pushRecent(from,to,vias);loadCorridorSights(patterns)}else toast('Ingen reiser funnet – prøv andre stopp eller tidspunkt','err')}
@@ -4196,6 +4247,48 @@ function renderHealth(rows){
       <span class="hr-ic">${r.ok?IC.check:IC.alert}</span>
       <span class="hr-txt"><b>${esc(r.navn)}</b><span>${esc(r.melding)}</span></span></div>`).join('');
 }
+
+/* ================= søk uten å bytte fane =================
+   Før måtte du søke i Plan og så bytte til Kart for å se ruten. Nå flyttes
+   selve søkekortet inn på kartet ved behov – samme DOM-element, så all logikk,
+   alle lyttere og all tilstand er delt. To kopier ville uunngåelig kommet i
+   utakt; ett element kan ikke det. */
+let kortPåKart=false;
+function oppdaterKartsøk(){
+  const bar=$('#mapSearchBar');if(!bar)return;
+  const a=state.stops[0],b=state.stops[state.stops.length-1];
+  const txt=bar.querySelector('.msb-txt');
+  if(a&&a.name&&b&&b.name){bar.classList.add('filled');txt.textContent=`${a.name} → ${b.name}`}
+  else if(b&&b.name){bar.classList.add('filled');txt.textContent=`Til ${b.name}`}
+  else{bar.classList.remove('filled');txt.textContent='Hvor skal du?'}
+}
+function åpneKartsøk(){
+  if(kortPåKart)return;
+  const kort=$('#searchCard');if(!kort)return;
+  setSearchMode('trip');
+  $('#mapSheetSlot').appendChild(kort);        // flytter, kopierer ikke
+  kortPåKart=true;
+  $('#mapSheetBackdrop').hidden=false;$('#mapSheet').hidden=false;
+  requestAnimationFrame(()=>{
+    $('#mapSheet').classList.add('open');$('#mapSheetBackdrop').classList.add('open');
+    placeSwap();
+  });
+  pushHistory();
+}
+function lukkKartsøk(){
+  if(!kortPåKart)return;
+  const sh=$('#mapSheet'),bd=$('#mapSheetBackdrop');
+  sh.classList.remove('open');bd.classList.remove('open');
+  kortPåKart=false;
+  setTimeout(()=>{
+    sh.hidden=true;bd.hidden=true;
+    const kort=$('#searchCard'),hjem=$('#cardHome');
+    if(kort&&hjem&&hjem.parentElement)hjem.parentElement.insertBefore(kort,hjem.nextSibling);
+    placeSwap();
+  },260);
+}
+$('#mapSearchBar').onclick=åpneKartsøk;
+$('#mapSheetBackdrop').onclick=lukkKartsøk;
 
 /* ================= finn kjøretøyet =================
    «Hvor er bussen min nå?» er spørsmålet folk stiller mens de venter. Vi har
@@ -4679,6 +4772,11 @@ function measureStackNow(){
   vm.style.setProperty('--top-h',th+'px');
   const hh=(hint&&!hint.hidden)?hint.offsetHeight+8:0;
   vm.style.setProperty('--hint-h',hh+'px');
+  const bar=$('#mapSearchBar'),ctx=$('#mapCtxChip');
+  const bh=(bar&&!bar.hidden&&bar.offsetHeight)?bar.offsetHeight+8:0;
+  vm.style.setProperty('--bar-h',bh+'px');
+  const ctxH=(ctx&&ctx.offsetHeight&&getComputedStyle(ctx).display!=='none')?ctx.offsetHeight+8:0;
+  vm.style.setProperty('--ctx-h',ctxH+'px');
 }
 if(window.ResizeObserver){
   const ro=new ResizeObserver(()=>measureStack());
