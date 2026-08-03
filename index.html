@@ -436,6 +436,11 @@ a{color:inherit}
   display:grid;place-items:center;box-shadow:0 2px 6px rgba(4,20,43,.32);cursor:pointer;
   transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
 .stop-pin:hover{transform:scale(1.18)}
+/* Der du går på og av, og der du bytter – litt større enn dem du bare passerer */
+.stop-pin.key{width:27px;height:27px;border-width:3px;box-shadow:0 2px 9px rgba(4,20,43,.45)}
+.stop-pin.key svg{width:14px;height:14px}
+.stop-pin.key .pin-label{left:31px;font-weight:700}
+.stop-pin.key .pin-label.left{left:auto;right:31px}
 .stop-pin svg{width:12px;height:12px;display:block;color:var(--pc,#0A2A57)}
 /* Samme fargekoding i kortet som på kartet, så «hvem er hvem» henger sammen */
 .mc-from::before,.mc-to::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;
@@ -669,6 +674,13 @@ a{color:inherit}
 .ls-title{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 2px 7px}
 #layerSheet .seg{margin-bottom:12px}
 .ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.ls-grid-4{grid-template-columns:repeat(2,1fr)}
+#stopFilterChip{position:absolute;left:12px;z-index:1041;display:flex;align-items:center;gap:7px;
+  top:calc(12px + var(--top-h) + var(--hint-h,0px));min-height:36px;padding:0 12px;border-radius:999px;
+  background:rgba(7,31,66,.86);color:#fff;font-size:12px;font-weight:600;backdrop-filter:blur(6px);
+  box-shadow:0 2px 10px rgba(4,20,43,.3);animation:viewIn .28s ease}
+#stopFilterChip svg{width:14px;height:14px;display:block;flex:none}
+#stopFilterChip u{text-decoration:underline;text-underline-offset:2px;color:#9FC4F0}
 .ls-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 4px 10px;border-radius:13px;
   border:1.5px solid var(--line);background:var(--card);color:var(--muted);
   transition:border-color .2s,background .2s,color .2s,transform .16s}
@@ -903,6 +915,20 @@ a{color:inherit}
 .ac-item .ic svg{width:15px;height:15px;display:block}
 .ac-item b{font-size:13.5px;display:block;color:var(--ink)}
 .ac-item span{font-size:11px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+/* Nedtelling mens varselet er aktivt – synlig i alle faner, så du ikke må
+   lete etter den. */
+#wakeStatus{position:absolute;left:12px;right:12px;bottom:calc(12px + var(--sab));z-index:3100;
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:14px;
+  background:var(--tab);color:#fff;box-shadow:0 10px 30px rgba(4,20,43,.4);
+  animation:cardUp .34s cubic-bezier(.3,1.3,.4,1)}
+#wakeStatus>svg{width:19px;height:19px;flex:none;animation:pulse 1.8s infinite}
+#wakeStatus>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+#wakeStatus b{font-size:13.5px;font-family:var(--font-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wakeStatus span span{font-size:11.5px;opacity:.88;font-family:var(--font-m)}
+#wakeStatus .ws-x{flex:none;width:32px;height:32px;border-radius:10px;color:#fff;
+  background:rgba(255,255,255,.16);display:grid;place-items:center}
+#wakeStatus .ws-x svg{width:13px;height:13px;display:block}
+
 /* Oppdateringsbanner: uten dette kjørte appen videre på gammel kode helt til
    den ble lukket og åpnet på nytt. */
 #updateBar{position:absolute;left:12px;right:12px;bottom:calc(12px + var(--sab));z-index:3200;
@@ -1105,6 +1131,7 @@ a{color:inherit}
       <div id="map"></div>
       <div id="modeBar" hidden></div>
       <div id="mapHint" hidden>Zoom inn for å se holdeplasser</div>
+      <button id="stopFilterChip" hidden></button>
       <div id="mapCtxChip">Kart – utforsk området</div>
       <div class="fabs">
         <button class="fab" id="fabLayers" aria-label="Kartlag og visning"><span class="fab-dot"></span></button>
@@ -1119,7 +1146,8 @@ a{color:inherit}
           <button data-base="topo">Topografi</button>
         </div>
         <div class="ls-title">Vis på kartet</div>
-        <div class="ls-grid">
+        <div class="ls-grid ls-grid-4">
+          <button class="ls-item" id="lsStops"><span class="ls-ic"></span><b>Holdeplasser</b><span class="ls-sub">alle</span></button>
           <button class="ls-item" id="fabVehicles"><span class="ls-ic"></span><b>Kjøretøy</b><span class="ls-sub">i sanntid</span></button>
           <button class="ls-item" id="fabBikes"><span class="ls-ic"></span><b>Bysykkel</b><span class="ls-sub">ledige sykler</span></button>
           <button class="ls-item" id="fabAttract"><span class="ls-ic"></span><b>Severdig</b><span class="ls-sub">i utsnittet</span></button>
@@ -1242,6 +1270,7 @@ a{color:inherit}
       </div>
   </aside>
 
+  <div id="wakeStatus" role="status" hidden></div>
   <div id="updateBar" role="status" hidden>
     <span class="ub-txt">Ny versjon av REIS er klar</span>
     <button class="ub-btn" id="btnUpdate">Oppdater</button>
@@ -1360,6 +1389,7 @@ const IC={
   arrowR:S('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>'),
   plus:S('<path d="M12 5v14"/><path d="M5 12h14"/>'),
   check:S('<path d="M20 6 9 17l-5-5"/>'),
+  eye:S('<path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6"/>'),
   layers:S('<path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="m3 13 9 5 9-5"/>'),
   menu:S('<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/>'),
   bookmark:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>',
@@ -2021,8 +2051,9 @@ const TRIP_Q=`query Trip($from:Location!,$to:Location!,$via:[TripViaLocationInpu
       duration distance walkDistance expectedStartTime expectedEndTime
       legs{
         mode realtime distance duration expectedStartTime expectedEndTime
-        fromPlace{name quay{id publicCode latitude longitude}}
-        toPlace{name quay{id publicCode latitude longitude}}
+        fromPlace{name quay{id publicCode latitude longitude stopPlace{id}}}
+        toPlace{name quay{id publicCode latitude longitude stopPlace{id}}}
+        intermediateQuays{id name latitude longitude stopPlace{id}}
         line{publicCode name transportMode presentation{colour textColour}}
         pointsOnLink{points}
         situations{id summary{value language}}
@@ -2339,7 +2370,11 @@ const state={stops:[{uid:uid()},{uid:uid()}],timeMode:'now',modes:new Set(),resu
   userPos:null,walkMinToStop:null,wakeOn:false,wakeWatchId:null,wakeFired:false,wakeDest:null,
   home:loadLS('home',null),work:loadLS('work',null),favLine:loadLS('favLine',null),
   departStop:null,departures:[],departuresFor:null,depFilter:new Set(),attractOn:false,
-  basemap:loadLS('basemap','standard')};
+  basemap:loadLS('basemap','standard'),
+  /* 'auto' = ruten hvis den finnes, ellers alle. 'all' = alltid alle. 'off' = ingen. */
+  stopsMode:loadLS('stopsMode','auto'),
+  wakePlan:null,wakePre:false,wakeDist:null,wakeTimer:null,wakeLastFix:0,
+  wakeByttVarslet:new Set()};
 /* Transportvalget er en innstilling nå, ikke noe du setter for hvert søk. */
 state.modes=new Set(loadLS('modes',[]));
 let commuterTarget=null;
@@ -2915,26 +2950,122 @@ function destCoord(){
     if(lp.quay&&lp.quay.latitude!=null)return {lat:lp.quay.latitude,lon:lp.quay.longitude,name:lp.name}}
   const t=state.stops[state.stops.length-1];return t&&t.lat?{lat:t.lat,lon:t.lon,name:t.name}:null;
 }
+/* Alle stoppene fram til der du skal av – brukes til «ett stopp igjen» og til
+   å falle tilbake på ruteplanen når GPS-en forsvinner i tunnel. */
+function wakePlan(){
+  const p=state.selectedPattern;
+  if(!p||!Array.isArray(p.legs))return null;
+  const siste=p.legs[p.legs.length-1];
+  const av=siste.toPlace&&siste.toPlace.quay;
+  if(!av||!okLL([av.latitude,av.longitude]))return null;
+  /* Nest siste stopp på den siste etappen – varselet «ett stopp igjen». */
+  const mellom=(siste.intermediateQuays||[]).filter(q=>okLL([q.latitude,q.longitude]));
+  const forrige=mellom.length?mellom[mellom.length-1]:null;
+  /* Bytter underveis er der folk faktisk bommer. */
+  const bytter=[];
+  p.legs.forEach((l,i)=>{
+    if(i===p.legs.length-1)return;
+    if(l.mode==='foot')return;
+    const q=l.toPlace&&l.toPlace.quay;
+    if(q&&okLL([q.latitude,q.longitude]))
+      bytter.push({lat:q.latitude,lon:q.longitude,name:l.toPlace.name,t:new Date(l.expectedEndTime)});
+  });
+  return {
+    av:{lat:av.latitude,lon:av.longitude,name:siste.toPlace.name,t:new Date(siste.expectedEndTime)},
+    forrige:forrige?{lat:forrige.latitude,lon:forrige.longitude,name:forrige.name}:null,
+    bytter,
+    stoppIgjen:mellom.length
+  };
+}
 async function toggleWake(){
   if(state.wakeOn){stopWake();return}
   const d=destCoord();if(!d){toast('Velg en reise først','err');return}
   if(!navigator.geolocation){toast('Geolokasjon støttes ikke','err');return}
   if(!window.isSecureContext){toast('Vekk meg krever HTTPS','err');return}
   if('Notification' in window&&Notification.permission==='default'){try{await Notification.requestPermission()}catch(e){}}
-  state.wakeDest=d;state.wakeFired=false;state.wakeOn=true;syncWakeUI();toast('Vekk meg er på – varsler nær '+d.name,'ok');
+  state.wakeDest=d;state.wakeFired=false;state.wakeOn=true;
+  state.wakePlan=wakePlan();
+  state.wakePre=false;state.wakeByttVarslet=new Set();
+  syncWakeUI();showWakeStatus();
+  toast('Varsler deg før du skal av ved '+d.name,'ok');
   try{state.wakeWatchId=navigator.geolocation.watchPosition(pos=>{
     if(!state.wakeOn||state.wakeFired)return;
-    if(haversine(pos.coords.latitude,pos.coords.longitude,state.wakeDest.lat,state.wakeDest.lon)<350)fireWake();
-  },err=>logErr('wake',err.message),{enableHighAccuracy:true,maximumAge:3000});}catch(e){stopWake();toast('Kunne ikke starte alarm','err')}
+    state.wakeLastFix=Date.now();
+    const {latitude:la,longitude:lo}=pos.coords;
+    const pl=state.wakePlan;
+    /* Bytte underveis – varsles når du nærmer deg byttepunktet. */
+    if(pl)pl.bytter.forEach((b,i)=>{
+      if(state.wakeByttVarslet.has(i))return;
+      if(haversine(la,lo,b.lat,b.lon)<300){
+        state.wakeByttVarslet.add(i);
+        varsle('Bytt ved '+b.name,'Gjør deg klar til å bytte',[220,120,220]);
+      }
+    });
+    /* Ett stopp igjen – tid til å reise seg. */
+    if(pl&&pl.forrige&&!state.wakePre&&haversine(la,lo,pl.forrige.lat,pl.forrige.lon)<300){
+      state.wakePre=true;
+      varsle('Ett stopp igjen','Neste stopp er '+state.wakeDest.name,[180,90,180]);
+    }
+    state.wakeDist=haversine(la,lo,state.wakeDest.lat,state.wakeDest.lon);
+    showWakeStatus();
+    if(state.wakeDist<350)fireWake();
+  },err=>logErr('wake',err.message),{enableHighAccuracy:true,maximumAge:3000});}
+  catch(e){stopWake();toast('Kunne ikke starte alarm','err');return}
+
+  /* Reserve: mister vi GPS i tunnel, varsler vi på klokka i stedet. Uten dette
+     var alarmen ubrukelig akkurat på T-banen, der den trengs mest. */
+  state.wakeLastFix=Date.now();
+  clearInterval(state.wakeTimer);
+  state.wakeTimer=setInterval(()=>{
+    if(!state.wakeOn||state.wakeFired){clearInterval(state.wakeTimer);return}
+    showWakeStatus();
+    const pl=state.wakePlan;if(!pl)return;
+    const utenGps=Date.now()-(state.wakeLastFix||0)>45000;
+    const igjen=pl.av.t-now();
+    if(utenGps&&igjen<=90000&&igjen>-300000){
+      varsle('Snart fremme','Ruten sier '+state.wakeDest.name+' om '+relMin(Math.max(0,igjen))+' – GPS er borte',[300,150,300]);
+      fireWake('tid');
+    }
+  },5000);
 }
-function stopWake(){state.wakeOn=false;if(state.wakeWatchId!=null){try{navigator.geolocation.clearWatch(state.wakeWatchId)}catch(e){}state.wakeWatchId=null}syncWakeUI()}
+/* Kort vibrasjon kjennes gjennom jakkelomma uten at hele bussen hører det. */
+function varsle(tittel,tekst,mønster){
+  try{if(navigator.vibrate)navigator.vibrate(mønster||[200,100,200])}catch(e){}
+  try{if('Notification' in window&&Notification.permission==='granted')
+    new Notification('REIS – '+tittel,{body:tekst,tag:'reis-wake',renotify:true})}catch(e){}
+  toast(tittel+' · '+tekst,'ok');
+}
+/* Nedtelling mens varselet er aktivt, så du vet hvor mye tid du har. */
+function showWakeStatus(){
+  const el2=$('#wakeStatus');if(!el2)return;
+  if(!state.wakeOn){el2.hidden=true;return}
+  const pl=state.wakePlan;
+  const igjen=pl?pl.av.t-now():null;
+  const utenGps=Date.now()-(state.wakeLastFix||0)>45000;
+  const deler=[];
+  if(state.wakeDist!=null&&!utenGps)deler.push(fmtWalk(state.wakeDist)+' igjen');
+  if(igjen!=null&&igjen>-60000)deler.push('ca. '+relMin(Math.max(0,igjen)));
+  if(utenGps)deler.push('venter på GPS');
+  el2.hidden=false;
+  el2.innerHTML=`${IC.bell}<span><b>Av ved ${esc(state.wakeDest.name)}</b>`+
+    `${deler.length?'<span>'+esc(deler.join(' · '))+'</span>':''}</span>`+
+    `<button class="ws-x tap" id="wsStop" aria-label="Skru av varselet">${IC.x}</button>`;
+  const st=$('#wsStop');if(st)st.onclick=()=>{stopWake();toast('Varselet er av')};
+}
+function stopWake(){state.wakeOn=false;state.wakeDist=null;state.wakePlan=null;
+  clearInterval(state.wakeTimer);const ws=$('#wakeStatus');if(ws)ws.hidden=true;if(state.wakeWatchId!=null){try{navigator.geolocation.clearWatch(state.wakeWatchId)}catch(e){}state.wakeWatchId=null}syncWakeUI()}
 function syncWakeUI(){$$('#detTools .tool-btn.wake, #mapCard .tool-btn.wake').forEach(b=>{b.classList.toggle('on',state.wakeOn);
   b.innerHTML=state.wakeOn?`${IC.bell} Vekk meg: PÅ`:`${IC.bell} Vekk meg`})}
-function fireWake(){
-  state.wakeFired=true;
+function fireWake(grunn){
+  state.wakeFired=true;clearInterval(state.wakeTimer);
+  const ws=$('#wakeStatus');if(ws)ws.hidden=true;
   try{if(navigator.vibrate)navigator.vibrate([500,250,500,250,700])}catch(e){}
   try{if('Notification' in window&&Notification.permission==='granted')new Notification('REIS – du er fremme!',{body:'Holdeplass: '+state.wakeDest.name})}catch(e){}
-  $('#wfTitle').textContent='Du er fremme!';$('#wfText').textContent='Holdeplass: '+state.wakeDest.name;$('#wakeFlash').classList.add('show');
+  $('#wfTitle').textContent=grunn==='tid'?'Snart fremme':'Du er fremme!';
+  $('#wfText').textContent=(grunn==='tid'
+    ?'Ruteplanen sier du er fremme nå – GPS-signalet er borte. '
+    :'')+'Holdeplass: '+state.wakeDest.name;
+  $('#wakeFlash').classList.add('show');
   try{const ctx=new (window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=880;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.0001,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.3,ctx.currentTime+t+.02);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+t+.3);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.32)})}catch(e){}
 }
 $('#wfClose').onclick=closeWakeFlash;
@@ -3668,8 +3799,22 @@ let stopMarkersAt=0,stopMarkersBusy=false,shownStopIds=new Set(),lastPinKey='';
 const STOP_ZOOM=13, MAX_PINS=45;
 async function loadStopMarkers(force){
   if(!mapUsable()||!stopsLayer)return;
+  const filter=stopFilter();
+  if(filter==='off'){stopsLayer.clearLayers();shownStopIds.clear();
+    $('#mapHint').hidden=true;measureStack();syncStopChip();return}
+  /* Har vi en rute, tegner vi dens egne stopp direkte – ikke et utsnittssøk. */
+  if(filter instanceof Set){
+    const liste=routeStops();
+    if(liste){drawStopList(liste,true);$('#mapHint').hidden=true;measureStack();syncStopChip();return}
+  }
   const z=map.getZoom();
-  if(z<STOP_ZOOM){stopsLayer.clearLayers();shownStopIds.clear();$('#mapHint').hidden=false;measureStack();return}
+  /* Viser vi bare rutens stopp, er de få nok til å tegnes uansett zoom. */
+  if(z<STOP_ZOOM&&!(filter instanceof Set)){
+    stopsLayer.clearLayers();shownStopIds.clear();
+    /* Ba du uttrykkelig om å se alle, skal du få vite hvorfor det er tomt. */
+    const h=$('#mapHint');
+    h.textContent=state.stopsMode==='all'?'Zoom inn for å se alle holdeplassene':'Zoom inn for å se holdeplasser';
+    h.hidden=false;measureStack();syncStopChip();return}
   if(!$('#mapHint').hidden){$('#mapHint').hidden=true;measureStack()}
   if(stopMarkersBusy)return;
   /* Bremsen skal hindre kall ved smådrag – ikke ved zoom eller nytt område. */
@@ -3692,6 +3837,7 @@ async function loadStopMarkers(force){
     edges.forEach(e=>{
       const pl=e.node&&e.node.place;if(!pl||!okLL([pl.latitude,pl.longitude]))return;
       if(shownStopIds.has(pl.id))return;
+      if(filter instanceof Set&&!filter.has(pl.id))return;
       if(shownStopIds.size>=MAX_PINS)return;      // nok til å være nyttig, ikke nok til å drukne kartet
       shownStopIds.add(pl.id);
       const modes=(pl.transportMode||[]).filter(Boolean);
@@ -3708,9 +3854,94 @@ async function loadStopMarkers(force){
       mk.addTo(stopsLayer);
     });
     stopMarkersAt=Date.now();
-    layoutStopLabels();
+    layoutStopLabels();syncStopChip();
   }catch(err){logErr('stopmarkers',err)}
   finally{stopMarkersBusy=false}
+}
+
+/* ================= hvilke holdeplasser vises =================
+   Med en rute på kartet var 45 nåler mer til hinder enn hjelp. Har du en rute,
+   vises som standard bare stoppene ruten faktisk bruker – inkludert dem du
+   passerer underveis. Du kan når som helst be om å se alle igjen. */
+/* Stoppene på ruten kommer fra reisen selv – med navn og koordinater. Å hente
+   dem fra kartutsnittet i stedet var feil: en rute strekker seg lenger enn det
+   du ser, så de fleste stoppene ble aldri hentet. Dette krever heller ingen
+   ekstra forespørsel. */
+function routeStops(){
+  const p=state.selectedPattern;
+  if(!p||!Array.isArray(p.legs))return null;
+  const ut=new Map();
+  const legg=(q,navn,modus,viktig)=>{
+    if(!q)return;
+    const id=(q.stopPlace&&q.stopPlace.id)||q.id;
+    const lat=q.latitude,lon=q.longitude;
+    if(!id||!okLL([lat,lon]))return;
+    const før=ut.get(id);
+    if(!før||viktig)ut.set(id,{id,name:navn||før&&før.name||'',lat,lon,mode:modus||'bus',dist:0,viktig:!!viktig||!!(før&&før.viktig)});
+  };
+  p.legs.forEach(l=>{
+    const m=l.mode==='foot'?null:l.mode;
+    legg(l.fromPlace&&l.fromPlace.quay,l.fromPlace&&l.fromPlace.name,m,true);
+    legg(l.toPlace&&l.toPlace.quay,l.toPlace&&l.toPlace.name,m,true);
+    (l.intermediateQuays||[]).forEach(q=>legg(q,q.name,m,false));
+  });
+  return ut.size?[...ut.values()]:null;
+}
+function routeStopIds(){
+  const p=state.selectedPattern;
+  if(!p||!Array.isArray(p.legs))return null;
+  const ids=new Set();
+  const legg=q=>{
+    if(!q)return;
+    const sp=q.stopPlace&&q.stopPlace.id;
+    if(sp)ids.add(sp);
+    if(q.id)ids.add(q.id);
+  };
+  p.legs.forEach(l=>{
+    legg(l.fromPlace&&l.fromPlace.quay);
+    legg(l.toPlace&&l.toPlace.quay);
+    (l.intermediateQuays||[]).forEach(legg);
+  });
+  return ids.size?ids:null;
+}
+function stopFilter(){
+  if(state.stopsMode==='off')return 'off';
+  if(state.stopsMode==='all')return null;
+  return routeStopIds();                 // 'auto': ruten hvis den finnes
+}
+function syncStopChip(){
+  const chip=$('#stopFilterChip');if(!chip)return;
+  const f=stopFilter();
+  if(f==='off'){chip.hidden=false;chip.innerHTML=`${IC.eye}Holdeplasser skjult · <u>vis</u>`;
+    chip.onclick=()=>{state.stopsMode='all';saveLS('stopsMode','all');loadStopMarkers(true);syncStopChip();syncLayerUI()};return}
+  if(f instanceof Set){chip.hidden=false;
+    chip.innerHTML=`${IC.route}Kun stopp på ruten · <u>vis alle</u>`;
+    chip.onclick=()=>{state.stopsMode='all';saveLS('stopsMode','all');loadStopMarkers(true);syncStopChip();syncLayerUI()};return}
+  if(state.stopsMode==='all'&&routeStopIds()){
+    chip.hidden=false;chip.innerHTML=`${IC.route}Viser alle stopp · <u>kun ruten</u>`;
+    chip.onclick=()=>{state.stopsMode='auto';saveLS('stopsMode','auto');loadStopMarkers(true);syncStopChip();syncLayerUI()};return}
+  chip.hidden=true;
+}
+
+/* Felles tegning, enten stoppene kommer fra ruten eller fra utsnittet. */
+function drawStopList(liste,erRute){
+  if(!stopsLayer)return;
+  stopsLayer.clearLayers();shownStopIds.clear();
+  liste.slice(0,MAX_PINS).forEach(st=>{
+    if(shownStopIds.has(st.id))return;
+    shownStopIds.add(st.id);
+    const mm=MODE[st.mode]||MODE.bus;
+    const mk=L.marker([st.lat,st.lon],{
+      icon:L.divIcon({className:'',iconSize:[22,22],iconAnchor:[11,11],
+        html:`<div class="stop-pin${erRute&&st.viktig?' key':''}" style="--pc:${mm.hex}" `+
+             `title="${esc(st.name)}">${mm.icon||''}<span class="pin-label">${esc(st.name)}</span></div>`}),
+      keyboard:false,zIndexOffset:erRute&&st.viktig?140:100});
+    mk.on('click',()=>showStopCard(st));
+    mk.stopData=st;
+    mk.addTo(stopsLayer);
+  });
+  stopMarkersAt=Date.now();
+  layoutStopLabels();
 }
 
 /* ================= navn på holdeplassene =================
@@ -3723,13 +3954,16 @@ const MODE_RANG={rail:0,metro:1,tram:2,water:3,bus:4,coach:4};
 function layoutStopLabels(){
   if(!mapUsable()||!stopsLayer)return;
   const lag=stopsLayer.getLayers();
-  const vis=map.getZoom()>=LABEL_ZOOM;
+  /* Rutens egne stopp er få nok til at navnene alltid får plass. */
+  const kunRute=stopFilter() instanceof Set;
+  const vis=kunRute||map.getZoom()>=LABEL_ZOOM;
   if(!vis){lag.forEach(m=>{const el2=m.getElement&&m.getElement();
     if(el2){const l=el2.querySelector('.pin-label');if(l)l.classList.remove('show')}});return}
 
   /* Viktigst først: tog og T-bane før buss, og nærmest før fjernest. */
   const sortert=lag.slice().sort((a,b)=>{
     const A=a.stopData||{},B=b.stopData||{};
+    if(!!B.viktig!==!!A.viktig)return B.viktig?1:-1;   // på/av og bytter først
     const r=(MODE_RANG[A.mode]??5)-(MODE_RANG[B.mode]??5);
     return r||((A.dist||0)-(B.dist||0));
   });
@@ -4020,11 +4254,13 @@ function nodeMarker(ll,cls,txt,label){
 function fitRoute(ll){const pts=(ll||[]).filter(okLL);if(!mapUsable()||pts.length<1)return;lastBounds=L.latLngBounds(pts);map.fitBounds(lastBounds,{paddingTopLeft:[26,110],paddingBottomRight:[26,mapCardH()+80],maxZoom:16,animate:true,duration:.6})}
 function clearRoute(){
   try{if(routeLayer)routeLayer.clearLayers()}catch(e){logErr('kart',e)}
+  setTimeout(()=>{if(mapUsable())loadStopMarkers(true)},60);
   state.selectedPattern=null;state.streetRoute=null;lastBounds=null;
   try{applyMapContext()}catch(e){logErr('kart',e)}
 }
 function drawPattern(p){
   if(!mapUsable()||!routeLayer)return;
+  setTimeout(()=>{loadStopMarkers(true)},60);   // ruten endret seg – nytt filter
   routeLayer.clearLayers();const pts=[];
   p.legs.forEach(leg=>{const ll=legPoints(leg).filter(okLL);if(ll.length<2)return;const hex=(MODE[modeOf(leg)]||MODE.foot).hex;
     const line=L.polyline(ll,{color:hex,weight:5,opacity:.92,lineCap:'round',lineJoin:'round'}).addTo(routeLayer);
@@ -4146,6 +4382,14 @@ function closeLayers(){
   },220);
 }
 function syncLayerUI(){
+  const ls=$('#lsStops');
+  if(ls){
+    ls.classList.toggle('on',state.stopsMode!=='off');
+    const sub=ls.querySelector('.ls-sub');
+    if(sub)sub.textContent=STOPS_TEKST[state.stopsMode]||'alle';
+    const ic=ls.querySelector('.ls-ic');
+    if(ic&&!ic.innerHTML)ic.innerHTML=IC.route;
+  }
   $('#fabVehicles').classList.toggle('on',state.vehiclesOn);
   $('#fabBikes').classList.toggle('on',state.bikesOn);
   $('#fabAttract').classList.toggle('on',state.attractOn);
@@ -4153,6 +4397,17 @@ function syncLayerUI(){
   $('#fabLayers').querySelector('.fab-dot').style.opacity=
     (state.vehiclesOn||state.bikesOn||state.attractOn)?'1':'0';
 }
+/* Tre tilstander: automatisk (ruten når du har en) → alle → av. */
+const STOPS_NESTE={auto:'all',all:'off',off:'auto'};
+const STOPS_TEKST={auto:'ruten',all:'alle',off:'av'};
+$('#lsStops').onclick=()=>{
+  state.stopsMode=STOPS_NESTE[state.stopsMode]||'auto';
+  saveLS('stopsMode',state.stopsMode);
+  loadStopMarkers(true);syncLayerUI();syncStopChip();
+  toast(state.stopsMode==='off'?'Skjuler holdeplasser'
+    :state.stopsMode==='all'?'Viser alle holdeplasser'
+    :'Viser stopp på ruten når du har en','ok');
+};
 $('#fabLayers').onclick=toggleLayers;
 $('#baseSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setBasemap(b.dataset.base)});
 $('#map').addEventListener('pointerdown',()=>{if(layersOpen())closeLayers()});

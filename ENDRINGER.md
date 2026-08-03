@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (224 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (232 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,51 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Kartet viser bare stoppene du trenger
+
+Med en rute på kartet lå 45 nåler oppå den. Har du valgt en reise, vises nå bare
+**stoppene ruten faktisk bruker** – på, av, bytter og dem du passerer underveis.
+
+Stoppene hentes fra reisen selv (`intermediateQuays`), ikke fra et søk rundt
+kartets midtpunkt. Det siste var feil: en rute strekker seg lenger enn det du
+ser, så de fleste stoppene ble aldri hentet. Første forsøk ga **1 nål av 10**;
+nå kommer alle, uten en eneste ekstra forespørsel.
+
+- **På- og avstigning er større** enn stopp du bare passerer, og får navn først.
+- Rutens stopp viser navn på **alle** zoomnivåer – de er få nok.
+- Et merke på kartet: «Kun stopp på ruten · **vis alle**», og motsatt vei.
+- I lagvelgeren veksler **Holdeplasser** mellom *ruten → alle → av*. Valget huskes.
+
+---
+
+## Varselet er blitt til en reisefølge
+
+Fem forbedringer, der den siste lukker et reelt hull.
+
+**Ett stopp før.** Du får beskjed ved nest siste stopp, ikke først når du er
+fremme. Da rekker du å reise deg.
+
+**Bytter varsles.** Det er ved bytte folk faktisk bommer, ikke ved endestasjonen.
+
+**Nedtelling mens det står på.** En linje nederst: «Av ved Majorstuen · 1,9 km
+igjen · ca. 15 min», synlig i alle faner med av-knapp.
+
+**Diskret vibrasjon.** Korte mønstre (220-120-220 for bytte, 180-90-180 for
+forvarsel) kjennes gjennom jakkelomma uten at hele bussen hører det.
+
+**Reserve når GPS ryker.** Dette er den viktigste. T-banen i Oslo går i tunnel
+akkurat der varselet trengs – uten signal ville alarmen aldri utløst. Har vi
+ikke hatt en posisjon på 45 sekunder, varsler appen på **klokka** i stedet, ut
+fra ruteplanen, og sier hvorfor:
+
+> «Snart fremme — Ruteplanen sier du er fremme nå – GPS-signalet er borte.
+> Holdeplass: Majorstuen»
+
+Verifisert ende-til-ende: forvarselet utløste ved Nationaltheatret, alarmen ved
+Majorstuen, og tunnelreserven utløste på tid med riktig forklaring.
 
 ---
 
