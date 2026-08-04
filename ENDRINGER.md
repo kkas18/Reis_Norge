@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (259 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (262 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,42 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Slutt på bobler som er i veien
+
+Meldt av bruker med skjermbilde: to «Oppdatert»-bobler oppå avgangslista.
+
+**Rotårsaken var to implementasjoner av samme funksjon.** Dra-for-å-oppdatere
+var registrert to ganger – en eldre `bindPull` og en nyere `settOppDra` – så
+hvert drag ga **to hentinger og to bobler**. Den gamle er fjernet.
+
+> Testene hadde faktisk to versjoner av samme test også, én for hver
+> implementasjon, og begge besto. At de besto samtidig var selve varselet om at
+> koden fantes i to utgaver – jeg så det bare ikke før skjermbildet kom.
+
+**Meldinger som ikke sier noe nytt, er fjernet.** «Oppdatert» etter et drag,
+«Følger deg mens du går», «Sted lagret», «Mål satt», «Kartet er lastet» – i alle
+tilfellene ser du resultatet på skjermen. Snurringen *er* tilbakemeldingen.
+12 bekreftelser fjernet.
+
+**De som er igjen, er flyttet ut av veien:**
+- nederst, rett over menyen – ikke oppå innholdet du nettopp handlet på
+- **én om gangen**; kommer en ny, erstatter den den forrige
+- kompakt brikke i stedet for en plate over halve skjermen
+
+Målt: 1 melding om gangen, 10 px klaring til menyen, 0 px² overlapp, og
+**1 henting per drag** i stedet for 2.
+
+## Varselet flyttet inn i topplinja
+
+Raden under toppen tok en hel linje av skjermen. Varselet er nå en kompakt
+brikke i selve topplinja, ved siden av menyknappen: **🔔 13 min**, som skifter
+til rødt når du nærmer deg. Trykk gir samme valgpanel som før, og hele statusen
+ligger i tittelen for skjermleser.
+
+Målt: brikka dekker **0 px²** av både innhold og meny.
 
 ---
 

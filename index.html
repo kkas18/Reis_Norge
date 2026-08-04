@@ -1037,24 +1037,18 @@ a{color:inherit}
 .ac-item .ic svg{width:15px;height:15px;display:block}
 .ac-item b{font-size:13.5px;display:block;color:var(--ink)}
 .ac-item span{font-size:11px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
-/* FIX: linja lå over bunnmenyen og dekket fanene. Nå er den en egen rad i
-   appens ramme, rett under topplinja – da tar den sin egen plass og kan ikke
-   dekke noe som helst. Hele linja er trykkbar og åpner valgene. */
-#wakeStatus{flex:none;position:relative;z-index:1150;width:100%;min-height:46px;
-  display:flex;align-items:center;gap:10px;padding:7px 13px;text-align:left;
-  background:linear-gradient(100deg,var(--green-2,#12805A),var(--green,#16A34A));
-  color:#fff;box-shadow:0 4px 14px rgba(4,20,43,.28);
-  animation:wsIn .32s cubic-bezier(.22,1,.36,1)}
-@keyframes wsIn{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:none}}
-#wakeStatus>svg{width:18px;height:18px;flex:none;animation:pulse 1.8s infinite}
-#wakeStatus .ws-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-#wakeStatus b{font-size:13px;font-family:var(--font-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#wakeStatus .ws-sub{font-size:11px;opacity:.9;font-family:var(--font-m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#wakeStatus .ws-more{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:8px;
-  background:rgba(255,255,255,.18)}
-#wakeStatus .ws-more svg{width:13px;height:13px;display:block}
-/* Nær målet skifter linja til rødt – du skal av nå */
-#wakeStatus.soon{background:linear-gradient(100deg,var(--signal-2),var(--signal))}
+/* Varselet er ikke en hel rad lenger, men en kompakt brikke i topplinja. Den
+   tar ingen plass fra innholdet, står alltid synlig, og åpner valgene ved trykk. */
+#wakeChip{flex:none;display:flex;align-items:center;gap:7px;height:34px;padding:0 11px;
+  border-radius:999px;background:rgba(22,163,74,.92);color:#fff;
+  font-size:12px;font-weight:700;font-family:var(--font-m);white-space:nowrap;
+  box-shadow:0 2px 8px rgba(4,20,43,.3);animation:chipIn .3s cubic-bezier(.3,1.3,.4,1);
+  max-width:46vw;overflow:hidden}
+@keyframes chipIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+#wakeChip svg{width:14px;height:14px;flex:none;animation:pulse 1.8s infinite}
+#wakeChip .wc-t{overflow:hidden;text-overflow:ellipsis}
+#wakeChip.soon{background:rgba(200,16,46,.95)}
+#wakeChip:active{transform:scale(.94)}
 
 /* Oppdateringsbanner: uten dette kjørte appen videre på gammel kode helt til
    den ble lukket og åpnet på nytt. */
@@ -1067,12 +1061,21 @@ a{color:inherit}
   color:#fff;font-weight:700;font-size:12.5px}
 #updateBar .ub-x{flex:none;width:30px;height:30px;border-radius:9px;color:#A9C6E4;display:grid;place-items:center}
 #updateBar .ub-x svg{width:13px;height:13px;display:block}
-#toasts{position:absolute;top:calc(70px + var(--sat));left:12px;right:12px;z-index:3000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:var(--navy);color:#fff;font-size:13px;padding:11px 14px;border-radius:12px;box-shadow:var(--sh-2);animation:toastIn .3s cubic-bezier(.3,1.3,.4,1);pointer-events:auto;display:flex;align-items:flex-start;gap:10px;line-height:1.45}
+/* Meldingene lå øverst og dekket innholdet du nettopp handlet på. Nå ligger de
+   nederst, rett over menyen, som i systemets egne varsler – og bare én om
+   gangen, så de ikke stabler seg. */
+#toasts{position:absolute;left:12px;right:12px;bottom:calc(66px + var(--sab));z-index:3000;
+  display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none;align-items:center}
+/* Kompakt og bare så bred som teksten trenger – ikke en grønn plate over
+   halve skjermen. */
+.toast{max-width:100%;background:rgba(10,42,87,.94);color:#fff;font-size:12.5px;
+  padding:9px 14px;border-radius:999px;box-shadow:0 6px 20px rgba(4,20,43,.4);
+  backdrop-filter:blur(8px);animation:toastIn .28s cubic-bezier(.3,1.3,.4,1);
+  pointer-events:auto;display:flex;align-items:center;gap:10px;line-height:1.4}
 .toast span{flex:1;min-width:0;word-break:break-word}
 .toast .toast-copy{flex:none;font-size:10.5px;font-weight:700;letter-spacing:.06em;background:rgba(255,255,255,.18);border-radius:7px;padding:5px 9px;color:#fff}
-.toast.err{background:#B02A37}
-.toast.ok{background:#0E7A3D}
+.toast.err{background:rgba(176,42,55,.95)}
+.toast.ok{background:rgba(14,122,61,.94)}
 .toast.out{opacity:0;transform:translateY(-8px);transition:all .3s}
 @keyframes toastIn{from{opacity:0;transform:translateY(-10px) scale(.96)}}
 #wakeFlash{position:fixed;inset:0;z-index:5000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(160deg,var(--signal),var(--signal-2));color:#fff;text-align:center;padding:30px}
@@ -1117,10 +1120,10 @@ a{color:inherit}
       </svg>
       <div class="brand-txt"><h1>REIS</h1><small id="topContext">Planlegg reisen</small></div>
     </div>
+    <button id="wakeChip" hidden aria-label="Aktivt varsel – trykk for valg"></button>
     <button class="icon-btn tap" id="btnMore" aria-label="Mer – lagret, utseende og innstillinger"></button>
   </header>
 
-  <button id="wakeStatus" hidden aria-label="Aktivt varsel – trykk for valg"></button>
   <main id="views">
 
     <section id="viewPlan" class="view active">
@@ -1669,6 +1672,9 @@ function toastOnce(msg,type='',raw='',ms=60000){
   toast(msg,type,raw);
 }
 function toast(msg,type='',raw=''){
+  /* Én melding om gangen. Stabler de seg, er det alltid den nyeste som gjelder. */
+  const boks=$('#toasts');
+  if(boks)while(boks.children.length>0)boks.firstElementChild.remove();
   const t=el('div','toast '+type);
   t.appendChild(el('span',null,esc(msg)));
   if(raw){const b=el('button','toast-copy','KOPIER');
@@ -1765,7 +1771,7 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    allerede åpen side beholder gammel HTML og JS selv om en ny service worker
    er installert. Nå oppdages det, og du får velge når. */
 /* Denne må holdes lik VERSION i sw.js. Byggeskriptet sjekker at de stemmer. */
-const APP_VERSION='v6.5.0';
+const APP_VERSION='v6.6.0';
 let swReg=null,waitingSW=null,reloading=false,byttetSelv=false;
 
 /* Service worker-livssyklusen er lunefull: en ny versjon kan bli hengende i
@@ -2001,7 +2007,7 @@ async function ensureMap(){
     return null;
   }
 }
-$('#mfRetry').onclick=async()=>{const m=await ensureMap();if(m){m.invalidateSize({pan:false});applyMapContext();toast('Kartet er lastet','ok')}};
+$('#mfRetry').onclick=async()=>{const m=await ensureMap();if(m){m.invalidateSize({pan:false});applyMapContext();0}};
 
 /* Leaflet kaster hardt på NaN-koordinater og river med seg hele visningen.
    Alt som skal på kartet passerer denne vakten først. */
@@ -2569,7 +2575,7 @@ function openReport(stopId,stopName){
       noe sted.</div>
     <div class="rep-grid">${REP.map(([k,e,l])=>`<button class="rep-btn" data-t="${k}">${e}${esc(l)}</button>`).join('')}</div>
     <div class="mc-acts" style="margin-top:12px"><button class="mini-btn ghost" id="repShare">${IC.share}Del siste rapport</button></div>`);
-  $$('#modalCard .rep-btn').forEach(b=>b.onclick=()=>{saveReport(stopId,b.dataset.t);closeModal();toast('Rapport lagret','ok');
+  $$('#modalCard .rep-btn').forEach(b=>b.onclick=()=>{saveReport(stopId,b.dataset.t);closeModal();0;
     if($('#viewDepart').classList.contains('active'))$('#depReports').innerHTML=reportsHTML(stopId);refreshMapCardReports(stopId)});
   const sh=$('#repShare');if(sh)sh.onclick=()=>{const arr=(getReports()[stopId]||[]);if(!arr.length){toast('Ingen rapporter ennå','');return}
     const t=REP.find(x=>x[0]===arr[0].type);shareText(`${stopName}: ${t[2]} – ${relMin(Date.now()-arr[0].t)} siden (via REIS Norge)`)};
@@ -2653,7 +2659,7 @@ function showWelcome(){
       const p=await getPos();state.userPos=p;setUser(p.lat,p.lon,p.acc);
       closeModal();
       loadNearby(true);renderNearby();
-      toast('Fant deg – her er stoppene i nærheten','ok');
+      0;
     }catch(e){
       logErr('geo',e);closeModal();
       toast(e.message+' Du kan fortsatt søke selv.','');
@@ -2757,40 +2763,9 @@ window.addEventListener('popstate',e=>{
    på at intervallet slår til. Virker bare når lista er helt øverst, så den
    ikke kommer i veien for vanlig rulling. */
 const PTR_MAX=90, PTR_TRIGGER=64;
-function bindPull(padSel,oppdater){
-  const pad=$(padSel);if(!pad)return;
-  const ind=el('div','ptr');ind.innerHTML=`<span class="ptr-ring">${IC.refresh}</span>`;
-  pad.parentElement.insertBefore(ind,pad);
-  let y0=null,dy=0,aktiv=false,jobber=false;
-  pad.addEventListener('touchstart',e=>{
-    if(jobber||e.touches.length!==1||pad.scrollTop>0)return;
-    y0=e.touches[0].clientY;dy=0;aktiv=true;
-  },{passive:true});
-  pad.addEventListener('touchmove',e=>{
-    if(!aktiv||jobber)return;
-    dy=e.touches[0].clientY-y0;
-    if(dy<=0){ind.style.transform='';ind.classList.remove('vis');return}
-    if(pad.scrollTop>0){aktiv=false;ind.classList.remove('vis');return}
-    if(e.cancelable&&dy>6)e.preventDefault();
-    const d=Math.min(PTR_MAX,dy*0.55);
-    ind.classList.add('vis');
-    ind.style.transform=`translateY(${d}px)`;
-    ind.classList.toggle('klar',d>=PTR_TRIGGER*0.55);
-  },{passive:false});
-  const slipp=async()=>{
-    if(!aktiv||jobber){aktiv=false;return}
-    aktiv=false;
-    const nok=dy*0.55>=PTR_TRIGGER*0.55;
-    if(!nok){ind.style.transform='';ind.classList.remove('vis','klar');return}
-    jobber=true;ind.classList.add('går');ind.style.transform=`translateY(46px)`;
-    try{if(navigator.vibrate)navigator.vibrate(8)}catch(e){}
-    try{await oppdater()}catch(e){logErr('pull',e)}
-    ind.style.transform='';ind.classList.remove('vis','klar','går');jobber=false;
-  };
-  pad.addEventListener('touchend',slipp,{passive:true});
-  pad.addEventListener('touchcancel',()=>{aktiv=false;ind.style.transform='';
-    ind.classList.remove('vis','klar')},{passive:true});
-}
+/* bindPull er fjernet – settOppDra gjorde det samme, og to implementasjoner
+   ga to hentinger per drag. */
+
 
 /* ================= sveip mellom faner =================
    Rundgang: fra Lagret sveiper du videre til Plan, og motsatt vei fra Plan til
@@ -3263,7 +3238,7 @@ async function saveQuickEditor(){
     list.unshift(item);
   }
   saveQuickTrips(list);closeModal();qtAt=0;renderQuickTrips();renderSaved();
-  toast(`Hurtigreise lagret: ${from.n} → ${to.n}`,'ok');
+  0;
 }
 
 /* ================= proaktivt varsel ================= */
@@ -3377,7 +3352,7 @@ function varsle(tittel,tekst,mønster){
 }
 /* Nedtelling mens varselet er aktivt, så du vet hvor mye tid du har. */
 function showWakeStatus(){
-  const el2=$('#wakeStatus');if(!el2)return;
+  const el2=$('#wakeChip');if(!el2)return;
   if(!state.wakeOn){el2.hidden=true;return}
   const pl=state.wakePlan;
   const igjen=pl?pl.av.t-now():null;
@@ -3391,9 +3366,15 @@ function showWakeStatus(){
   el2.classList.toggle('soon',
     (state.wakeDist!=null&&state.wakeDist<1200)||(igjen!=null&&igjen<180000));
   el2.hidden=false;
-  el2.innerHTML=`${IC.bell}<span class="ws-txt"><b>Av ved ${esc(state.wakeDest.name)}</b>`+
-    `${deler.length?`<span class="ws-sub">${esc(deler.join(' · '))}</span>`:''}</span>`+
-    `<span class="ws-more">${IC.chevD}</span>`;
+  /* Plass til én opplysning i topplinja: den mest presserende. */
+  let kort;
+  if(utenGps)kort='søker GPS';
+  else if(igjen!=null&&igjen>-60000&&igjen<3600000)kort=relMin(Math.max(0,igjen));
+  else if(state.wakeDist!=null)kort=fmtWalk(state.wakeDist);
+  else kort='på';
+  el2.innerHTML=`${IC.bell}<span class="wc-t">${esc(kort)}</span>`;
+  el2.title=`Av ved ${state.wakeDest.name}${deler.length?' · '+deler.join(' · '):''}`;
+  el2.setAttribute('aria-label',el2.title+'. Trykk for valg.');
   el2.onclick=openWakeSheet;
 }
 /* Trykk på linja gir valgene – i stedet for én kryssknapp som bare kan skru av. */
@@ -3438,12 +3419,12 @@ function openWakeSheet(){
   $('#woOff').onclick=()=>{stopWake();closeModal();toast('Varselet er av')};
 }
 function stopWake(){state.wakeOn=false;state.wakeDist=null;state.wakePlan=null;
-  clearInterval(state.wakeTimer);const ws=$('#wakeStatus');if(ws)ws.hidden=true;if(state.wakeWatchId!=null){try{navigator.geolocation.clearWatch(state.wakeWatchId)}catch(e){}state.wakeWatchId=null}syncWakeUI()}
+  clearInterval(state.wakeTimer);const ws=$('#wakeChip');if(ws)ws.hidden=true;if(state.wakeWatchId!=null){try{navigator.geolocation.clearWatch(state.wakeWatchId)}catch(e){}state.wakeWatchId=null}syncWakeUI()}
 function syncWakeUI(){$$('#detTools .tool-btn.wake, #mapCard .tool-btn.wake').forEach(b=>{b.classList.toggle('on',state.wakeOn);
   b.innerHTML=state.wakeOn?`${IC.bell} Vekk meg: PÅ`:`${IC.bell} Vekk meg`})}
 function fireWake(grunn){
   state.wakeFired=true;clearInterval(state.wakeTimer);
-  const ws=$('#wakeStatus');if(ws)ws.hidden=true;
+  const ws=$('#wakeChip');if(ws)ws.hidden=true;
   try{if(navigator.vibrate)navigator.vibrate([500,250,500,250,700])}catch(e){}
   try{if('Notification' in window&&Notification.permission==='granted')new Notification('REIS – du er fremme!',{body:'Holdeplass: '+state.wakeDest.name})}catch(e){}
   $('#wfTitle').textContent=grunn==='tid'?'Snart fremme':'Du er fremme!';
@@ -3628,7 +3609,7 @@ async function useMyPosition(uid2){
     const label=await reverseGeocode(p.lat,p.lon).catch(()=>'Min posisjon');
     s.name=label;s.lat=p.lat;s.lon=p.lon;s.id=null;
     renderStops();loadNearby(true);
-    toast(`Satt til ${label}`,'ok');
+    0;
   }catch(e){logErr('geo',e);toast(e.message,'err')}
 }
 
@@ -3911,7 +3892,7 @@ function bindSpotActs(root){
   root.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{
     const c=b.closest('.spot'),a={title:c.dataset.title,lat:+c.dataset.lat,lon:+c.dataset.lon};
     if(b.dataset.act==='add')addSpotToJourney(a);
-    else if(b.dataset.act==='fav'){const fp=loadLS('favPlaces',[]);fp.unshift({n:a.title,lat:a.lat,lon:a.lon});saveLS('favPlaces',fp.slice(0,12));b.innerHTML=IC.star;toast('Sted lagret','ok')}
+    else if(b.dataset.act==='fav'){const fp=loadLS('favPlaces',[]);fp.unshift({n:a.title,lat:a.lat,lon:a.lon});saveLS('favPlaces',fp.slice(0,12));b.innerHTML=IC.star;0}
   });
 }
 function addSpotToJourney(a){
@@ -3958,7 +3939,7 @@ $('#btnSaveJ').onclick=()=>{
   const item={from:{n:from.name,lat:from.lat,lon:from.lon},to:{n:to.name,lat:to.lat,lon:to.lon},vias:vias.filter(v=>v.lat).map(v=>({n:v.name,lat:v.lat,lon:v.lon})),t:Date.now()};
   const dup=fj.findIndex(x=>x.from.n===item.from.n&&x.to.n===item.to.n);
   if(dup>-1){fj.splice(dup,1);saveLS('favJourneys',fj);$('#btnSaveJ').textContent='Lagre';toast('Fjernet fra hurtigreiser')}
-  else{fj.unshift(item);saveLS('favJourneys',fj.slice(0,8));$('#btnSaveJ').textContent='Lagret';toast('Lagret som hurtigreise','ok')}
+  else{fj.unshift(item);saveLS('favJourneys',fj.slice(0,8));$('#btnSaveJ').textContent='Lagret';0}
   qtAt=0;renderQuickTrips();
 };
 async function loadTips(p){
@@ -4594,7 +4575,7 @@ function startFollow(){
      gatenivå hvis du er lenger ute – men aldri zoom UT, du kan ha valgt selv. */
   if(mapUsable()&&map.getZoom()<16&&state.userPos)
     moveSelf(()=>map.setView([state.userPos.lat,state.userPos.lon],16,{animate:true}));
-  toast('Følger deg mens du går','ok');setDotState();
+  0;setDotState();
   followWatch=navigator.geolocation.watchPosition(p=>{
     /* Signalet er tilbake – fjern «leter»-tilstanden. */
     if(followLost){followLost=0;clearTimeout(followLostTimer);$('#fabLocate').classList.remove('searching')}
@@ -5022,7 +5003,7 @@ async function showPlaceCard(lat,lon){
     const setStop=(idx,label)=>{
       const t=idx==='to'?state.stops[state.stops.length-1]:state.stops[0];
       t.name=name;t.lat=lat;t.lon=lon;t.id=null;renderStops();
-      toast(`${label} satt til ${name}`,'ok');
+      0;
       if(state.stops[0].lat&&state.stops.at(-1).lat){switchTab('plan');findJourney(false)}
     };
     $('#pcTo').onclick=()=>setStop('to','Mål');
@@ -5100,7 +5081,7 @@ function renderSaved(){
     <button class="mini-btn" data-pu="${i}">Bruk</button><button class="mini-btn ghost" data-pd="${i}">${IC.x}</button></div>`).join(''):'<p class="hint">Lagre severdigheter med stjerne-knappen.</p>';
   $('#favJourneys').querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>applyJourney(fj[+b.dataset.j]));
   $('#favJourneys').querySelectorAll('[data-jd]').forEach(b=>b.onclick=()=>{fj.splice(+b.dataset.jd,1);saveLS('favJourneys',fj);renderSaved();renderQuickTrips()});
-  $('#favPlaces').querySelectorAll('[data-pu]').forEach(b=>b.onclick=()=>{const p=fp[+b.dataset.pu];const t=state.stops[state.stops.length-1];t.name=p.n;t.lat=p.lat;t.lon=p.lon;t.id=null;renderStops();switchTab('plan');showPlanSection('form');toast('Mål satt','ok')});
+  $('#favPlaces').querySelectorAll('[data-pu]').forEach(b=>b.onclick=()=>{const p=fp[+b.dataset.pu];const t=state.stops[state.stops.length-1];t.name=p.n;t.lat=p.lat;t.lon=p.lon;t.id=null;renderStops();switchTab('plan');showPlanSection('form');0});
   $('#favPlaces').querySelectorAll('[data-pd]').forEach(b=>b.onclick=()=>{fp.splice(+b.dataset.pd,1);saveLS('favPlaces',fp);renderSaved()});
 }
 $('#btnCopyLog').onclick=()=>{
@@ -5130,7 +5111,7 @@ $('#btnCheckUpdate').onclick=async()=>{
 $('#btnClearLog').onclick=()=>{errLog=[];saveLS('errlog',[]);renderErrLog();toast('Feilloggen er tømt','ok')};
 $('#btnReset').onclick=()=>{if(confirm('Tømme alle lagrede reiser, steder, nylige søk, rapporter og favorittlinje?')){
   ['recents','favPlaces','favJourneys','reports','favLine','home','work','errlog'].forEach(k=>localStorage.removeItem('reis.'+k));
-  state.home=state.work=state.favLine=null;errLog=[];renderSaved();renderRecents();renderCommuter();renderErrLog();toast('Tømt','ok')}};
+  state.home=state.work=state.favLine=null;errLog=[];renderSaved();renderRecents();renderCommuter();renderErrLog();0}};
 
 function computeTitle(){
   if(state.wakeOn&&state.wakeDest)return 'Vekk meg → '+state.wakeDest.name;
@@ -5153,23 +5134,16 @@ function tickClock(){}
 
 $('#app').dataset.tab='plan';
 setSearchMode(loadLS('searchMode','trip'));
-/* Avgangstavla og «I nærheten» er de to som blir gamle mens du ser på dem. */
-bindPull('#viewDepart .scrollpad',async()=>{
-  if(state.departStop){await loadDepartures(state.departStop.id,true);toast('Oppdatert','ok')}
-  else toast('Velg et stoppested først','');
-});
-bindPull('#viewPlan .scrollpad',async()=>{
-  await Promise.all([loadNearby(true),loadQuickLive(true)]);
-  updateCommuterLive();toast('Oppdatert','ok');
-});
-/* Avgangstavla og Plan kan dras ned for å hente på nytt. */
+/* FIX: dra-for-å-oppdatere var registrert TO ganger – en gammel bindPull og en
+   nyere settOppDra – så hvert drag ga to hentinger og to «Oppdatert»-bobler.
+   Én registrering, og ingen bekreftelse: snurringen ER tilbakemeldingen. */
 settOppDra('#viewDepart .scrollpad',async()=>{
-  if(state.departStop){await loadDepartures(state.departStop.id);toast('Oppdatert','ok')}
+  if(state.departStop)await loadDepartures(state.departStop.id);
   else toast('Velg et stoppested først','');
 });
 settOppDra('#viewPlan .scrollpad',async()=>{
   await Promise.all([loadNearby(true),loadQuickLive(true)]);
-  updateCommuterLive();toast('Oppdatert','ok');
+  updateCommuterLive();
 });
 initSections();syncModeChips('#planModes','mode-chip',state.modes);renderFilterNote();
 renderNearby();loadNearby();startNearby();renderQuickTrips();updateSecCounts();
@@ -5214,7 +5188,7 @@ whenVisible(away=>{
       const r=await autocomplete(txt.slice(0,120));
       if(r[0]){const t=state.stops[state.stops.length-1];
         Object.assign(t,{name:r[0].name,lat:r[0].lat,lon:r[0].lon,id:r[0].id});
-        renderStops();toast(`Mål satt til ${r[0].name}`,'ok');
+        renderStops();0;
         if(state.stops[0].lat)findJourney(false);
         return;}
     }catch(e){logErr('share',e)}
