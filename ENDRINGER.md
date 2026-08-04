@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (277 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (285 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,70 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Kartet er ryddet
+
+Målt før: **seks paneler oppå kartet samtidig**, som dekket 73 % av flaten. To av
+dem sa nøyaktig det samme.
+
+| | Før | Nå |
+|---|---|---|
+| Paneler over kartet | 6 | **2** (søkefelt + ombordlinje) |
+| Kartflate dekket | 73 % | **25 %** |
+
+**Kontekst-chipen er fjernet.** «Kollektiv · 11 min · 2 etapper» sto midt på
+kartet, mens rutekortet nederst sa «Kollektiv · 11 min · sanntid». Samme
+opplysning, to steder.
+
+**Modusraden flyttet inn i rutekortet.** Kollektiv/Bil/Sykkel/Gå gjelder *ruten*,
+ikke kartet – den hører hjemme der ruten vises, og forsvinner sammen med kortet.
+
+**Stoppfilteret sier fra i lagvelgeren.** «Kun stopp på ruten · vis alle» var en
+egen brikke oppå kartet. Nå står status under **Holdeplasser** i lagvelgeren,
+der valget uansett bor: «kun ruten», «alle», «av».
+
+**«Trykk på kartet for å velge mål» er en melding, ikke et panel.** Den sies én
+gang og forsvinner.
+
+### To feil jeg lagde underveis
+**Stille krasj i reisesøket.** Jeg fjernet to paneler, men koden som skrev til
+dem ble stående. `$('#mapCtxChip').textContent = …` på et element som ikke lenger
+fantes kastet midt i `findJourney`, og søket ble hengende på «Søker etter
+kollektivreiser…» for alltid. Ingen synlig feilmelding.
+
+> En ny test går nå gjennom **alle** `$('#…')`-oppslag i koden og sjekker at
+> id-en faktisk finnes i markupen. Den ville fanget dette umiddelbart.
+
+**Modusraden ble slettet av kortet.** Første forsøk *flyttet* det levende
+elementet inn i rutekortet. Men kortet skriver om sin egen `innerHTML` ved hver
+oppdatering – og da forsvant raden sporløst. Nå bygges den som en del av kortets
+HTML og bindes på nytt hver gang.
+
+**Knappene klatret opp under ombordlinja.** Taket for FAB-ene tok bare hensyn til
+bunnstabelen. Gjennomgangen målte 322 px² overlapp i fire tilstander; taket tar nå
+også høyde for toppen.
+
+---
+
+## Kortene sier mer
+
+**Hjem og Jobb viser nå to avganger.** Én avgang er lite verdt i det øyeblikket
+du nettopp mistet den. Nå står neste under, dempet: «deretter 34 · 12 min».
+
+**Gåavstanden er blitt en stolpe.** «335 m» krever at du regner om til minutter
+i hodet. Stolpen fylles fra grønt til rødt over 0–800 meter, så ett blikk sier
+om stoppet er rett rundt hjørnet eller en tur. Tallet står fortsatt ved siden av.
+
+Målt på Oslo S: fire stopp med 27, 279, 316 og 335 meter, som gir stolper på
+6, 35, 40 og 42 %.
+
+> **En stille feil kom for en dag underveis.** Nærhetskortet hadde *to*
+> `style`-attributter – ett for aksentfargen og ett for animasjonsforsinkelsen.
+> Nettleseren beholder bare det første, så forsinkelsen ble forkastet uten et
+> ord: alle kortene tonet inn samtidig i stedet for etter tur. Slått sammen til
+> ett attributt, og en test teller nå attributtene på selve knappe-taggen.
 
 ---
 

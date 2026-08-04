@@ -215,6 +215,12 @@ a{color:inherit}
 .comm-btn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
   background:var(--ac,var(--line-2));opacity:.85}
 .comm-btn.empty::before{opacity:.25}
+/* Avgang nummer to, dempet – nyttig når du nettopp mistet den første */
+.cb-next{display:inline-flex;align-items:center;gap:5px;margin-top:5px;
+  font-family:var(--font-m);font-size:10.5px;color:var(--faint)}
+.cb-next::before{content:"deretter";margin-right:2px;letter-spacing:.02em}
+.leg-badge.sm{min-width:22px;height:16px;font-size:10px;padding:0 4px;border-radius:5px}
+.cb-live{display:flex;flex-direction:column;align-items:flex-start}
 .comm-btn:active{transform:scale(.97)}
 .comm-btn:hover{box-shadow:var(--sh-1);border-color:var(--line-2)}
 .cb-top{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
@@ -504,14 +510,16 @@ a{color:inherit}
 /* Mistet signalet, men følger fortsatt – knappen pulserer i stedet for å slukne */
 .fab.following.searching{animation:seekPulse 1.4s ease-in-out infinite}
 @keyframes seekPulse{0%,100%{opacity:1}50%{opacity:.45}}
-#modeBar{position:absolute;top:12px;left:12px;z-index:1055;background:var(--card);border-radius:999px;box-shadow:var(--sh-2);display:flex;padding:4px;gap:2px;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
+/* Ikke lenger festet til toppen av kartet – den bor i rutekortet. */
+#modeBar{position:relative;margin:0 0 10px;background:var(--paper);border-radius:999px;box-shadow:var(--sh-2);display:flex;padding:4px;gap:2px;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
 #modeBar::-webkit-scrollbar{display:none}
 .mb-btn{display:flex;align-items:center;justify-content:center;gap:5px;height:38px;padding:0 12px;border-radius:999px;font-size:11.5px;font-weight:600;color:var(--muted);transition:all .2s;white-space:nowrap}
 .mb-btn svg{width:17px;height:17px;flex:0 0 auto;display:block}
 .mb-btn.on{background:var(--navy);color:#fff;box-shadow:var(--sh-1)}
 .mb-btn.on svg{color:var(--tab-2)}
-#mapCtxChip{position:absolute;top:calc(12px + var(--top-h) + var(--msb-h) + var(--ob-h) + var(--hint-h));left:12px;z-index:1040;background:var(--navy);color:#fff;font-size:12px;padding:8px 13px;border-radius:999px;box-shadow:var(--sh-2);display:flex;gap:7px;align-items:center;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#mapCtxChip b{font-family:var(--font-m)}
+/* #mapCtxChip er fjernet – den gjentok undertittelen i rutekortet nederst
+   («Kollektiv · 11 min · sanntid»), og stjal en linje av kartet for det. */
+
 /* Kartkortet, lagvelgeren og knappene lå alle forankret til bunnen med faste
    pikselverdier – derfor la de seg oppå hverandre. Nå stables de: --card-h og
    --layer-h måles i JS, og alt over regner seg ut fra dem. */
@@ -523,7 +531,10 @@ a{color:inherit}
 #viewMap{--card-h:0px;--layer-h:0px;--top-h:0px;--msb-h:0px;--ob-h:0px;--hint-h:0px;--ctx-h:0px}
 .fabs{position:absolute;right:12px;z-index:1050;display:flex;flex-direction:column;gap:9px;
   /* Følger stabelen, men forlater aldri skjermen uansett hvor høye kortene blir */
-  bottom:min(calc(18px + var(--card-h) + var(--layer-h)), calc(100% - 210px));
+  /* Taket må også ta høyde for toppstabelen. Uten det klatret knappene opp
+     under ombordlinja når kortet ble høyt. */
+  bottom:min(calc(18px + var(--card-h) + var(--layer-h)),
+             calc(100% - 210px - var(--top-h) - var(--msb-h) - var(--ob-h)));
   transition:bottom .28s cubic-bezier(.22,1,.36,1)}
 .fab{position:relative;width:46px;height:46px;border-radius:14px;background:var(--card);box-shadow:var(--sh-2);display:grid;place-items:center;color:var(--ink);transition:transform .18s,background .18s,color .18s;border:1px solid var(--line)}
 .fab svg{width:20px;height:20px;display:block}
@@ -785,12 +796,7 @@ a{color:inherit}
 #layerSheet .seg{margin-bottom:12px}
 .ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 .ls-grid-4{grid-template-columns:repeat(2,1fr)}
-#stopFilterChip{position:absolute;left:12px;z-index:1041;display:flex;align-items:center;gap:7px;
-  top:calc(12px + var(--top-h) + var(--msb-h) + var(--ob-h) + var(--hint-h) + var(--ctx-h));min-height:36px;padding:0 12px;border-radius:999px;
-  background:rgba(7,31,66,.86);color:#fff;font-size:12px;font-weight:600;backdrop-filter:blur(6px);
-  box-shadow:0 2px 10px rgba(4,20,43,.3);animation:viewIn .28s ease}
-#stopFilterChip svg{width:14px;height:14px;display:block;flex:none}
-#stopFilterChip u{text-decoration:underline;text-underline-offset:2px;color:#9FC4F0}
+
 .ls-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 4px 10px;border-radius:13px;
   border:1.5px solid var(--line);background:var(--card);color:var(--muted);
   transition:border-color .2s,background .2s,color .2s,transform .16s}
@@ -804,7 +810,6 @@ a{color:inherit}
 .ls-item.on .ls-ic,.ls-item.on b{color:var(--tab)}
 :root[data-theme="dark"] .ls-item.on b,:root[data-theme="dark"] .ls-item.on .ls-ic{color:var(--tab-2)}
 /* Satellitt og topografi er lyse flater – hold kortene lesbare over dem. */
-:root[data-base="satellitt"] #mapCtxChip{background:rgba(6,20,40,.86)}
 
 .opt-row{display:flex;gap:10px;align-items:flex-start;margin-top:12px;cursor:pointer}
 .opt-row input{flex:none;width:20px;height:20px;margin-top:1px;accent-color:var(--tab)}
@@ -1051,6 +1056,11 @@ a{color:inherit}
 .nc-top{display:flex;align-items:baseline;gap:8px}
 .nc-top b{font-family:var(--font-d);font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nc-top span{margin-left:auto;flex:none;font-family:var(--font-m);font-size:10.5px;color:var(--faint)}
+.nc-walk{display:inline-flex;align-items:center;gap:6px}
+.nw-bar{display:block;width:34px;height:4px;border-radius:99px;background:var(--line);overflow:hidden}
+.nw-bar>i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--green),var(--amber-txt) 70%,var(--signal));
+  transition:width .3s ease}
 .nc-lines{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .nc-line{display:inline-flex;align-items:center;gap:6px;background:var(--paper);border-radius:9px;padding:4px 8px 4px 4px;max-width:100%}
 .nc-line .leg-badge{height:20px;padding:0 6px;font-size:10.5px}
@@ -1322,14 +1332,12 @@ a{color:inherit}
 
     <section id="viewMap" class="view">
       <div id="map"></div>
-      <div id="modeBar" hidden></div>
+
       <div id="mapHint" hidden>Zoom inn for å se holdeplasser</div>
-      <button id="stopFilterChip" hidden></button>
       <!-- Hvilket kjøretøy du sitter i akkurat nå. Uten dette må du huske
            linjenummeret fra reiseforslaget – og det er nettopp det man glemmer
            når man står på en full buss. -->
       <button id="onboardBar" hidden aria-live="polite"></button>
-      <div id="mapCtxChip">Kart – utforsk området</div>
       <!-- Samme søkekort som i Plan, flyttet hit ved behov. Ett kort, to hjem –
            da kan de ikke komme i utakt, og all logikk er delt. -->
       <button id="mapSearchBar" aria-label="Søk etter reise">
@@ -1362,6 +1370,7 @@ a{color:inherit}
         </div>
       </div>
       <div id="mapCard" hidden></div>
+
       <div id="mapFallback" hidden>
         <div class="mf-inner">
           <span class="mf-ic" id="mfIc"></span>
@@ -1839,7 +1848,7 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    allerede åpen side beholder gammel HTML og JS selv om en ny service worker
    er installert. Nå oppdages det, og du får velge når. */
 /* Denne må holdes lik VERSION i sw.js. Byggeskriptet sjekker at de stemmer. */
-const APP_VERSION='v7.2.0';
+const APP_VERSION='v7.4.0';
 let swReg=null,waitingSW=null,reloading=false,byttetSelv=false;
 
 /* Service worker-livssyklusen er lunefull: en ny versjon kan bli hengende i
@@ -2989,13 +2998,19 @@ async function updateCommuterLive(){
     const slot=$(`[data-live="${k}"]`);if(!slot)continue;const p=state[k];if(!p)continue;
     try{const stops=await nearestStops(p.lat,p.lon,900,3);if(!stops.length){slot.textContent='—';continue}
       const sp=await getDepartures(stops[0].id,6);const calls=mapCalls(sp);
-      const next=calls.find(c=>!c.cancelled&&c.t-now()>-60000);
+      const kommende=calls.filter(c=>!c.cancelled&&c.t-now()>-60000).slice(0,2);
+      const next=kommende[0];
       if(!next){slot.innerHTML=`<span style="color:var(--faint)">Ingen avganger nå</span>`;continue}
       const mm=MODE[next.mode]||MODE.bus;const diffMin=(next.t-Date.now())/60000;const pc=paceFor(diffMin);
       /* Kortet får fargen til linjen som faktisk går nå. */
       const kort=slot.closest('.comm-btn');
       if(kort)kort.style.setProperty('--ac',next.colour?'#'+next.colour:mm.hex);
-      slot.innerHTML=`<span class="leg-badge" style="background:${mm.hex}">${esc(next.code)}</span> ${relMin(next.t-now())} <span class="pace ${pc.cls}">${pc.ic}${pc.txt}</span>`;
+      /* Nummer to gjør kortet brukbart når du nettopp har mistet den første. */
+      const nr2=kommende[1];
+      const nr2HTML=nr2?`<span class="cb-next"><i class="leg-badge sm" style="background:${
+          nr2.colour?'#'+nr2.colour:((MODE[nr2.mode]||MODE.bus).hex)}">${esc(nr2.code)}</i>${
+          relMin(nr2.t-now())}</span>`:'';
+      slot.innerHTML=`<span class="leg-badge" style="background:${mm.hex}">${esc(next.code)}</span> ${relMin(next.t-now())} <span class="pace ${pc.cls}">${pc.ic}${pc.txt}</span>`+nr2HTML;
     }catch(e){slot.innerHTML=`<span style="color:var(--faint)">—</span>`}
   }
 }
@@ -3020,8 +3035,17 @@ function nearbyCardHTML(s2,i){
   /* Aksenten hentes fra første avgang – kortet får linjens egen farge. */
   const f=(s2.calls||[])[0];
   const ac=f?(f.colour?'#'+f.colour:((MODE[f.mode]||MODE.bus).hex)):'';
-  return `<button style="${ac?`--ac:${esc(ac)}`:''}" class="near-card" data-i="${i}" style="animation-delay:${Math.min(i*50,200)}ms">
-    <div class="nc-top"><b>${esc(s2.name)}</b><span>${Math.round(s2.dist)} m</span></div>
+  /* FIX: elementet hadde TO style-attributter – nettleseren beholder bare det
+     første, så animasjonsforsinkelsen ble stille forkastet. */
+  const gå=Math.round(s2.dist);
+  /* Avstanden som stolpe: 0–800 m fyller hele bredden. Et blikk sier mer enn
+     å lese «340 m» og regne om til minutter i hodet. */
+  const andel=Math.max(6,Math.min(100,Math.round(gå/800*100)));
+  return `<button class="near-card" data-i="${i}"
+      style="${ac?`--ac:${esc(ac)};`:''}animation-delay:${Math.min(i*50,200)}ms">
+    <div class="nc-top"><b>${esc(s2.name)}</b>
+      <span class="nc-walk" title="${gå} meter å gå">
+        <i class="nw-bar"><i style="width:${andel}%"></i></i>${fmtWalk(gå)}</span></div>
     <div class="nc-lines">${calls||'<span class="nc-dest">Ingen avganger den neste timen</span>'}</div>
   </button>`;
 }
@@ -3871,7 +3895,7 @@ async function findJourney(fromMap=false){
     const sub=`${from.name} → ${to.name}`+(vias.length?` · via ${vias.map(v=>v.name).join(', ')}`:'');
     if(!fromMap){showPlanSection('results');$('#resSub').textContent=sub;$('#resList').innerHTML=skelCards(3)}
     else{$('#viewMap').classList.add('has-card');const card=$('#mapCard');card.hidden=false;
-      card.innerHTML=mapCardHTML(`<div class="mc-head"><div><b>Søker etter kollektivreiser…</b><span>${esc(sub)}</span></div></div><div class="skel" style="height:44px;margin-top:10px"></div>`);bindCardGrip();$('#mapCtxChip').textContent='Søker…'}
+      card.innerHTML=mapCardHTML(`<div class="mc-head"><div><b>Søker etter kollektivreiser…</b><span>${esc(sub)}</span></div></div><div class="skel" style="height:44px;margin-top:10px"></div>`);bindCardGrip()}
     let patterns;
     try{patterns=await planTrip(from,to,vias,dt.toISOString(),state.timeMode==='arrive',[...state.modes])}
     catch(err){if(meg!==tripSeq)return;
@@ -3910,17 +3934,22 @@ function renderResults(){
   $$('#resList .trip-card').forEach(c=>c.onclick=()=>selectPattern(+c.dataset.i));
   $$('#resList .tc-go').forEach(b=>b.onclick=e=>{e.stopPropagation();openDetail(+b.dataset.i)});
 }
+/* Tegn raden inn i kortet på nytt, og bind knappene. */
+function plasserModusrad(){
+  const slot=$('#mcModes');if(!slot)return;
+  const vis=!!(state.selectedPattern||state.streetRoute||
+    (state.stops[0]&&state.stops[0].lat&&state.stops.at(-1)&&state.stops.at(-1).lat));
+  slot.innerHTML=vis?modeBarHTML():'';
+  bindModeBar();
+}
 function syncModeBar(){
-  /* Modusraden gjelder ruteberegning. Uten en rute var den en meny uten
-     funksjon, så den vises først når du faktisk har noe å regne om. */
-  const bar=$('#modeBar');
-  if(bar){
-    const før=bar.hidden;
-    bar.hidden=!(state.selectedPattern||state.streetRoute||
-      (state.stops[0]&&state.stops[0].lat&&state.stops.at(-1)&&state.stops.at(-1).lat));
-    if(før!==bar.hidden&&typeof measureStack==='function')measureStack();
-  }
-  $$('#modeBar .mb-btn').forEach(b=>b.classList.toggle('on',b.dataset.mode===state.routeMode));
+  /* Raden gjelder ruteberegning, og bor i rutekortet – den finnes bare når
+     kortet finnes, og trenger derfor ingen egen skjuling. */
+  plasserModusrad();
+  $$('#modeBar .mb-btn').forEach(b=>{
+    const på=b.dataset.mode===state.routeMode;
+    b.classList.toggle('on',på);b.setAttribute('aria-selected',String(på));
+  });
 }
 function selectPattern(i){state.selectedPattern=state.results[i];if(!state.selectedPattern)return;state.routeMode='transit';state.streetRoute=null;syncModeBar();switchTab('map')}
 
@@ -4608,18 +4637,17 @@ function stopFilter(){
   if(state.stopsMode==='all')return null;
   return routeStopIds();                 // 'auto': ruten hvis den finnes
 }
+/* Filteret sier nå fra i lagvelgeren, der valget bor – ikke som en egen brikke
+   oppå kartet. Én ting færre å lese. */
 function syncStopChip(){
-  const chip=$('#stopFilterChip');if(!chip)return;
-  const f=stopFilter();
-  if(f==='off'){chip.hidden=false;chip.innerHTML=`${IC.eye}Holdeplasser skjult · <u>vis</u>`;
-    chip.onclick=()=>{state.stopsMode='all';saveLS('stopsMode','all');loadStopMarkers(true);syncStopChip();syncLayerUI()};return}
-  if(f instanceof Set){chip.hidden=false;
-    chip.innerHTML=`${IC.route}Kun stopp på ruten · <u>vis alle</u>`;
-    chip.onclick=()=>{state.stopsMode='all';saveLS('stopsMode','all');loadStopMarkers(true);syncStopChip();syncLayerUI()};return}
-  if(state.stopsMode==='all'&&routeStopIds()){
-    chip.hidden=false;chip.innerHTML=`${IC.route}Viser alle stopp · <u>kun ruten</u>`;
-    chip.onclick=()=>{state.stopsMode='auto';saveLS('stopsMode','auto');loadStopMarkers(true);syncStopChip();syncLayerUI()};return}
-  chip.hidden=true;
+  const ls=$('#lsStops');
+  if(ls){
+    const sub=ls.querySelector('.ls-sub');
+    if(sub)sub.textContent=state.stopsMode==='off'?'av'
+      :(state.stopsMode==='auto'&&routeStopIds())?'kun ruten'
+      :STOPS_TEKST[state.stopsMode]||'alle';
+  }
+  /* Selve brikken er fjernet – status vises i lagvelgeren over. */
 }
 
 /* Felles tegning, enten stoppene kommer fra ruten eller fra utsnittet. */
@@ -4865,9 +4893,20 @@ function syncLastDepBtn(){
 }
 
 /* ================= kartfane ================= */
-$('#modeBar').innerHTML=[['transit',IC.route,'Kollektiv'],['car',IC.car,'Bil'],['bike',IC.bike,'Sykkel'],['foot',IC.walk,'Gå']]
-  .map(([m,ic,l])=>`<button class="mb-btn${m==='transit'?' on':''}" data-mode="${m}">${ic}${l}</button>`).join('');
-$$('#modeBar .mb-btn').forEach(b=>b.onclick=()=>selectRouteMode(b.dataset.mode));
+/* FIX: raden ble først FLYTTET inn i rutekortet – men kortet skriver om sin
+   egen innerHTML, og da ble elementet slettet uten et ord. Nå bygges raden på
+   nytt som en del av kortet hver gang, og knappene bindes etterpå. */
+const RUTEMODI=[['transit','route','Kollektiv'],['car','car','Bil'],
+                ['bike','bike','Sykkel'],['foot','walk','Gå']];
+function modeBarHTML(){
+  return `<div id="modeBar" role="tablist" aria-label="Reisemåte">`+
+    RUTEMODI.map(([m,ikon,l])=>`<button class="mb-btn${m===state.routeMode?' on':''}" `+
+      `data-mode="${m}" aria-selected="${m===state.routeMode}">${IC[ikon]}${l}</button>`).join('')+
+    `</div>`;
+}
+function bindModeBar(){
+  $$('#modeBar .mb-btn').forEach(b=>b.onclick=()=>selectRouteMode(b.dataset.mode));
+}
 function selectRouteMode(m){
   state.routeMode=m;syncModeBar();
   if(m==='transit'){if(state.selectedPattern){$('#viewMap').classList.add('has-card');drawPattern(state.selectedPattern);showRouteCard(state.selectedPattern)}else routeForCurrentMode()}
@@ -4882,7 +4921,11 @@ function mapCardH(){const c=$('#mapCard');return c.hidden?0:c.offsetHeight}
 /* Kortet dekket store deler av kartet. Nå kan det legges ned til bare
    overskriften, og valget huskes gjennom økten. */
 let mapCardCollapsed=loadLS('mapCardCollapsed',false);
-function mapCardHTML(inner){return `<button class="mc-grip" aria-label="Vis eller skjul kortet"></button>`+inner}
+/* Kortet får en plass til modusraden øverst – den hører til ruten kortet viser. */
+function mapCardHTML(inner){
+  return `<button class="mc-grip" aria-label="Vis eller skjul kortet"></button>`+
+         `<div id="mcModes"></div>`+inner;
+}
 function applyCardCollapse(){
   const c=$('#mapCard');if(!c)return;
   c.classList.toggle('collapsed',mapCardCollapsed);
@@ -4915,20 +4958,20 @@ function measureStackNow(){
   vm.style.setProperty('--top-h',th+'px');
   const hh=(hint&&!hint.hidden)?hint.offsetHeight+8:0;
   vm.style.setProperty('--hint-h',hh+'px');
-  const bar=$('#mapSearchBar'),ctx=$('#mapCtxChip');
+  const bar=$('#mapSearchBar');
   const ob=$('#onboardBar');
   vm.style.setProperty('--msb-h',
     ((bar&&!bar.hidden&&bar.offsetHeight)?bar.offsetHeight+8:0)+'px');
   vm.style.setProperty('--ob-h',
     ((ob&&!ob.hidden&&ob.offsetHeight)?ob.offsetHeight+8:0)+'px');
-  const ctxH=(ctx&&ctx.offsetHeight&&getComputedStyle(ctx).display!=='none')?ctx.offsetHeight+8:0;
-  vm.style.setProperty('--ctx-h',ctxH+'px');
+  vm.style.setProperty('--ctx-h','0px');
 }
 if(window.ResizeObserver){
   const ro=new ResizeObserver(()=>measureStack());
   ['#mapCard','#layerSheet'].forEach(sel=>{const el2=$(sel);if(el2)ro.observe(el2)});
 }
 function bindCardGrip(){
+  plasserModusrad();
   const g=$('#mapCard .mc-grip');
   if(g)g.onclick=()=>{
     mapCardCollapsed=!mapCardCollapsed;saveLS('mapCardCollapsed',mapCardCollapsed);
@@ -5001,7 +5044,7 @@ function showRouteCard(p){
   bindCardGrip();
   $('#mcDetail').onclick=()=>openDetail(state.results.indexOf(p));
   $('#mcClear').onclick=clearRoute;$('#mcSetB').onclick=armMapTap;bindTools($('#mcTools'),true);
-  $('#mapCtxChip').innerHTML=`Kollektiv · <b>${fmtDur(p.duration)}</b> · ${p.legs.length} etapper`;measureStack();
+  measureStack();
   fillCompare('transit');if(to.lat)fillWeather(to.lat,to.lon);if(p.distance)fillCO2(p.distance);fillFareMeta();
 }
 async function computeStreetRoute(m){
@@ -5009,9 +5052,9 @@ async function computeStreetRoute(m){
   if(pts.length<2){toast('Sett start og mål i Plan-fanen først','err');switchTab('plan');return}
   state.selectedPattern=null;const card=$('#mapCard');card.hidden=false;$('#viewMap').classList.add('has-card');
   card.innerHTML=mapCardHTML(`<div class="mc-head"><div><b>Beregner ${STREET[m].l.toLowerCase()}-rute…</b><span>${esc(pts.map(p=>p.name).join(' → '))}</span></div></div><div class="skel" style="height:44px;margin-top:10px"></div>`);bindCardGrip();
-  $('#mapCtxChip').textContent='Beregner rute…';
+
   try{const route=await osrmRoute(m,pts.map(p=>[p.lat,p.lon]));state.streetRoute={route,mode:m};drawStreetRoute(route,m,pts);showStreetCard(route,m,pts)}
-  catch(e){logErr('osrm',e);card.innerHTML=`<div class="err-box" style="margin:0"><div class="err-ic">${IC.alert}</div><b>Kunne ikke beregne rute</b><p>${esc(e.message)}</p><button class="chip-btn" id="mcRetry">Prøv igjen</button></div>`;$('#mcRetry').onclick=()=>computeStreetRoute(m);$('#mapCtxChip').textContent='Rute feilet'}
+  catch(e){logErr('osrm',e);card.innerHTML=`<div class="err-box" style="margin:0"><div class="err-ic">${IC.alert}</div><b>Kunne ikke beregne rute</b><p>${esc(e.message)}</p><button class="chip-btn" id="mcRetry">Prøv igjen</button></div>`;$('#mcRetry').onclick=()=>computeStreetRoute(m)}
 }
 function drawStreetRoute(route,m,pts){
   if(!mapUsable()||!routeLayer)return;
@@ -5035,7 +5078,7 @@ function showStreetCard(route,m,pts){
    <div class="mc-acts"><button class="mini-btn" id="mcSetB">${IC.pin}Sett mål på kartet</button></div>`);
   bindCardGrip();
   $('#mcClear').onclick=clearRoute;$('#mcSetB').onclick=armMapTap;bindTools($('#mcTools'),false);
-  $('#mapCtxChip').innerHTML=`${st.l} · <b>${fmtDur(route.duration)}</b> · ${fmtWalk(route.distance)}`;measureStack();
+  measureStack();
   fillCompare(m);fillWeather(b.lat,b.lon);
   if(m==='bike'||m==='foot')fillElev(route.geometry.coordinates.map(c=>[c[1],c[0]]));
   if(m==='bike'){const nb=nearestBike(b.lat,b.lon);if(nb){const slot=$('#mcMeta');if(slot)slot.innerHTML+=`<span class="meta-chip bike">${IC.bike}${esc(nb.name)} · ${nb.avail} ledige · ${fmtWalk(nb.dist)}</span>`}
@@ -5062,9 +5105,11 @@ async function fillElev(coords){
 function fillCO2(distM){const slot=$('#mcMeta');if(!slot||!distM)return;const kg=(distM/1000)*(130-25)/1000;
   slot.innerHTML+=`<span class="meta-chip co2">${IC.leaf}Spar ${kg.toFixed(1)} kg CO₂ vs bil</span>`}
 
-let mapArmed=false,prevChip='';
+let mapArmed=false;
 async function armMapTap(){if(!await ensureMap())return;mapArmed=!mapArmed;$('#fabSetB').classList.toggle('armed',mapArmed);map.getContainer().classList.toggle('armed',mapArmed);
-  if(mapArmed){prevChip=$('#mapCtxChip').innerHTML;$('#mapCtxChip').textContent='Trykk på kartet for å velge mål…'}else{$('#mapCtxChip').innerHTML=prevChip||'Kart'}}
+  /* Instruksjonen er kortvarig og hører ikke hjemme som et fast panel – den
+     sies én gang og forsvinner. */
+  if(mapArmed)toast('Trykk på kartet for å velge mål','');}
 $('#fabSetB').onclick=armMapTap;
 
 /* Lagvelgeren samler kartstil og de tre datalagene på ett sted, slik at
@@ -5126,7 +5171,7 @@ async function onMapClick(e){
   const {lat,lng}=e.latlng;
   if(mapArmed){
     mapArmed=false;$('#fabSetB').classList.remove('armed');map.getContainer().classList.remove('armed');
-    $('#mapCtxChip').textContent='Henter stedsnavn…';
+
     const name=await reverseGeocode(lat,lng).catch(()=>'Valgt punkt');
     const t=state.stops[state.stops.length-1];t.name=name;t.lat=lat;t.lon=lng;t.id=null;renderStops();
     toast('Mål satt – beregner rute…','ok');routeForCurrentMode();
@@ -5185,7 +5230,7 @@ function showStopCard(s){
     <div id="mcRows"><div class="skel" style="height:40px;margin-top:8px"></div></div>`);
   bindCardGrip();
   $('#mcAll').onclick=()=>switchTab('depart');bindTools($('#mcTools'),false,s.id,s.name);
-  $('#mapCtxChip').innerHTML=`Stoppested · ${esc(s.name)}`;measureStack();
+  measureStack();
   (async()=>{try{if(state.departuresFor!==s.id||!state.departures.length){const sp=await getDepartures(s.id);state.departures=mapCalls(sp);state.departuresFor=s.id}
     const rows=$('#mcRows');if(!rows)return;
     rows.innerHTML=state.departures.slice(0,3).map(d=>{const mm=MODE[d.mode]||MODE.bus;
@@ -5205,7 +5250,7 @@ function applyMapContext(){
   if(state.routeMode!=='transit'&&state.streetRoute&&state.streetRoute.mode===state.routeMode){vm.classList.add('has-card');const pts=state.stops.filter(s=>s.lat);drawStreetRoute(state.streetRoute.route,state.streetRoute.mode,pts.length>=2?pts:state.stops);showStreetCard(state.streetRoute.route,state.streetRoute.mode,pts.length>=2?pts:state.stops)}
   else if(state.selectedPattern){vm.classList.add('has-card');drawPattern(state.selectedPattern);showRouteCard(state.selectedPattern)}
   else if(state.departStop){vm.classList.add('has-card');centerOnStop();showStopCard(state.departStop)}
-  else{vm.classList.remove('has-card');hideMapCard();$('#mapCtxChip').textContent='Kart – utforsk området'}
+  else{vm.classList.remove('has-card');hideMapCard()}
 }
 $('#fabAttract').onclick=async function(){
   if(!await ensureMap())return;
