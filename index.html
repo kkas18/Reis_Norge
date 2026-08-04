@@ -700,6 +700,23 @@ a{color:inherit}
 .sheet-x svg{width:13px;height:13px;display:block}
 .sheet-body{flex:1;min-height:0;padding-top:0}
 
+/* «Mine reiser» er ikke et skjema lenger – det er dine ting. Søket bor på
+   kartet, og denne linja er inngangen dit. */
+#planSearchBar{display:flex;align-items:center;gap:11px;width:100%;min-height:52px;
+  margin-top:6px;padding:0 14px;border-radius:15px;background:var(--card);
+  border:1.5px solid var(--line);box-shadow:var(--sh-1);text-align:left;
+  transition:transform .16s,border-color .2s,box-shadow .2s}
+#planSearchBar:active{transform:scale(.985)}
+#planSearchBar:hover{border-color:var(--tab-2);box-shadow:var(--sh-2)}
+.psb-ic{flex:none;display:grid;place-items:center;width:22px;height:22px;color:var(--tab)}
+.psb-ic svg{width:18px;height:18px;display:block}
+.psb-txt{flex:1;min-width:0;font-size:15px;font-weight:600;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#planSearchBar.filled .psb-txt{color:var(--ink)}
+.psb-arr{flex:none;color:var(--faint);display:grid;place-items:center}
+.psb-arr svg{width:16px;height:16px;display:block}
+:root[data-theme="dark"] .psb-ic{color:var(--tab-2)}
+
 /* ---------- søk direkte på kartet ---------- */
 #mapSearchBar{position:absolute;left:12px;right:12px;z-index:1058;
   top:calc(12px + var(--top-h));
@@ -725,8 +742,8 @@ a{color:inherit}
   transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
 #mapSheet.open{transform:none}
 #mapSheet .search-card{margin-top:2px}
-/* På kartet trenger vi ikke fanevelgeren – du er allerede i reisemodus */
-#mapSheet .sc-tabs{display:none}
+/* Fanevelgeren MÅ bli med: nå som kortet bare bor her, er dette eneste vei til
+   «Se avganger». Å skjule den gjorde funksjonen uoppnåelig. */
 
 /* ---------- kartets lagvelger ---------- */
 #layerSheet{position:absolute;left:12px;right:12px;z-index:1065;background:var(--card);
@@ -1134,6 +1151,13 @@ a{color:inherit}
             <div class="pb-head"><span class="pb-ic" id="pbIc"></span><div><b id="pbTitle"></b><p id="pbText"></p></div></div>
             <div class="pb-acts"><button class="mini-btn" id="pbAlt">Se alternativ rute</button><button class="mini-btn ghost" id="pbDismiss">Skjul</button></div>
           </div>
+          <!-- Én inngang til søk, uansett hvor du står. Trykk her, og du havner
+               på kartet med søkekortet oppe – samme kort som ellers. -->
+          <button id="planSearchBar" aria-label="Søk etter reise">
+            <span class="psb-ic"></span>
+            <span class="psb-txt">Hvor skal du?</span>
+            <span class="psb-arr"></span>
+          </button>
           <div class="sec" data-sec="quick">
             <button class="sec-label toggle" type="button" aria-expanded="true">
               <span>Hurtigreise</span><i class="sl-line"></i><span class="sec-count" id="quickCount" hidden></span><span class="sec-chev"></span>
@@ -1157,8 +1181,7 @@ a{color:inherit}
           </div>
           <!-- Ett samlet søkekort: modusvelger, Fra/Til som rader, og handlingene
                inne i samme flate. Færre kanter å lese enn to separate bokser. -->
-          <div id="cardHome"></div>
-          <section class="search-card" id="searchCard" aria-label="Søk">
+          <section class="search-card" id="searchCard" aria-label="Søk" hidden>
             <div class="sc-tabs" role="tablist">
               <button role="tab" data-sc="trip" class="on" aria-selected="true">Finn reise</button>
               <button role="tab" data-sc="stop" aria-selected="false">Se avganger</button>
@@ -1274,6 +1297,7 @@ a{color:inherit}
       <aside id="mapSheet" hidden aria-label="Søk på kartet">
         <div class="sheet-grip"></div>
         <div id="mapSheetSlot"></div>
+        <div id="cardHome"></div>
       </aside>
       <div class="fabs">
         <button class="fab" id="fabLayers" aria-label="Kartlag og visning"><span class="fab-dot"></span></button>
@@ -1310,7 +1334,7 @@ a{color:inherit}
 
   <nav id="bottomNav" aria-label="Hovedmeny" role="tablist">
     <span id="navInd"></span>
-    <button class="nav-btn active" data-tab="plan" role="tab" aria-selected="true"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 18v-5a4 4 0 0 1 4-4h4a4 4 0 0 0 4-4"/><circle cx="6" cy="19.5" r="2.2" fill="currentColor"/><circle cx="18" cy="4.5" r="2.2" fill="currentColor"/></svg>Plan</button>
+    <button class="nav-btn active" data-tab="plan" role="tab" aria-selected="true"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 18v-5a4 4 0 0 1 4-4h4a4 4 0 0 0 4-4"/><circle cx="6" cy="19.5" r="2.2" fill="currentColor"/><circle cx="18" cy="4.5" r="2.2" fill="currentColor"/></svg>Mine reiser</button>
     <button class="nav-btn" data-tab="depart" role="tab" aria-selected="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>Avganger</button>
     <button class="nav-btn" data-tab="map" role="tab" aria-selected="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>Kart</button>
   </nav>
@@ -1580,6 +1604,8 @@ $('#btnResBack').innerHTML=IC.chevL; $('#btnDetBack').innerHTML=IC.chevL;
 $('#depSwitchIc').innerHTML=IC.search; $('#scNearIc').innerHTML=IC.locate;
 $('#fabLocate').innerHTML=IC.locate; $('#fabSetB').innerHTML=IC.pin;
 $('#mapSearchBar').querySelector('.msb-ic').innerHTML=IC.search;
+$('#planSearchBar').querySelector('.psb-ic').innerHTML=IC.search;
+$('#planSearchBar').querySelector('.psb-arr').innerHTML=IC.chevR;
 $('#btnMore').innerHTML=IC.menu;
 $('#fabLayers').insertAdjacentHTML('afterbegin',IC.layers);
 $('#moreClose').innerHTML=IC.x;
@@ -1771,7 +1797,7 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    allerede åpen side beholder gammel HTML og JS selv om en ny service worker
    er installert. Nå oppdages det, og du får velge når. */
 /* Denne må holdes lik VERSION i sw.js. Byggeskriptet sjekker at de stemmer. */
-const APP_VERSION='v6.6.0';
+const APP_VERSION='v7.0.0';
 let swReg=null,waitingSW=null,reloading=false,byttetSelv=false;
 
 /* Service worker-livssyklusen er lunefull: en ny versjon kan bli hengende i
@@ -4236,18 +4262,22 @@ function renderHealth(rows){
    utakt; ett element kan ikke det. */
 let kortPåKart=false;
 function oppdaterKartsøk(){
-  const bar=$('#mapSearchBar');if(!bar)return;
   const a=state.stops[0],b=state.stops[state.stops.length-1];
-  const txt=bar.querySelector('.msb-txt');
-  if(a&&a.name&&b&&b.name){bar.classList.add('filled');txt.textContent=`${a.name} → ${b.name}`}
-  else if(b&&b.name){bar.classList.add('filled');txt.textContent=`Til ${b.name}`}
-  else{bar.classList.remove('filled');txt.textContent='Hvor skal du?'}
+  let tekst='Hvor skal du?',fylt=false;
+  if(a&&a.name&&b&&b.name){tekst=`${a.name} → ${b.name}`;fylt=true}
+  else if(b&&b.name){tekst=`Til ${b.name}`;fylt=true}
+  [['#mapSearchBar','.msb-txt'],['#planSearchBar','.psb-txt']].forEach(([bs,ts])=>{
+    const bar=$(bs);if(!bar)return;
+    bar.classList.toggle('filled',fylt);
+    const t=bar.querySelector(ts);if(t)t.textContent=tekst;
+  });
 }
 function åpneKartsøk(){
   if(kortPåKart)return;
   const kort=$('#searchCard');if(!kort)return;
   setSearchMode('trip');
   $('#mapSheetSlot').appendChild(kort);        // flytter, kopierer ikke
+  kort.hidden=false;
   kortPåKart=true;
   $('#mapSheetBackdrop').hidden=false;$('#mapSheet').hidden=false;
   requestAnimationFrame(()=>{
@@ -4264,11 +4294,17 @@ function lukkKartsøk(){
   setTimeout(()=>{
     sh.hidden=true;bd.hidden=true;
     const kort=$('#searchCard'),hjem=$('#cardHome');
-    if(kort&&hjem&&hjem.parentElement)hjem.parentElement.insertBefore(kort,hjem.nextSibling);
+    if(kort&&hjem&&hjem.parentElement){hjem.parentElement.insertBefore(kort,hjem);kort.hidden=true}
     placeSwap();
   },260);
 }
 $('#mapSearchBar').onclick=åpneKartsøk;
+/* Fra «Mine reiser» går veien om kartet – der ruten uansett skal tegnes. */
+$('#planSearchBar').onclick=async()=>{
+  switchTab('map');
+  await ensureMap();
+  setTimeout(åpneKartsøk,260);
+};
 $('#mapSheetBackdrop').onclick=lukkKartsøk;
 
 /* ================= finn kjøretøyet =================
@@ -5122,7 +5158,7 @@ every(1000,()=>{const t=computeTitle();if(document.title!==t)document.title=t},{
 
 /* Topplinja viser hvor du er, ikke klokkeslettet – telefonen har alt en klokke
    i statuslinja, og en til var bare støy. */
-const TAB_TEXT={plan:'Planlegg reisen',depart:'Sanntidsavganger',map:'Kart og kjøretøy'};
+const TAB_TEXT={plan:'Dine reiser og steder',depart:'Sanntidsavganger',map:'Kart, søk og kjøretøy'};
 function setTopContext(name){
   const el2=$('#topContext');if(!el2)return;
   const txt=TAB_TEXT[name]||TAB_TEXT.plan;

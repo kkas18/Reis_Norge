@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (262 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (267 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,48 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Ny struktur: «Mine reiser» og «Kart»
+
+Plan-fanen var blitt overflødig. Etter at kartet fikk eget søk, gjorde de to
+fanene det samme – ett skjema hver, to steder for én oppgave.
+
+**Fanene byttet rolle:**
+
+| | Før | Nå |
+|---|---|---|
+| Fane 1 | **Plan** – et skjema | **Mine reiser** – dine ting |
+| Kart | se på ruten | søk, rute, holdeplasser, alt |
+
+«Mine reiser» inneholder hurtigreiser, nylige søk og avganger i nærheten. Ikke
+et skjema – ting du har lagret og ting som skjer rundt deg.
+
+**Søket har flyttet permanent til kartet**, der ruten uansett skal tegnes. Fra
+«Mine reiser» ligger én linje øverst – «Hvor skal du?» – som tar deg dit med
+kortet oppe. Begge feltene viser hvilken reise som er aktiv, og holdes i takt
+fordi de leser samme tilstand.
+
+Det er fortsatt **ett** søkekort i hele appen. Nå med kartarket som fast hjem.
+
+### En regresjon jeg innførte og fant
+Jeg skjulte fanevelgeren «Finn reise / Se avganger» i arket, med begrunnelsen at
+du «allerede er i reisemodus». Men siden kortet nå BARE bor der, gjorde det
+**«Se avganger» helt uoppnåelig**. Den er tilbake, og en test passer på at den
+ikke kan skjules igjen.
+
+### Hva testene avslørte om testene
+Elleve suiter feilet etter ombyggingen – alle fordi de klikket på `#btnSearch`
+der knappen ikke lenger lå. Ingen av dem var feil i appen.
+
+> Det sier noe om testdekningen: mye av den var bundet til *hvor* ting lå, ikke
+> *hva* de gjorde. De er nå rettet til å gå gjennom det nye arket, og to av dem
+> avdekket oppførsel jeg ikke hadde tenkt over – at Escape lukker kartarket, og
+> at søk fra kartet med vilje ikke fyller resultatlista.
+
+Gjennomgangen dekker nå **16 tilstander**: 0 overlapp, 0 avkuttet tekst,
+0 sideskriptfeil, alle seks fanekombinasjoner ok.
 
 ---
 
