@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (273 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (277 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,34 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Visuelt løft på «Mine reiser»
+
+To ting gjorde skjermen kjedelig, og bare det ene var farger.
+
+**Tomme overskrifter over ingenting.** «Nylige» uten nylige søk tegnet bare en
+strek og en tittel, og etterlot et hull. Seksjoner uten innhold skjules nå helt –
+da ser skjermen bevisst ut i stedet for halvferdig. «I nærheten» er unntaket:
+den har en egen tom-tilstand med knapp for å slå på posisjon.
+
+**Alle kortene var samme mørkeblå.** Nå henter hvert kort **linjens egen farge**:
+
+- Hjem/Jobb får fargen til linjen som faktisk går nå
+- Hurtigreiser får fargen fra første kollektivetappe i reisen
+- Nærhetskort får fargen fra første avgang
+
+Fargen brukes som en 3 px stripe i kanten og en svak toning (8–9 %) i
+bakgrunnen. Nok til å skille kortene fra hverandre, ikke nok til å ta over.
+Seksjonsoverskriftene har fått en liten farget markør, så øyet finner dem raskere.
+
+> **Målt at det fortsatt er lesbart.** Toning bak tekst er lett å ta for langt.
+> `getComputedStyle` sier ingenting her – en gradient er et bakgrunns*bilde*, så
+> `backgroundColor` er gjennomsiktig. Kontrasten er derfor målt på faktiske
+> piksler fra et skjermbilde: **14,5:1 i lys modus, 12,5:1 i mørk.** Kravet er 4,5:1.
+
+Målt på Oslo S: fire nærhetskort med **tre forskjellige** farger.
 
 ---
 

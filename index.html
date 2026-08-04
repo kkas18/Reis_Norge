@@ -206,9 +206,15 @@ a{color:inherit}
 .ca-arr svg{width:15px;height:15px;display:block}
 :root[data-theme="dark"] .ca-ic{color:var(--tab-2)}
 .comm-cell{position:relative;display:flex}
-.comm-btn{flex:1;min-width:0;min-height:92px;display:flex;flex-direction:column;text-align:left;
-  border:1.5px solid var(--line);border-radius:15px;padding:10px 11px;background:var(--card);
+/* Kortene var alle like mørkeblå. Nå henter hvert kort en anelse av linjens
+   egen farge – nok til å skille dem fra hverandre, ikke nok til å skrike. */
+.comm-btn{position:relative;flex:1;min-width:0;min-height:92px;display:flex;flex-direction:column;text-align:left;
+  border:1.5px solid var(--line);border-radius:15px;padding:10px 11px;overflow:hidden;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--ac,transparent) 9%,var(--card)),var(--card) 62%);
   transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s}
+.comm-btn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--ac,var(--line-2));opacity:.85}
+.comm-btn.empty::before{opacity:.25}
 .comm-btn:active{transform:scale(.97)}
 .comm-btn:hover{box-shadow:var(--sh-1);border-color:var(--line-2)}
 .cb-top{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
@@ -958,6 +964,13 @@ a{color:inherit}
 /* Ledeteksten skjules bare der posisjonsknappen faktisk står. */
 .stop-field.empty:not(:focus-within):has(.sc-pos:not([hidden])) input::placeholder{color:transparent}
 
+.qt-card::before,.near-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--ac,var(--line-2));opacity:.85}
+
+/* Overskriftene fikk en farget markør, så øyet finner seksjonene raskere */
+.sec-label>span:first-child::before{content:"";display:inline-block;width:6px;height:6px;border-radius:2px;
+  background:var(--tab-2);margin-right:8px;vertical-align:1px;opacity:.9}
+
 /* ---------- sammenleggbare seksjoner ---------- */
 .sec-label.toggle{width:100%;cursor:pointer;user-select:none;min-height:44px;margin:6px 0 4px}
 .sec-label.toggle::after{display:none}
@@ -987,8 +1000,9 @@ a{color:inherit}
 /* ---------- hurtigreiser (fra A til B) ---------- */
 #quickTrips{display:flex;flex-direction:column;gap:8px;margin-top:9px}
 .qt-cell{position:relative;display:flex}
-.qt-card{flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;
-  background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:10px 40px 10px 12px;
+.qt-card{position:relative;flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;overflow:hidden;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--ac,transparent) 9%,var(--card)),var(--card) 62%);
+  border:1.5px solid var(--line);border-radius:14px;padding:10px 40px 10px 15px;
   transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s;
   animation:rowIn .32s cubic-bezier(.22,1,.36,1) both}
 .qt-card:active{transform:scale(.98)}
@@ -1027,8 +1041,9 @@ a{color:inherit}
 
 /* ---------- «I nærheten» ---------- */
 #nearbyWrap{padding-bottom:6px}
-.near-card{display:block;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);
-  border-radius:14px;padding:10px 12px;margin-top:8px;
+.near-card{position:relative;display:block;width:100%;text-align:left;overflow:hidden;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--ac,transparent) 8%,var(--card)),var(--card) 58%);
+  border:1.5px solid var(--line);border-radius:14px;padding:10px 12px 10px 15px;margin-top:8px;
   transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s;
   animation:rowIn .34s cubic-bezier(.22,1,.36,1) both}
 .near-card:active{transform:scale(.98)}
@@ -1824,7 +1839,7 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    allerede åpen side beholder gammel HTML og JS selv om en ny service worker
    er installert. Nå oppdages det, og du får velge når. */
 /* Denne må holdes lik VERSION i sw.js. Byggeskriptet sjekker at de stemmer. */
-const APP_VERSION='v7.1.0';
+const APP_VERSION='v7.2.0';
 let swReg=null,waitingSW=null,reloading=false,byttetSelv=false;
 
 /* Service worker-livssyklusen er lunefull: en ny versjon kan bli hengende i
@@ -2977,6 +2992,9 @@ async function updateCommuterLive(){
       const next=calls.find(c=>!c.cancelled&&c.t-now()>-60000);
       if(!next){slot.innerHTML=`<span style="color:var(--faint)">Ingen avganger nå</span>`;continue}
       const mm=MODE[next.mode]||MODE.bus;const diffMin=(next.t-Date.now())/60000;const pc=paceFor(diffMin);
+      /* Kortet får fargen til linjen som faktisk går nå. */
+      const kort=slot.closest('.comm-btn');
+      if(kort)kort.style.setProperty('--ac',next.colour?'#'+next.colour:mm.hex);
       slot.innerHTML=`<span class="leg-badge" style="background:${mm.hex}">${esc(next.code)}</span> ${relMin(next.t-now())} <span class="pace ${pc.cls}">${pc.ic}${pc.txt}</span>`;
     }catch(e){slot.innerHTML=`<span style="color:var(--faint)">—</span>`}
   }
@@ -2999,7 +3017,10 @@ function nearbyCardHTML(s2,i){
     return `<span class="nc-line"><i class="leg-badge" style="background:${esc(hex)}">${esc(c.code)}</i>
       <span class="nc-dest">${esc(c.dest)}</span><span class="nc-when${diff<=45000?' due':''}">${when}</span></span>`;
   }).join('');
-  return `<button class="near-card" data-i="${i}" style="animation-delay:${Math.min(i*50,200)}ms">
+  /* Aksenten hentes fra første avgang – kortet får linjens egen farge. */
+  const f=(s2.calls||[])[0];
+  const ac=f?(f.colour?'#'+f.colour:((MODE[f.mode]||MODE.bus).hex)):'';
+  return `<button style="${ac?`--ac:${esc(ac)}`:''}" class="near-card" data-i="${i}" style="animation-delay:${Math.min(i*50,200)}ms">
     <div class="nc-top"><b>${esc(s2.name)}</b><span>${Math.round(s2.dist)} m</span></div>
     <div class="nc-lines">${calls||'<span class="nc-dest">Ingen avganger den neste timen</span>'}</div>
   </button>`;
@@ -3089,6 +3110,20 @@ function initSections(){
   });
 }
 /* Tellere på lukkede seksjoner, så du ser hva som ligger der uten å åpne */
+/* En seksjon uten innhold er bare en overskrift over ingenting. Skjul den helt
+   – da ser skjermen bevisst ut i stedet for halvferdig. */
+function skjulTommeSeksjoner(){
+  const tellere={recents:'#recents'};
+  Object.entries(tellere).forEach(([navn,sel])=>{
+    const sec=document.querySelector(`.sec[data-sec="${navn}"]`);
+    const boks=$(sel);
+    if(!sec||!boks)return;
+    /* «I nærheten» skal alltid stå – den har en egen tom-tilstand med knapp. */
+    if(navn==='nearby')return;
+    const tomt=!boks.children.length;
+    sec.hidden=tomt;
+  });
+}
 function updateSecCounts(){
   const q=$('#quickCount');
   if(q){const n=quickTrips().length;q.hidden=!n;q.textContent=n+(n===1?' reise':' reiser')}
@@ -3155,8 +3190,11 @@ function renderQuickTrips(){
       liveHTML=`${badges||''}<span class="qt-when${diff<=45000?' due':''}">${when}</span>`+
                `<span style="color:var(--faint)">· ${fmtDur(live.dur)}</span>`;
     }
+    /* Aksentfargen kommer fra første kollektivetappe i den faktiske reisen. */
+    const f0=live&&live.legs&&live.legs.find(l=>l.mode!=='foot');
+    const ac=f0?(f0.colour?'#'+f0.colour:((MODE[f0.mode]||MODE.bus).hex)):'';
     return `<div class="qt-cell">
-      <button class="qt-card" data-i="${i}" style="animation-delay:${Math.min(i*45,180)}ms"
+      <button class="qt-card" data-i="${i}" style="animation-delay:${Math.min(i*45,180)}ms;${ac?`--ac:${esc(ac)}`:''}"
               aria-label="Reis fra ${esc(x.from.n)} til ${esc(x.to.n)}">
         <span class="qt-ic">${IC.route}</span>
         <span class="qt-body">
@@ -5190,6 +5228,7 @@ function pushRecent(from,to,vias){
   let r=loadLS('recents',[]);r=[item,...r.filter(x=>!(x.from.n===item.from.n&&x.to.n===item.to.n))].slice(0,5);saveLS('recents',r);renderRecents();
 }
 function renderRecents(){
+  setTimeout(skjulTommeSeksjoner,0);
   const r=loadLS('recents',[]);if(!r.length){$('#recentsWrap').hidden=true;return}
   $('#recentsWrap').hidden=false;
   $('#recents').innerHTML=r.map((x,i)=>`<button class="recent-chip" data-i="${i}">${IC.clock}${esc(x.from.n)} → ${esc(x.to.n)}</button>`).join('');
