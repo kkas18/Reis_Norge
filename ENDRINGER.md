@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (267 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (273 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,41 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## «Hvilken buss sitter jeg på?»
+
+Reiseforslaget vet hvilken linje du skal ta, men du ser det bare hvis du husker
+linjenummeret fra listen – og det er nettopp det man glemmer på en full buss.
+
+Kartet viser nå en linje øverst mens du er underveis:
+
+> **3** · Du sitter på T-bane 3
+> Av ved Majorstuen · om 3 min
+
+- I **linjens egen farge** når selskapet oppgir den, ellers transportmiddelets.
+- **Neste etappe nevnes**: «… · så T-bane 3», så du vet hva som kommer.
+- **Gange er ikke et kjøretøy** – da står det «Gå til Jernbanetorget», dempet,
+  så det ikke roper like høyt.
+- Trykk på linja for å åpne reisedetaljene.
+
+Etappen finnes ut fra klokka, med ett minutts margin før og et halvt etter, slik
+at den ikke blafrer ved etappeskifte. Linja skjuler seg av seg selv mer enn fem
+minutter før avreise og etter ankomst.
+
+Testet ved å forskyve appens klokke til midten av hver etappe – begge etappene
+ga riktig tekst, riktig farge og riktig merke, og linja forsvant etter reisen.
+
+> **T-bane skrives med stor T.** Første versjon skrev «du sitter på t-bane 3»,
+> fordi jeg satte hele transportmiddelnavnet i små bokstaver for å få det til å
+> gli i setningen. Det virker for buss og trikk, men T-bane er et egennavn.
+
+### Stabelen fikk en feil jeg innførte selv
+Ombordlinja plasserte seg først etter `--bar-h` – en variabel den selv bidro
+til. Et element kan ikke posisjonere seg etter en verdi som inkluderer dets egen
+høyde. Nå har **hver ting sin egen variabel** (`--msb-h`, `--ob-h`), og de
+summeres bare av det som ligger under.
 
 ---
 

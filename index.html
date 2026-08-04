@@ -489,7 +489,7 @@ a{color:inherit}
 /* FIX: hintet lå på top:14px, altså rett oppå modusraden. Toppen av kartet
    stables nå etter målt høyde, på samme måte som bunnen. */
 #viewMap{--top-h:0px}
-#mapHint{position:absolute;left:50%;top:calc(12px + var(--top-h) + var(--bar-h));transform:translateX(-50%);z-index:1056;
+#mapHint{position:absolute;left:50%;top:calc(12px + var(--top-h) + var(--msb-h) + var(--ob-h));transform:translateX(-50%);z-index:1056;
   background:rgba(7,31,66,.86);color:#fff;font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;
   backdrop-filter:blur(6px);pointer-events:none;animation:viewIn .3s ease}
 /* Posisjonsknappen lyser når «følg meg» er på */
@@ -504,7 +504,7 @@ a{color:inherit}
 .mb-btn svg{width:17px;height:17px;flex:0 0 auto;display:block}
 .mb-btn.on{background:var(--navy);color:#fff;box-shadow:var(--sh-1)}
 .mb-btn.on svg{color:var(--tab-2)}
-#mapCtxChip{position:absolute;top:calc(12px + var(--top-h) + var(--bar-h) + var(--hint-h));left:12px;z-index:1040;background:var(--navy);color:#fff;font-size:12px;padding:8px 13px;border-radius:999px;box-shadow:var(--sh-2);display:flex;gap:7px;align-items:center;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mapCtxChip{position:absolute;top:calc(12px + var(--top-h) + var(--msb-h) + var(--ob-h) + var(--hint-h));left:12px;z-index:1040;background:var(--navy);color:#fff;font-size:12px;padding:8px 13px;border-radius:999px;box-shadow:var(--sh-2);display:flex;gap:7px;align-items:center;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #mapCtxChip b{font-family:var(--font-m)}
 /* Kartkortet, lagvelgeren og knappene lå alle forankret til bunnen med faste
    pikselverdier – derfor la de seg oppå hverandre. Nå stables de: --card-h og
@@ -512,7 +512,9 @@ a{color:inherit}
 /* Toppen av kartet er en stabel. Hvert element legger seg under det forrige,
    etter MÅLT høyde – ellers havner de oppå hverandre så snart ett av dem
    endrer størrelse eller dukker opp. */
-#viewMap{--card-h:0px;--layer-h:0px;--top-h:0px;--bar-h:0px;--hint-h:0px;--ctx-h:0px}
+/* Hver variabel er ÉN tings høyde. Slår man dem sammen, ender et element opp
+   med å posisjonere seg etter en verdi det selv bidrar til. */
+#viewMap{--card-h:0px;--layer-h:0px;--top-h:0px;--msb-h:0px;--ob-h:0px;--hint-h:0px;--ctx-h:0px}
 .fabs{position:absolute;right:12px;z-index:1050;display:flex;flex-direction:column;gap:9px;
   /* Følger stabelen, men forlater aldri skjermen uansett hvor høye kortene blir */
   bottom:min(calc(18px + var(--card-h) + var(--layer-h)), calc(100% - 210px));
@@ -717,6 +719,27 @@ a{color:inherit}
 .psb-arr svg{width:16px;height:16px;display:block}
 :root[data-theme="dark"] .psb-ic{color:var(--tab-2)}
 
+/* Ombord: linjen du sitter på, i linjens egen farge. Står den øverst på kartet,
+   ser du med ett blikk om du er på riktig vogn. */
+#onboardBar{position:absolute;left:12px;right:12px;z-index:1059;
+  top:calc(12px + var(--top-h) + var(--msb-h));
+  display:flex;align-items:center;gap:11px;min-height:52px;padding:7px 12px;
+  border-radius:15px;background:var(--ob,#0A2A57);color:#fff;text-align:left;
+  box-shadow:0 6px 20px rgba(4,20,43,.34);animation:obIn .34s cubic-bezier(.22,1,.36,1)}
+@keyframes obIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.ob-badge{flex:none;display:grid;place-items:center;min-width:44px;height:34px;padding:0 8px;
+  border-radius:10px;background:rgba(255,255,255,.2);
+  font-family:var(--font-d);font-size:16px;font-weight:800;letter-spacing:.01em}
+.ob-badge svg{width:17px;height:17px;display:block}
+.ob-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ob-txt b{font-size:14px;font-family:var(--font-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ob-txt span{font-size:11.5px;opacity:.92;font-family:var(--font-m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ob-next{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;
+  background:rgba(255,255,255,.18)}
+.ob-next svg{width:14px;height:14px;display:block}
+/* Gange-etapper er ikke et kjøretøy – dempet, så de ikke roper like høyt */
+#onboardBar.walk{background:rgba(10,42,87,.9)}
+
 /* ---------- søk direkte på kartet ---------- */
 #mapSearchBar{position:absolute;left:12px;right:12px;z-index:1058;
   top:calc(12px + var(--top-h));
@@ -757,7 +780,7 @@ a{color:inherit}
 .ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 .ls-grid-4{grid-template-columns:repeat(2,1fr)}
 #stopFilterChip{position:absolute;left:12px;z-index:1041;display:flex;align-items:center;gap:7px;
-  top:calc(12px + var(--top-h) + var(--bar-h) + var(--hint-h) + var(--ctx-h));min-height:36px;padding:0 12px;border-radius:999px;
+  top:calc(12px + var(--top-h) + var(--msb-h) + var(--ob-h) + var(--hint-h) + var(--ctx-h));min-height:36px;padding:0 12px;border-radius:999px;
   background:rgba(7,31,66,.86);color:#fff;font-size:12px;font-weight:600;backdrop-filter:blur(6px);
   box-shadow:0 2px 10px rgba(4,20,43,.3);animation:viewIn .28s ease}
 #stopFilterChip svg{width:14px;height:14px;display:block;flex:none}
@@ -1287,6 +1310,10 @@ a{color:inherit}
       <div id="modeBar" hidden></div>
       <div id="mapHint" hidden>Zoom inn for å se holdeplasser</div>
       <button id="stopFilterChip" hidden></button>
+      <!-- Hvilket kjøretøy du sitter i akkurat nå. Uten dette må du huske
+           linjenummeret fra reiseforslaget – og det er nettopp det man glemmer
+           når man står på en full buss. -->
+      <button id="onboardBar" hidden aria-live="polite"></button>
       <div id="mapCtxChip">Kart – utforsk området</div>
       <!-- Samme søkekort som i Plan, flyttet hit ved behov. Ett kort, to hjem –
            da kan de ikke komme i utakt, og all logikk er delt. -->
@@ -1797,7 +1824,7 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    allerede åpen side beholder gammel HTML og JS selv om en ny service worker
    er installert. Nå oppdages det, og du får velge når. */
 /* Denne må holdes lik VERSION i sw.js. Byggeskriptet sjekker at de stemmer. */
-const APP_VERSION='v7.0.0';
+const APP_VERSION='v7.1.0';
 let swReg=null,waitingSW=null,reloading=false,byttetSelv=false;
 
 /* Service worker-livssyklusen er lunefull: en ny versjon kan bli hengende i
@@ -2640,6 +2667,7 @@ function switchTab(name,dir){
   $('#app').dataset.tab=name;
   saveLS('lastTab',name);
   if(name!=='map'&&kortPåKart)lukkKartsøk();
+  setTimeout(visOmbord,80);
   setTopContext(name);
   navBtns.forEach(t=>{const on=t.dataset.tab===name;t.classList.toggle('active',on);t.setAttribute('aria-selected',String(on))});positionNav();
   Object.entries(views).forEach(([k,v])=>v.classList.toggle('active',k===name));
@@ -4255,6 +4283,66 @@ function renderHealth(rows){
       <span class="hr-txt"><b>${esc(r.navn)}</b><span>${esc(r.melding)}</span></span></div>`).join('');
 }
 
+/* ================= hvilket kjøretøy sitter du i? =================
+   Reiseforslaget vet det, men du ser det bare hvis du husker linjenummeret fra
+   listen – og det er nettopp det man glemmer på en full buss. Etappen finnes
+   ut fra klokka, og bekreftes av posisjonen når vi har den. */
+function nåværendeEtappe(){
+  const p=state.selectedPattern;
+  if(!p||!Array.isArray(p.legs)||!p.legs.length)return null;
+  const t=now();
+  const start=new Date(p.legs[0].expectedStartTime).getTime();
+  const slutt=new Date(p.legs[p.legs.length-1].expectedEndTime).getTime();
+  /* Reisen er ikke i gang, eller for lengst over. */
+  if(t<start-5*60000||t>slutt+5*60000)return null;
+  for(let i=0;i<p.legs.length;i++){
+    const l=p.legs[i];
+    const a=new Date(l.expectedStartTime).getTime();
+    const b=new Date(l.expectedEndTime).getTime();
+    if(t>=a-60000&&t<=b+30000)return {leg:l,i,neste:p.legs[i+1]||null,slutter:b};
+  }
+  return null;
+}
+function visOmbord(){
+  const bar=$('#onboardBar');if(!bar)return;
+  const nå=nåværendeEtappe();
+  if(!nå||!$('#viewMap').classList.contains('active')){
+    if(!bar.hidden){bar.hidden=true;measureStack()}
+    return;
+  }
+  const l=nå.leg,m=modeOf(l),mm=MODE[m]||MODE.bus;
+  const gange=m==='foot';
+  const kode=(l.line&&l.line.publicCode)||'';
+  const mål=(l.toPlace&&l.toPlace.name)||'';
+  const igjen=Math.max(0,nå.slutter-now());
+  const merke=gange?`<span class="ob-badge">${IC.walk||IC.person}</span>`
+                   :`<span class="ob-badge">${esc(kode||mm.l)}</span>`;
+  /* «t-bane» med liten t er feil – T-bane er et egennavn. De andre skrives
+     med liten forbokstav midt i en setning. */
+  const navn=m==='metro'?'T-bane':mm.l.toLowerCase();
+  const tittel=gange?`Gå til ${esc(mål)}`
+                    :`Du sitter på ${esc(navn)}${kode?' '+esc(kode):''}`;
+  const under=gange
+    ? `Framme om ${relMin(igjen)}`
+    : `Av ved ${esc(mål)} · om ${relMin(igjen)}`;
+  const neste=nå.neste;
+  const nesteTekst=neste
+    ? (modeOf(neste)==='foot'?'så gange'
+       :`så ${modeOf(neste)==='metro'?'T-bane':(MODE[modeOf(neste)]?MODE[modeOf(neste)].l.toLowerCase():'')} ${(neste.line&&neste.line.publicCode)||''}`.trim())
+    : '';
+  bar.style.setProperty('--ob',gange?'':(l.line&&l.line.presentation&&l.line.presentation.colour
+      ? '#'+l.line.presentation.colour : mm.hex));
+  bar.classList.toggle('walk',gange);
+  bar.innerHTML=`${merke}<span class="ob-txt"><b>${tittel}</b>`+
+    `<span>${under}${nesteTekst?' · '+esc(nesteTekst):''}</span></span>`+
+    `<span class="ob-next">${IC.chevR}</span>`;
+  bar.setAttribute('aria-label',tittel+'. '+under);
+  bar.onclick=()=>{switchTab('plan');showPlanSection('detail')};
+  const før=bar.hidden;bar.hidden=false;
+  if(før)measureStack();
+}
+every(15000,visOmbord,{net:false});
+
 /* ================= søk uten å bytte fane =================
    Før måtte du søke i Plan og så bytte til Kart for å se ruten. Nå flyttes
    selve søkekortet inn på kartet ved behov – samme DOM-element, så all logikk,
@@ -4790,8 +4878,11 @@ function measureStackNow(){
   const hh=(hint&&!hint.hidden)?hint.offsetHeight+8:0;
   vm.style.setProperty('--hint-h',hh+'px');
   const bar=$('#mapSearchBar'),ctx=$('#mapCtxChip');
-  const bh=(bar&&!bar.hidden&&bar.offsetHeight)?bar.offsetHeight+8:0;
-  vm.style.setProperty('--bar-h',bh+'px');
+  const ob=$('#onboardBar');
+  vm.style.setProperty('--msb-h',
+    ((bar&&!bar.hidden&&bar.offsetHeight)?bar.offsetHeight+8:0)+'px');
+  vm.style.setProperty('--ob-h',
+    ((ob&&!ob.hidden&&ob.offsetHeight)?ob.offsetHeight+8:0)+'px');
   const ctxH=(ctx&&ctx.offsetHeight&&getComputedStyle(ctx).display!=='none')?ctx.offsetHeight+8:0;
   vm.style.setProperty('--ctx-h',ctxH+'px');
 }
@@ -4841,6 +4932,7 @@ function clearRoute(){
 }
 function drawPattern(p){
   if(!mapUsable()||!routeLayer)return;
+  setTimeout(visOmbord,120);
   setTimeout(()=>{loadStopMarkers(true)},60);   // ruten endret seg – nytt filter
   routeLayer.clearLayers();const pts=[];
   p.legs.forEach(leg=>{const ll=legPoints(leg).filter(okLL);if(ll.length<2)return;const hex=(MODE[modeOf(leg)]||MODE.foot).hex;
