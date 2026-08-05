@@ -58,9 +58,12 @@
 /* Hver fane har sin egen norske farge. Fargen brukes bare på appens «kron-
    juveler» – topplinje, indikator og aktivt faneikon – slik at den signaliserer
    hvor du er uten å overdøve innholdet. */
-#app[data-tab="plan"]  {--tab:#1B4FA0;--tab-2:#4A82D8;--tab-soft:rgba(27,79,160,.12)}
-#app[data-tab="depart"]{--tab:#C8102E;--tab-2:#E8455E;--tab-soft:rgba(200,16,46,.12)}
-#app[data-tab="map"]   {--tab:#0F6F6C;--tab-2:#2BA39C;--tab-soft:rgba(15,111,108,.12)}
+/* Fanene følger det norske flagget: dyp flaggblå, flaggrød, og den hvite
+   korsstripen – gjengitt som en lys stålgrå, siden ren hvit ikke kan bære
+   tekst i lys modus. --tab brukes i lys modus, --tab-2 i mørk. */
+#app[data-tab="plan"]  {--tab:#00205B;--tab-2:#5E93E0;--tab-soft:rgba(0,32,91,.12)}   /* flaggblå */
+#app[data-tab="depart"]{--tab:#BA0C2F;--tab-2:#F0596F;--tab-soft:rgba(186,12,47,.12)} /* flaggrød */
+#app[data-tab="map"]   {--tab:#455A75;--tab-2:#DCE6F2;--tab-soft:rgba(69,90,117,.12)} /* korsets hvite */
 *{box-sizing:border-box;margin:0;padding:0}
 /* Grensesnittet skal ikke kunne knipes større – da forskyver hele oppsettet seg.
    Kartet er unntatt: der håndterer Leaflet knipingen selv. */
@@ -142,12 +145,26 @@ a{color:inherit}
 .scrollpad{height:100%;overflow-y:auto;overscroll-behavior:contain;padding:2px 13px calc(14px + var(--sab));scrollbar-width:none}
 .scrollpad::-webkit-scrollbar{display:none}
 #bottomNav{flex:none;position:relative;display:grid;grid-template-columns:repeat(3,1fr);background:var(--navy);padding:5px 8px calc(6px + var(--sab));box-shadow:0 -6px 24px rgba(7,31,66,.3)}
-#bottomNav::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:var(--tab-2);opacity:.4;transition:background .45s ease}
+/* Hårstreken over menyen bærer flagget: tre felt i blått, hvitt og rødt.
+   Den aktive fanens felt lyser, de andre er dempet – så streken både pynter
+   og viser hvor du er. */
+#bottomNav::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,
+    var(--f1,#00205B) 0 33.33%, var(--f2,#E8EDF5) 33.33% 66.66%, var(--f3,#BA0C2F) 66.66%);
+  opacity:.9;transition:opacity .45s ease}
+#app[data-tab="plan"]  {--f1:#5E93E0;--f2:rgba(232,237,245,.28);--f3:rgba(186,12,47,.32)}
+#app[data-tab="depart"]{--f1:rgba(0,32,91,.45);--f2:rgba(232,237,245,.28);--f3:#F0596F}
+#app[data-tab="map"]   {--f1:rgba(0,32,91,.45);--f2:#DCE6F2;--f3:rgba(186,12,47,.32)}
 .nav-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 3px;color:#89A6C4;font-size:10px;font-weight:600;letter-spacing:.04em;transition:color .25s}
 .nav-btn svg{width:20px;height:20px;display:block;transition:transform .32s cubic-bezier(.34,1.56,.64,1),color .35s ease}
 .nav-btn:active svg{transform:scale(.86)}
 .nav-btn.active{color:#fff}
 .nav-btn.active svg{transform:translateY(-2px) scale(1.1);color:var(--tab-2)}
+/* Liten stolpe under aktiv fane, i fanens flaggfarge */
+.nav-btn.active::after{content:"";position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
+  width:26px;height:3px;border-radius:3px 3px 0 0;background:var(--tab-2);
+  animation:navInd .3s cubic-bezier(.22,1,.36,1)}
+@keyframes navInd{from{width:0;opacity:0}to{width:26px;opacity:1}}
 #navInd{position:absolute;top:0;height:3px;background:var(--tab-2);border-radius:0 0 4px 4px;
   transition:left .34s cubic-bezier(.5,1.3,.5,1),width .34s cubic-bezier(.5,1.3,.5,1),background .45s ease}
 .sub{display:none}
@@ -281,9 +298,6 @@ a{color:inherit}
 .stop-del svg{width:13px;height:13px;display:block}
 .stop-del:hover{background:var(--signal-soft);color:var(--signal-2)}
 /* Tre like brede knapper i stedet for tre ulike bredder på én flyt-rad. */
-.plan-tools{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 2px}
-.plan-tools .chip-btn{width:100%;height:44px;padding:0 6px;font-size:12px;gap:5px}
-.plan-tools .chip-btn svg{width:14px;height:14px}
 .chip-btn:disabled{opacity:.4;pointer-events:none}
 .seg{display:flex;background:var(--paper);border-radius:12px;padding:3px;gap:2px}
 .seg button{flex:1;height:44px;border-radius:9px;font-size:12px;font-weight:600;color:var(--muted);transition:all .2s}
@@ -292,14 +306,8 @@ a{color:inherit}
 :root[data-theme="dark"] #timeInput{color-scheme:dark}
 #timeInput.show{display:block;animation:viewIn .2s}
 /* Seks like celler i to rader – ingen løs «Båt» alene på linje tre. */
-.modes,.mode-filter{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.modes .mode-chip,.mode-filter .mf-chip{width:100%;padding:0 6px;gap:6px}
 /* FIX: standardfargen var flaggblå, som forsvant mot mørk bakgrunn –
    «Alle» hadde 1,09:1 i kontrast. Nøytralfargen følger nå temaet. */
-.mode-chip,.mf-chip{--mc:var(--chip-neutral);display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;font-weight:600;color:var(--muted);background:var(--card);transition:border-color .2s,color .2s,background .2s,transform .16s;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mode-chip:active,.mf-chip:active{transform:scale(.94)}
-.mode-chip i,.mf-chip i{width:8px;height:8px;border-radius:50%;background:var(--mc);flex:0 0 auto}
-.mode-chip.on,.mf-chip.on{border-color:var(--mc);color:var(--mc);background:color-mix(in srgb,var(--mc) 12%,var(--card))}
 .cta{position:relative;width:100%;height:50px;margin-top:12px;border-radius:15px;background:linear-gradient(135deg,var(--signal),var(--signal-2));color:#fff;font-family:var(--font-d);font-size:16.5px;font-weight:700;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(232,95,48,.32);transition:transform .15s;overflow:hidden}
 .cta svg{width:18px;height:18px;display:block}
 .cta:active{transform:scale(.97)}
@@ -352,7 +360,6 @@ a{color:inherit}
 .tc-go svg{width:15px;height:15px;display:block}
 .trip-card:hover .tc-go{background:var(--navy);border-color:var(--navy);color:#fff}
 .tc-go:active{transform:translateY(-50%) scale(.9)}
-.dep-search{display:flex;gap:8px;margin-top:8px;align-items:stretch}
 .search-field{flex:1;position:relative}
 .search-field .s-ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--faint);display:grid;place-items:center}
 .search-field .s-ic svg{width:17px;height:17px;display:block}
@@ -360,9 +367,6 @@ a{color:inherit}
 .search-field input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(18,165,160,.18)}
 .search-field input::placeholder{color:var(--faint)}
 .search-field .stop-clear{display:none}
-.loc-btn{flex:none;width:50px;height:50px;border-radius:14px;background:var(--navy);color:#fff;display:grid;place-items:center;transition:transform .15s;box-shadow:var(--sh-1)}
-.loc-btn svg{width:20px;height:20px;display:block}
-.loc-btn:active{transform:scale(.9)}
 .dep-stop-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none;margin-top:10px}
 .dep-stop-chips::-webkit-scrollbar{display:none}
 .stop-chip{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 12px;border-radius:11px;border:1.5px solid var(--line);background:var(--card);font-size:12.5px;font-weight:600;color:var(--ink);transition:all .18s;line-height:1;white-space:nowrap}
@@ -377,7 +381,6 @@ a{color:inherit}
 .live-pill{display:inline-flex;align-items:center;gap:6px;background:var(--green-soft);color:var(--green-txt);font-size:10px;font-weight:700;letter-spacing:.14em;padding:5px 10px;border-radius:99px}
 .live-pill i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
 .board-head h2{animation:rowIn .34s cubic-bezier(.22,1,.36,1) both}
-.mode-filter{margin-top:10px}
 .dep-row{position:relative;display:flex;align-items:center;gap:11px;padding:9px 2px;border-bottom:1px solid var(--line);
   animation:rowIn .34s cubic-bezier(.22,1,.36,1) both}
 @keyframes rowIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
@@ -533,8 +536,11 @@ a{color:inherit}
   /* Følger stabelen, men forlater aldri skjermen uansett hvor høye kortene blir */
   /* Taket må også ta høyde for toppstabelen. Uten det klatret knappene opp
      under ombordlinja når kortet ble høyt. */
+  /* Knappene er tre à 46 px med 9 px mellomrom = 156 px. Reservasjonen var
+     210 px, og med toppstabelen trukket fra ble taket så lavt at knappene ble
+     presset ned i rutekortet. 170 px gir dem plass uten å skyve dem inn i noe. */
   bottom:min(calc(18px + var(--card-h) + var(--layer-h)),
-             calc(100% - 210px - var(--top-h) - var(--msb-h) - var(--ob-h)));
+             calc(100% - 170px - var(--top-h) - var(--msb-h) - var(--ob-h)));
   transition:bottom .28s cubic-bezier(.22,1,.36,1)}
 .fab{position:relative;width:46px;height:46px;border-radius:14px;background:var(--card);box-shadow:var(--sh-2);display:grid;place-items:center;color:var(--ink);transition:transform .18s,background .18s,color .18s;border:1px solid var(--line)}
 .fab svg{width:20px;height:20px;display:block}
@@ -972,9 +978,22 @@ a{color:inherit}
 .qt-card::before,.near-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
   background:var(--ac,var(--line-2));opacity:.85}
 
+/* Overskriften er en tydelig rad, ikke løs tekst over ingenting */
+.sec-label{border-radius:10px;padding:6px 4px;transition:background .18s}
+.sec-label:active{background:var(--paper)}
 /* Overskriftene fikk en farget markør, så øyet finner seksjonene raskere */
 .sec-label>span:first-child::before{content:"";display:inline-block;width:6px;height:6px;border-radius:2px;
   background:var(--tab-2);margin-right:8px;vertical-align:1px;opacity:.9}
+
+/* Transportvelgeren. Lå opprinnelig i samme regel som filterraden i Avganger;
+   da den ble fjernet, forsvant disse med. */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+.mode-chip{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;
+  border-radius:12px;border:1.5px solid var(--line);background:var(--card);
+  font-size:12.5px;font-weight:600;color:var(--chip-neutral);
+  transition:border-color .2s,background .2s,color .2s}
+.mode-chip svg{width:15px;height:15px;display:block}
+.mode-chip.on{border-color:var(--tab-2);background:var(--tab-soft);color:var(--ink)}
 
 /* ---------- sammenleggbare seksjoner ---------- */
 .sec-label.toggle{width:100%;cursor:pointer;user-select:none;min-height:44px;margin:6px 0 4px}
@@ -989,6 +1008,24 @@ a{color:inherit}
 .sec-body{display:grid;grid-template-rows:1fr;transition:grid-template-rows .28s cubic-bezier(.22,1,.36,1),opacity .2s ease}
 .sec-inner{overflow:hidden;min-height:0}
 .sec.closed .sec-body{grid-template-rows:0fr;opacity:0}
+/* En kollapset seksjon blir et kort, ikke en tynn strek. Tre streker over en
+   tom skjerm ser ut som noe mangler; tre kort ser ut som et valg. */
+.sec.closed{background:var(--card);border:1.5px solid var(--line);border-radius:15px;
+  padding:4px 12px 0;margin-top:10px;box-shadow:var(--sh-1);
+  transition:background .22s,border-color .22s}
+.sec.closed .sec-label{margin:8px 0 0;padding:0}
+.sec.closed .sl-line{opacity:0}
+.sec.closed:active{border-color:var(--tab-2)}
+/* En kollapset seksjon skal fortsatt fortelle hva den inneholder. Uten dette
+   satt man igjen med tre streker og en tom skjerm. */
+.sec-peek{display:none;font-family:var(--font-m);font-size:12px;color:var(--muted);
+  padding:6px 2px 12px 16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  animation:viewIn .26s ease}
+.sec.closed .sec-peek{display:block}
+.sec-peek b{font-family:var(--font-b);font-weight:700;color:var(--ink)}
+.sec-peek .pk-badge{display:inline-grid;place-items:center;min-width:20px;height:15px;padding:0 4px;
+  border-radius:5px;color:#fff;font-family:var(--font-d);font-size:9.5px;font-weight:800;
+  vertical-align:1px;margin-right:5px}
 .sec-count{flex:none;font-family:var(--font-m);font-size:10px;color:var(--faint);
   background:var(--paper);border-radius:99px;padding:2px 7px;letter-spacing:0}
 
@@ -1614,21 +1651,16 @@ const IC={
   arrowR:S('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>'),
   plus:S('<path d="M12 5v14"/><path d="M5 12h14"/>'),
   check:S('<path d="M20 6 9 17l-5-5"/>'),
-  eye:S('<path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6"/>'),
   layers:S('<path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="m3 13 9 5 9-5"/>'),
   menu:S('<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/>'),
-  bookmark:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>',
   edit:S('<path d="M4 20h4l10-10a2.83 2.83 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
   chevL:S('<path d="M15 5l-7 7 7 7"/>'),
   chevD:S('<path d="M6 9l6 6 6-6"/>'),
   chevR:S('<path d="M9 6l6 6-6 6"/>'),
-  refresh:S('<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>'),
   swapV:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3 5 6.99h3V14h2V6.99h3L9 3z"/></svg>',
-  sun:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 0 0 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>',
   moon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8A9.06 9.06 0 0 0 12 3z"/></svg>'
 };
 const WX={
-  sun:S('<circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/>'),
   partly:S('<circle cx="8" cy="8" r="2.6"/><path d="M8 2.6v1.4M8 12v1.4M2.6 8H4M12 8h1.4M4.6 4.6l1 1M11.4 4.6l-1 1"/><path d="M9.5 18a3.3 3.3 0 0 1-.4-6.6 4.3 4.3 0 0 1 8.2-.9A2.9 2.9 0 0 1 18 18H9.5z"/>'),
   cloud:S('<path d="M7 18a4 4 0 0 1-.5-7.97A5 5 0 0 1 16 9.2 3.5 3.5 0 0 1 17.5 18H7z"/>'),
   rain:S('<path d="M7 16a4 4 0 0 1-.5-7.97A5 5 0 0 1 16 7.2 3.5 3.5 0 0 1 17.5 16H7z"/><path d="M8 19l-1 2.5M12 19l-1 2.5M16 19l-1 2.5"/>'),
@@ -1848,7 +1880,7 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    allerede åpen side beholder gammel HTML og JS selv om en ny service worker
    er installert. Nå oppdages det, og du får velge når. */
 /* Denne må holdes lik VERSION i sw.js. Byggeskriptet sjekker at de stemmer. */
-const APP_VERSION='v7.4.0';
+const APP_VERSION='v7.5.0';
 let swReg=null,waitingSW=null,reloading=false,byttetSelv=false;
 
 /* Service worker-livssyklusen er lunefull: en ny versjon kan bli hengende i
@@ -3112,6 +3144,7 @@ function startNearby(){
 const SEC_DEFAULT={quick:true,recents:true,nearby:true,about:false,tech:false};
 function secOpen(){return {...SEC_DEFAULT,...loadLS('sections',{})}}
 function setSec(key,open){
+  setTimeout(oppdaterSammendrag,0);
   const all=secOpen();all[key]=open;saveLS('sections',all);
   const sec=document.querySelector(`.sec[data-sec="${key}"]`);
   if(!sec)return;
@@ -3151,6 +3184,49 @@ function skjulTommeSeksjoner(){
 function updateSecCounts(){
   const q=$('#quickCount');
   if(q){const n=quickTrips().length;q.hidden=!n;q.textContent=n+(n===1?' reise':' reiser')}
+  oppdaterSammendrag();
+}
+/* Sammendragslinjen som vises når en seksjon er lagt ned. Den henter det mest
+   presserende: neste hurtigreise, siste søk, nærmeste avgang. */
+function sammendragFor(navn){
+  if(navn==='quick'){
+    const t=quickTrips();
+    if(!t.length)return '';
+    const live=qtLive&&qtLive[qtKey(t[0])];   // nøkkelen er reisen, ikke posisjonen
+    const badge=live&&live.legs&&live.legs.find(l=>l.mode!=='foot');
+    const merke=badge?`<i class="pk-badge" style="background:${
+      badge.colour?'#'+badge.colour:((MODE[badge.mode]||MODE.bus).hex)}">${esc(badge.code)}</i>`:'';
+    const når=live?` · ${relMin(live.t-now())}`:'';
+    return `${merke}<b>${esc(t[0].from.n)}</b> → <b>${esc(t[0].to.n)}</b>${esc(når)}`;
+  }
+  if(navn==='recents'){
+    const r=loadLS('recents',[]);
+    if(!r.length)return '';
+    return `<b>${esc(r[0].from&&r[0].from.name||'')}</b> → <b>${esc(r[0].to&&r[0].to.name||'')}</b>`+
+           (r.length>1?` · og ${r.length-1} til`:'');
+  }
+  if(navn==='nearby'){
+    const s2=nearbyStops&&nearbyStops[0];
+    if(!s2)return '';
+    const c=(s2.calls||[])[0];
+    const merke=c?`<i class="pk-badge" style="background:${
+      c.colour?'#'+c.colour:((MODE[c.mode]||MODE.bus).hex)}">${esc(c.code)}</i>`:'';
+    return `${merke}<b>${esc(s2.name)}</b>${c?` · ${esc(relMin(c.t-now()))}`:''}`+
+           (nearbyStops.length>1?` · ${nearbyStops.length-1} stopp til`:'');
+  }
+  return '';
+}
+function oppdaterSammendrag(){
+  $$('#plan-form .sec[data-sec]').forEach(sec=>{
+    const navn=sec.dataset.sec;
+    let pk=sec.querySelector('.sec-peek');
+    const txt=sammendragFor(navn);
+    if(!txt){if(pk)pk.remove();return}
+    if(!pk){pk=el('div','sec-peek');
+      const body=sec.querySelector('.sec-body');
+      if(body)sec.insertBefore(pk,body);else sec.appendChild(pk);}
+    pk.innerHTML=txt;
+  });
 }
 
 /* ================= hurtigreiser (fra A til B) =================

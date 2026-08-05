@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (285 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (292 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,37 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## Opprydding etter alt som er fjernet
+
+Mange elementer er fjernet de siste rundene – filterraden i Avganger, søkefeltet
+der, verktøyraden i Plan, kontekst-chipen, stoppfilterbrikken. Reglene og
+ikonene deres ble stående igjen.
+
+Fjernet: CSS for **fem klasser** som ikke lenger finnes noe sted
+(`.plan-tools`, `.mode-filter`, `.mf-chip`, `.dep-search`, `.loc-btn`) og
+**seks ikoner** som aldri ble tegnet.
+
+**To nye tester passer på at det ikke skjer igjen:** én går gjennom alle
+`$('#…')`-oppslag og krever at id-en finnes i markupen, én går gjennom
+ikontabellen og krever at hvert ikon faktisk brukes.
+
+### Ryddingen brøt tre ting – som testene fanget
+Slettemønsteret mitt tok hele CSS-regler der klassen bare var **én av flere**
+selektorer. `.modes,.mode-filter{…}` inneholdt både filterraden og
+transportvelgeren – begge forsvant.
+
+> Testene meldte umiddelbart: transportvelgeren mistet rutenettet, «Alle» mistet
+> nøytralfargen og knappehøyden. Reglene er gjenopprettet som egne, og målt på
+> faktiske piksler: **10,9:1 kontrast i lys modus, 15,5:1 i mørk**, tre kolonner,
+> 44 px høye.
+
+**FAB-knappene havnet i rutekortet.** Da jeg lot taket ta hensyn til
+toppstabelen, ble det så lavt at knappene ble presset ned i kortet – 1 794 px²
+overlapp i to tilstander. Reservasjonen var 210 px for tre knapper som til
+sammen er 156 px. Justert til 170 px.
 
 ---
 
