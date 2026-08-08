@@ -2,7 +2,7 @@
 
 Alt under er verifisert mot Entur live 31. juli 2026, ikke gjettet.
 `node test-live.js` kjører appens egne spørringer mot API-et (15 tester),
-`node test-dom.js` tester grensesnitt og logikk i jsdom (292 tester),
+`node test-dom.js` tester grensesnitt og logikk i jsdom (297 tester),
 `python3 shot.py`, `measure.py`, `swipe_test.py`, `fill_test.py`, `qt_test.py`,
 `sec_test.py`, `overlap_test.py`, `perf_test.py`, `font_test.py`, `a11y.py` og
 `polish_test.py`, `plan_test.py`, `soak.py`, `regress_map.py` og `update_test.py`
@@ -164,6 +164,45 @@ Nå:
 
 Testen booter appen i jsdom **uten** Leaflet i det hele tatt og bekrefter at den
 starter, at Plan-fanen tegnes, og at alle kartfunksjonene har vakt.
+
+---
+
+## «Hva går rundt meg, og når?»
+
+Med posisjonen på, men uten å søke, viser «I nærheten» nå **én tidsrekke** på
+tvers av alle stoppestedene rundt deg – neste avgang først, uansett hvor den går
+fra:
+
+```
+nå      Trikk 12   → Majorstuen      fra Dronningens gate
+nå      Buss 34    → Tåsen           fra Jernbanetorget
+1 min   T-bane 5   → Vestli          fra Jernbanetorget
+```
+
+Klokkeslag til venstre, en loddrett strek i **linjens egen farge**, linjenummer
+og transportmiddel i midten, mål og stoppested til høyre. Trykk på en rad for å
+åpne tavla for det stoppet. Du kan fortsatt bytte til gruppering per stoppested,
+og valget huskes.
+
+**Samme linje mot samme sted vises bare én gang.** Fire avganger med buss 37 er
+ikke informasjon – du vil se *bredden* i tilbudet rundt deg.
+
+### Fargene følger norsk konvensjon
+Trikk **blå** (#0B91EF), buss **rød** (#E4002B), T-bane **oransje** (#EC700C),
+tog mørkeblå, båt turkis. Oppgir Entur linjens egen farge, vinner den.
+
+### Bytter vises som et hendelsesforløp
+Reisekortene viste bare løse linjemerker, som ikke sa noe om at du måtte bytte.
+Nå er det en kjede med pil mellom hver etappe, og et merke som sier hvor mange
+bytter det er: **🚶 → 13 → 31 → 🚶 · 1 bytte**. For skjermleser leses den som
+«gange, deretter Trikk 13, deretter Buss 31, deretter gange».
+
+> **Tidsrekken viste bare buss i første forsøk.** Det gikk 78 trikkavganger og
+> 21 T-baneavganger i området på det tidspunktet. Årsaken lå ett hakk tidligere:
+> avgangene ble kappet til **tre per stoppested** før tidsrekken ble bygget, så
+> bare den bussen som går oftest fra hvert stopp kom videre. Kortvisningen kutter
+> selv til tre – tidsrekken trenger alle. Etter rettelsen: trikk, T-bane og buss,
+> med tre ulike farger.
 
 ---
 

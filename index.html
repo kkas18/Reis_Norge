@@ -873,6 +873,42 @@ a{color:inherit}
 .ptr.ready .ptr-ring{border-top-color:var(--green);border-color:var(--green-soft)}
 .ptr.spin .ptr-ring{animation:snurr .8s linear infinite}
 @keyframes snurr{to{transform:rotate(360deg)}}
+/* Tidsrekken: klokkeslag til venstre, linje i midten, mål til høyre. Fargen
+   er linjens egen, og den går igjen både i merket og i den loddrette streken. */
+/* Kjeden: merke – pil – merke. Pilen betyr bytte når begge sider er kjøretøy. */
+.kjede{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.kj-pil{flex:none;width:9px;height:9px;position:relative}
+.kj-pil::before{content:"";position:absolute;left:0;top:50%;width:9px;height:1.5px;
+  margin-top:-.75px;background:var(--line-2)}
+.kj-pil::after{content:"";position:absolute;right:0;top:50%;width:4px;height:4px;
+  margin-top:-2px;border-top:1.5px solid var(--line-2);border-right:1.5px solid var(--line-2);
+  transform:rotate(45deg) translate(-1px,1px)}
+.kj-gange{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:6px;
+  background:var(--paper);color:var(--muted)}
+.kj-gange svg{width:12px;height:12px;display:block}
+.kj-mer{flex:none;font-family:var(--font-m);font-size:10px;color:var(--faint);padding-left:2px}
+.kj-bytt{flex:none;margin-left:4px;font-size:9.5px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--amber-txt);background:var(--amber-soft,rgba(217,138,6,.14));
+  padding:2px 6px;border-radius:6px;font-style:normal}
+.nb-time{display:flex;flex-direction:column;margin-top:8px}
+.nb-row{position:relative;display:flex;align-items:center;gap:10px;width:100%;min-height:52px;
+  padding:6px 8px 6px 0;text-align:left;background:none;border:none;border-radius:11px;
+  transition:background .18s}
+.nb-row:hover{background:var(--paper)}
+.nb-tid{flex:none;width:52px;text-align:right;font-family:var(--font-m);font-size:12.5px;
+  font-weight:700;color:var(--ink)}
+.nb-row.due .nb-tid{color:var(--green-txt)}
+.nb-strek{flex:none;width:3px;align-self:stretch;border-radius:2px;background:var(--mc);opacity:.85;margin:4px 0}
+.nb-linje{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:66px}
+.nb-mode{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.nb-mål{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.nb-mål b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-mål span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Bytt mellom tidsrekke og gruppering per stopp */
+.nb-switch{display:flex;gap:4px;margin-top:6px;background:var(--paper);border-radius:11px;padding:4px}
+.nb-switch button{flex:1;min-height:36px;border-radius:8px;font-size:12px;font-weight:600;
+  color:var(--muted);background:none;transition:background .2s,color .2s}
+.nb-switch button.on{background:var(--card);color:var(--ink);box-shadow:var(--sh-1)}
 .near-toggle{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:44px;
   margin-top:10px;border-radius:12px;background:none;border:1.5px dashed var(--line-2);
   font-size:12.5px;font-weight:600;color:var(--muted);transition:color .2s,border-color .2s,background .2s}
@@ -1854,7 +1890,9 @@ document.addEventListener('touchend',e=>{
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeWakeFlash();if(typeof closeMore==='function'&&!$('#moreSheet').hidden)closeMore();
   if(typeof lukkKartsøk==='function')lukkKartsøk()}});
 
-const MODE={foot:{l:'Gange',hex:'#64748B'},tram:{l:'Trikk',hex:'#0B87C7'},metro:{l:'T-bane',hex:'#E8590C'},bus:{l:'Buss',hex:'#C2255C'},rail:{l:'Tog',hex:'#3457D5'},water:{l:'Båt',hex:'#0C8599'},coach:{l:'Ekspress',hex:'#8447C9'},air:{l:'Fly',hex:'#5C6B7A'},funicular:{l:'Bane',hex:'#5C6B7A'},lift:{l:'Gondol',hex:'#5C6B7A'},cableway:{l:'Kabelbane',hex:'#5C6B7A'},trolleybus:{l:'Buss',hex:'#C2255C'},monorail:{l:'Bane',hex:'#5C6B7A'},taxi:{l:'Taxi',hex:'#8A8F98'}};
+/* Fargene følger norsk konvensjon: trikk blå, buss rød, T-bane oransje, tog
+   mørkeblå, båt turkis. Har linjen sin egen farge fra Entur, vinner den. */
+const MODE={foot:{l:'Gange',hex:'#64748B'},tram:{l:'Trikk',hex:'#0B91EF'},metro:{l:'T-bane',hex:'#EC700C'},bus:{l:'Buss',hex:'#E4002B'},rail:{l:'Tog',hex:'#3457D5'},water:{l:'Båt',hex:'#0C8599'},coach:{l:'Ekspress',hex:'#8447C9'},air:{l:'Fly',hex:'#5C6B7A'},funicular:{l:'Bane',hex:'#5C6B7A'},lift:{l:'Gondol',hex:'#5C6B7A'},cableway:{l:'Kabelbane',hex:'#5C6B7A'},trolleybus:{l:'Buss',hex:'#C2255C'},monorail:{l:'Bane',hex:'#5C6B7A'},taxi:{l:'Taxi',hex:'#8A8F98'}};
 const modeOf=leg=>{const m=(leg.line&&leg.line.transportMode)||leg.mode;return MODE[m]?m:'foot'};
 const STREET={car:{hex:'#1D6FEB',dash:null,l:'Bil'},bike:{hex:'#B02A37',dash:'12 9',l:'Sykkel'},foot:{hex:'#0E7A3D',dash:'2 9',l:'Gå'}};
 
@@ -1880,7 +1918,7 @@ if(matchMedia('(prefers-color-scheme: dark)').addEventListener)matchMedia('(pref
    allerede åpen side beholder gammel HTML og JS selv om en ny service worker
    er installert. Nå oppdages det, og du får velge når. */
 /* Denne må holdes lik VERSION i sw.js. Byggeskriptet sjekker at de stemmer. */
-const APP_VERSION='v7.5.0';
+const APP_VERSION='v7.6.0';
 let swReg=null,waitingSW=null,reloading=false,byttetSelv=false;
 
 /* Service worker-livssyklusen er lunefull: en ny versjon kan bli hengende i
@@ -3057,7 +3095,7 @@ function nearbyAskHTML(){
     <button class="chip-btn" id="nearAsk">Vis</button></div>`;
 }
 function nearbyCardHTML(s2,i){
-  const calls=(s2.calls||[]).slice(0,3).map(c=>{
+  const calls=(s2.calls||[]).slice(0,3).map(c=>{   // kortet viser tre
     const mm=MODE[c.mode]||MODE.bus;const hex=c.colour?('#'+c.colour):mm.hex;
     const diff=c.t-now();
     const when=diff<=45000?'nå':(diff<3600000?Math.max(1,Math.round(diff/60000))+' min':fmtTime(c.t));
@@ -3081,6 +3119,44 @@ function nearbyCardHTML(s2,i){
     <div class="nc-lines">${calls||'<span class="nc-dest">Ingen avganger den neste timen</span>'}</div>
   </button>`;
 }
+/* «Hva går rundt meg, og når?» besvares dårlig av fire lister gruppert per
+   stopp – da må du selv sammenligne klokkeslett på tvers. Denne visningen
+   slår dem sammen til ÉN tidsrekke: neste avgang først, uansett hvilket stopp
+   den går fra. */
+let nærhetsVisning=loadLS('nearbyView','tid');
+function nærhetTidslinjeHTML(){
+  const alle=[];
+  nearbyStops.forEach(s2=>(s2.calls||[]).forEach(c=>alle.push({...c,stopp:s2.name,dist:s2.dist})));
+  alle.sort((a,b)=>a.t-b.t);
+  /* Samme linje mot samme sted fire ganger på rad er ikke informasjon. Behold
+     den første av hver linje+retning – da ser du BREDDEN i tilbudet rundt deg,
+     ikke bare den ene bussen som går ofte. */
+  const sett=new Set(),liste=[];
+  for(const c of alle){
+    const nøkkel=(c.code||'')+'→'+(c.dest||'');
+    if(sett.has(nøkkel))continue;
+    sett.add(nøkkel);liste.push(c);
+    if(liste.length>=10)break;
+  }
+  if(!liste.length)return '<p class="hint" style="margin:8px 2px 0">Ingen avganger den neste timen.</p>';
+  let forrige=null;
+  return `<div class="nb-time">`+liste.map(c=>{
+    const mm=MODE[c.mode]||MODE.bus;
+    const hex=c.colour?('#'+c.colour):mm.hex;
+    const diff=c.t-now();
+    const nå=diff<=45000;
+    /* Skillelinje når vi går over til et nytt stoppested i rekken. */
+    const nyttStopp=c.stopp!==forrige;forrige=c.stopp;
+    return `<button class="nb-row${nå?' due':''}" data-stopp="${esc(c.stopp)}" style="--mc:${esc(hex)}">
+      <span class="nb-tid" data-ts="${+c.t}">${countdownHTML(diff,+c.t).replace(/<[^>]+>/g,'')}</span>
+      <span class="nb-strek"></span>
+      <span class="nb-linje"><i class="leg-badge" style="background:${esc(hex)}">${esc(c.code)}</i>
+        <span class="nb-mode">${esc(mm.l)}</span></span>
+      <span class="nb-mål"><b>${esc(c.dest)}</b>
+        <span>${nyttStopp?'fra ':''}${esc(c.stopp)} · ${fmtWalk(c.dist)}</span></span>
+    </button>`;
+  }).join('')+`</div>`;
+}
 function renderNearby(){
   const box=$('#nearby');if(!box)return;
   if(!state.userPos&&!nearbyStops.length){box.innerHTML=nearbyAskHTML();
@@ -3090,7 +3166,21 @@ function renderNearby(){
     $('#nearbyTag').hidden=true;return}
   if(!nearbyStops.length){box.innerHTML='<div class="skel" style="height:64px;margin-top:8px"></div>'.repeat(3);return}
   $('#nearbyTag').hidden=false;
-  box.innerHTML=nearbyStops.map(nearbyCardHTML).join('');
+  const bytter=`<div class="nb-switch" role="tablist">
+      <button data-v="tid"${nærhetsVisning==='tid'?' class="on"':''}>Når det går</button>
+      <button data-v="stopp"${nærhetsVisning==='stopp'?' class="on"':''}>Per stoppested</button>
+    </div>`;
+  box.innerHTML=bytter+(nærhetsVisning==='tid'
+    ? nærhetTidslinjeHTML()
+    : nearbyStops.map(nearbyCardHTML).join(''));
+  box.querySelectorAll('.nb-switch button').forEach(b=>b.onclick=()=>{
+    nærhetsVisning=b.dataset.v;saveLS('nearbyView',nærhetsVisning);renderNearby();
+  });
+  /* Trykk på en avgang → åpne tavla for det stoppet den går fra. */
+  box.querySelectorAll('.nb-row').forEach(r=>r.onclick=()=>{
+    const st=nearbyStops.find(x=>x.name===r.dataset.stopp);
+    if(st){switchTab('depart');selectDepartStop(st)}
+  });
   box.querySelectorAll('.near-card').forEach(c=>c.onclick=()=>{
     const st=nearbyStops[+c.dataset.i];if(!st)return;
     $('#depChips').innerHTML=`<button class="stop-chip on">${esc(st.name)}<span>${Math.round(st.dist)} m</span></button>`;
@@ -3121,10 +3211,15 @@ async function loadNearby(force){
   try{
     /* maximumResults teller plattformer FØR multiModalMode grupperer dem –
        n=4 ga ETT stoppested. Over-etterspør og kutt i visningen i stedet. */
-    const d=await enturGQL(NEARBY_Q,{lat:p.lat,lon:p.lon,r:1300,n:40,dep:3});
+    /* Flere avganger per stopp, ellers ser tidsrekken bare den bussen som går
+       oftest – trikk og T-bane faller utenfor. */
+    const d=await enturGQL(NEARBY_Q,{lat:p.lat,lon:p.lon,r:1300,n:40,dep:8});
     nearbyStops=((d.nearest&&d.nearest.edges)||[]).filter(e=>e.node&&e.node.place&&e.node.place.id).map(e=>{
       const pl=e.node.place;
-      const calls=mapCalls(pl).filter(c=>!c.cancelled&&c.t-now()>-60000).slice(0,3);
+      /* Kappet vi til tre her, ville tidsrekken bare sett den bussen som går
+         oftest fra hvert stopp – trikk og T-bane forsvant før de var vurdert.
+         Kortvisningen kutter selv til tre; tidsrekken trenger alle. */
+      const calls=mapCalls(pl).filter(c=>!c.cancelled&&c.t-now()>-60000);
       return {id:pl.id,name:pl.name,lat:pl.latitude,lon:pl.longitude,dist:e.node.distance,calls};
     }).filter(s2=>s2.calls.length).slice(0,4);   // stopp uten avganger hjelper ingen
     nearbyAt=Date.now();
@@ -3275,6 +3370,24 @@ async function loadQuickLive(force){
 }
 const qtKey=x=>`${x.from.n}>${x.to.n}`;
 
+/* Hendelsesforløpet i kortform: hver etappe som et merke, med pil imellom.
+   Er det mer enn ett kjøretøy, betyr pilen et bytte. */
+function kjedeHTML(legs,maks=4){
+  if(!legs||!legs.length)return '';
+  const vis=legs.slice(0,maks);
+  const deler=vis.map(l=>{
+    const mm=MODE[l.mode]||MODE.bus;
+    const hex=l.colour?('#'+l.colour):mm.hex;
+    if(l.mode==='foot')return `<i class="kj-gange" title="Gange">${IC.walk}</i>`;
+    return `<i class="leg-badge" style="background:${esc(hex)}" title="${esc(mm.l)} ${esc(l.code)}">${esc(l.code)}</i>`;
+  });
+  const kjede=deler.join('<i class="kj-pil" aria-hidden="true"></i>');
+  const bytter=vis.filter(l=>l.mode!=='foot').length-1;
+  return `<span class="kjede" aria-label="${
+      vis.map(l=>l.mode==='foot'?'gange':((MODE[l.mode]||MODE.bus).l+' '+(l.code||''))).join(', deretter ')
+    }">${kjede}${legs.length>maks?'<i class="kj-mer">+'+(legs.length-maks)+'</i>':''}`+
+    `${bytter>0?`<i class="kj-bytt">${bytter} bytte${bytter>1?'r':''}</i>`:''}</span>`;
+}
 function renderQuickTrips(){
   const box=$('#quickTrips');if(!box)return;
   const list=quickTrips();
@@ -3284,9 +3397,9 @@ function renderQuickTrips(){
     if(live){
       const diff=live.t-now();
       const when=diff<=45000?'nå':(diff<3600000?'om '+Math.max(1,Math.round(diff/60000))+' min':fmtTime(live.t));
-      const badges=live.legs.slice(0,3).map(l=>{
-        const mm=MODE[l.mode]||MODE.bus;const hex=l.colour?('#'+l.colour):mm.hex;
-        return `<i class="leg-badge" style="background:${esc(hex)}">${esc(l.code)}</i>`}).join('');
+      /* Bare linjemerkene sa ingenting om at du må BYTTE. Nå vises kjeden med
+         en pil mellom hver etappe, så «trikk 13 → buss 31» er tydelig. */
+      const badges=kjedeHTML(live.legs);
       liveHTML=`${badges||''}<span class="qt-when${diff<=45000?' due':''}">${when}</span>`+
                `<span style="color:var(--faint)">· ${fmtDur(live.dur)}</span>`;
     }
